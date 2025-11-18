@@ -1,0 +1,27 @@
+import AgreementModal from "./Component/AgreementModal "
+import Footer from "./Component/Footer"
+import Header from "./Component/Header"
+import { Routes, Route } from "react-router-dom"
+import Login from "./pages/Login"
+import Reg from "./pages/Reg"
+
+
+
+function App() {
+
+
+  return (
+    <>
+
+      <Header />
+      <Routes>
+        <Route path='/login' element={<Login />} />
+        <Route path='/Reg' element={<Reg />} />
+      </Routes>
+      {/* <AgreementModal /> */}
+      <Footer />
+    </>
+  )
+}
+
+export default App
