@@ -41,8 +41,8 @@ const Reg = () => {
                                         <div className='mt-[70px] w-full flex'>
                                             <div className=' items-start'>
                                                 <div className='flex'>
-                                                    <img src={agreeIcon} alt="" className=' cursor-pointer h-[16px] mr-1 w-4' />
-                                                    <img className=' cursor-pointer h-[16px] mr-1 w-4' src={agreeOkIcon} alt="" />
+                                                    <img src={agreeIcon} alt="" className='hidden cursor-pointer h-[16px] mr-1 w-4' />
+                                                    <img className='  cursor-pointer h-[16px] mr-1 w-4' src={agreeOkIcon} alt="" />
 
 
                                                     <p className='leading-[16px] text-[#252525] text-[12px] font-normal tracking-[0] m-0 p-0'>
