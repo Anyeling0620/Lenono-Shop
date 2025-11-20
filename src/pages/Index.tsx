@@ -1,9 +1,14 @@
-import React from 'react'
+import React from 'react';
+import Roll from './Roll';
 
-const index = () => {
+const Index: React.FC = () => {
   return (
-    <div>index</div>
-  )
-}
+    <div className="flex justify-center mt-2 w-full">
+      <div className="relative w-[1200px] m-auto">
+        <Roll />
+      </div>
+    </div>
+  );
+};
 
-export default index
+export default Index;
