@@ -108,7 +108,7 @@ const Rolling: React.FC = () => {
             <img
                 src={item.imageUrl}
                 alt={item.alt}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-top"
             />
             </a>
         </div>
