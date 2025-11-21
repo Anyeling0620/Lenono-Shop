@@ -18,6 +18,14 @@ import RightNavBar from "./Component/RightNavBar/RightNavBar"
 import Index from "./pages/Index"
 import type { HiddenPaths } from "./Types/hiddenPaths"
 
+import Footer from "./Component/Footer"
+import Header from "./Component/Header"
+import { Routes, Route } from "react-router-dom"
+import Login from "./Pages/Login"
+import Reg from "./Pages/Reg"
+import RightNavBar from "./Component/RightNavBar"
+import Roll from "./Pages/Roll"
+import Index from "./Pages/Index"
 
 
 function App() {
@@ -37,6 +45,8 @@ function App() {
         <Route path="/" element={<Index />} />
         <Route path='/login' element={<Login />} />
         <Route path='/register' element={<Reg />} />
+        <Route path='/Reg' element={<Reg />} />
+        <Route path='/Roll' element={<Roll />} />
       </Routes>
       {!isHidden
         &&
