@@ -1,7 +1,9 @@
 import React from 'react';
 import Roll from './Roll';
-import QuickAccess from './QuickAccess';
-import Recommended from './Recommended';
+import QuickAccess from '../Component/QuickAccess';
+import Recommended from '../Component/Recommended'
+
+
 
 const Index: React.FC = () => {
   return (
