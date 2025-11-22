@@ -1,5 +1,5 @@
 import React from 'react';
-import Roll from './Roll';
+import Roll from '../Component/Roll';
 import QuickAccess from '../Component/QuickAccess';
 import Recommended from '../Component/Recommended'
 

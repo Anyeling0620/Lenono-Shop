@@ -5,7 +5,7 @@ import { Routes, Route } from "react-router-dom"
 import Login from "./Pages/Login"
 import Reg from "./Pages/Reg"
 import RightNavBar from "./Component/RightNavBar"
-import Roll from "./Pages/Roll"
+import Roll from "./Component/Roll"
 import Index from "./Pages/Index"
 
 
