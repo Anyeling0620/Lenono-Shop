@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import SpecialNavItem from './SpecialNavItem';
 import NavItem from './NavItem';
 import ScrollToTop from './ScrollToTop';
@@ -17,7 +17,7 @@ interface NavItemConfig {
 const RightNavBar: React.FC = () => {
 
     // 导航项配置数据
-    const navItemsConfig: NavItemConfig[] = [
+    const navItemsData: NavItemConfig[] = [
         {
             id: 'lenovo-enjoy',
             type: 'special',
@@ -97,7 +97,33 @@ const RightNavBar: React.FC = () => {
         }
     ];
 
-
+      const [isAtTop, setIsAtTop] = useState(true);       // 控制是否在页面顶部
+    
+      // 使用useEffect添加滚动监听器，检查滚动位置
+      useEffect(() => {
+        const checkScrollPosition = () => {
+          setIsAtTop(window.scrollY === 0);  // 当滚动位置为0时，设置isAtTop为true
+        };
+    
+        window.addEventListener('scroll', checkScrollPosition);
+        checkScrollPosition(); // 初始检查
+    
+        // 清理函数，移除事件监听器
+        return () => window.removeEventListener('scroll', checkScrollPosition);
+      }, []);
+    
+      // 处理点击事件，平滑滚动到页面顶部
+      const handleClick = () => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      };
+    
+      // 如果在页面顶部，则不渲染任何内容
+      if (isAtTop) {
+        return null; // 在页面顶部时不显示
+      }
 
     // 渲染导航项
     const renderNavItem = (item: NavItemConfig) => {
@@ -119,6 +145,7 @@ const RightNavBar: React.FC = () => {
                         normalImage={item.normalImage}
                         hoverImage={item.hoverImage}
                         alt={item.alt}
+                        handleScrollToTop={handleClick}
                     />
                 );
 
@@ -142,7 +169,7 @@ const RightNavBar: React.FC = () => {
     return (
         <div className='top-[20%] block w-[70px] h-auto z-[11112] fixed right-5 bg-white/50 shadow-md backdrop-blur-md rounded-lg overflow-visible transition-all duration-300'>
             <ul>
-                {navItemsConfig.map(renderNavItem)}
+                {navItemsData.map(renderNavItem)}
             </ul>
         </div>
     );

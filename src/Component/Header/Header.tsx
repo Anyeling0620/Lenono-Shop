@@ -15,8 +15,8 @@ import Navbar from './Navbar'
 import AuthLinks from './AuthLinks'
 import SearchBar from './SearchBar'
 import { useLocation } from 'react-router-dom'
-import {type HiddenPaths } from '../../Types/hiddenPaths'
-import type { NavItem } from '../../Types/navItem'
+import {type HiddenPaths } from '../../types/hiddenPaths'
+import type { NavItem } from '../../types/navItem'
 
 
 const navItems: NavItem[] = [

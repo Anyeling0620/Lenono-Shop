@@ -8,7 +8,7 @@
  */
 import React, { useState, useTransition } from "react";
 import { Link, useLocation } from "react-router-dom";
-import type { NavItem } from "../../Types/navItem";
+import type { NavItem } from "../../types/navItem";
 
 
 

@@ -4,7 +4,7 @@ import FormField from "./FormField";
 import LoginModeTabs from "./LoginModeTabs";
 import SubmitButton from "./SubmitButton";
 import VerificationCodeField from "./VerificationCodeField";
-import type { FormState } from "../../Types/formState";
+import type { FormState } from "../../types/formState";
 import useVerificationCode from "../../Hooks/useVerificationCode";
 
 

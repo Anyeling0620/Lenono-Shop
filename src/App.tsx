@@ -2,7 +2,7 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-14 19:42:20
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-21 17:31:37
+ * @LastEditTime: 2025-11-22 12:32:21
  * @FilePath: \lenovo-shop\src\App.tsx
  * @Description: 
  * 
@@ -16,12 +16,9 @@ import Index from "./pages/Index"
 import MainLayout from "./Component/Layout/MainLayout"
 import NotFound from "./pages/404"
 
-
 function App() {
-
   return (
     <>
-
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<Index />} />
