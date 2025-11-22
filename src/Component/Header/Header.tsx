@@ -1,13 +1,4 @@
-/*
- * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @Date: 2025-11-14 20:13:36
- * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-20 23:55:43
- * @FilePath: \lenovo-shop\src\Component\Header\Header.tsx
- * @Description: 
- * 
- * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
- */
+
 /*
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-14 20:13:36
@@ -42,7 +33,6 @@ const Header: React.FC = () => {
         paths: ["/login", "/register"]
     }
     const isHidden: boolean = hiddenPaths.paths.includes(location.pathname)
-
 
     return (
         <header className="bg-white top-0 left-0 min-w-[1200px]">

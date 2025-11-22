@@ -9,39 +9,30 @@
  * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
  */
 // import AgreementModal from "./Component/AgreementModal "
-import Footer from "./Component/Footer/Footer"
-import Header from "./Component/Header/Header"
-import { Routes, Route, useLocation } from "react-router-dom"
+import { Routes, Route } from "react-router-dom"
 import Login from "./pages/Auth/Login"
 import Reg from "./pages/Auth/Register"
-import RightNavBar from "./Component/RightNavBar/RightNavBar"
 import Index from "./pages/Index"
-import type { HiddenPaths } from "./Types/hiddenPaths"
-
+import MainLayout from "./Component/Layout/MainLayout"
+import NotFound from "./pages/404"
 
 
 function App() {
-  const location = useLocation();
-
-  // 使用接口类型管理需要隐藏组件的路径
-  const hiddenPaths: HiddenPaths = {
-    paths: ["/login", "/register"]
-  };
-  const isHidden: boolean = hiddenPaths.paths.includes(location.pathname);
 
   return (
     <>
-      <Header />
-      <RightNavBar />
+
       <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path='/login' element={<Login />} />
-        <Route path='/register' element={<Reg />} />
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Index />} />
+          <Route path="/index" element={<Index />} />
+          <Route path='/login' element={<Login />} />
+          <Route path='/register' element={<Reg />} />
+        </Route>
+        <Route path="*" element={<NotFound />} />
       </Routes>
-      {!isHidden
-        &&
-        <Footer />
-      }
+
+
     </>
   )
 }

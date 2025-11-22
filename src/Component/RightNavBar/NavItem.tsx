@@ -2,13 +2,14 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-21 17:48:42
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-21 18:58:18
- * @FilePath: \lenovo-shop\src\Component\RightNavBa\NavItem.tsx
+ * @LastEditTime: 2025-11-22 10:41:53
+ * @FilePath: \lenovo-shop\src\Component\RightNavBar\NavItem.tsx
  * @Description: 
  * 
  * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
  */
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 interface NavItemProps {
     normalImage: string;
@@ -63,36 +64,11 @@ const NavItem: React.FC<NavItemProps> = ({
 
     // 根据悬停状态选择要显示的图片
     const currentImage = hoverImage && isHovered ? hoverImage : normalImage;
-
-    if (href) {
-        return (
-            <>
-                <li className='block relative list-none'>
-                    <a
-                        href={href}
-                        className={`block cursor-pointer text-black no-underline outline-none transition-all duration-200 ${isHovered ? 'bg-white/70' : ''
-                            }`}
-                        onMouseEnter={handleMouseEnter}
-                        onMouseLeave={handleMouseLeave}
-                        onClick={handleClick}
-                    >
-                        <img
-                            src={currentImage}
-                            className='w-[70px] border-none inline-block align-middle transition-all duration-200'
-                            alt={alt}
-                            loading="lazy"
-                        />
-                    </a>
-                </li>
-
-            </>
-        );
-    }
-
     return (
         <>
             <li className='block relative list-none'>
-                <div
+                <Link
+                    to={href || '#'}
                     className={`block cursor-pointer text-black no-underline outline-none transition-all duration-200 ${isHovered ? 'bg-white/70' : ''
                         }`}
                     onMouseEnter={handleMouseEnter}
@@ -105,25 +81,25 @@ const NavItem: React.FC<NavItemProps> = ({
                         alt={alt}
                         loading="lazy"
                     />
-                </div>
-
-            </li>
-
-            {/* {此处有bug，目前没找到解决办法} */}
-            {hasPopup && showPopup && (
-                <div
-                    className="fixed w-48 bg-white p-4 z-[11113] border border-gray-200 shadow-lg rounded-lg"
-                    style={{
-                        top: '20%',
-                        right: 'calc(5rem + 20px)'
+                </Link>
+            
+                 {hasPopup && showPopup && (
+                <ul
+                    className=" w-[210px] bg-white p-4 z-[11113] border-spacing-0  shadow-lg  top-0 absolute"
+                      style={{
+                        right: 'calc(72px)'
                     }}
                 >
-                    {children}
-                </div>
+                    <li className="inline relative">
+                            {children}
+                    </li>
+             
+                </ul>
             )}
-            {/*  */}
+            </li>
         </>
     );
+
 };
 
 export default NavItem;

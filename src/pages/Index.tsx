@@ -12,7 +12,9 @@ import React from 'react'
 
 const Index = () => {
   return (
-    <></>
+    <>
+    <img src="" className='h-[3000px]' alt="" />
+    </>
   )
 }
 

@@ -35,8 +35,8 @@ const RightNavBar: React.FC = () => {
             popupContent: (
                 <div className="text-sm text-gray-700">
                     <div className="font-semibold text-red-600 mb-1">服务热线</div>
-                    <div>400-990-8888</div>
-                    <div className="text-xs text-gray-500 mt-1">周一至周日 9:00-18:00</div>
+                    <div>114-514-6666</div>
+                    <div className="text-xs text-gray-500 mt-1">周一至周日 9:00-21:00</div>
                 </div>
             )
         },
@@ -46,7 +46,15 @@ const RightNavBar: React.FC = () => {
             normalImage: 'https://p1.lefile.cn/fes/cms/2025/10/20/50z28vxv0m8xogl4uy0kjpnz1pfe3c035989.jpg',
             hoverImage: 'https://p3.lefile.cn/fes/cms/2025/10/20/4h4gnqksch94pehlf5dtxu6ey6glp4447791.jpg',
             href: '/manual-consultation',
-            alt: '人工咨询'
+            alt: '人工咨询',
+            hasPopup: true,
+            popupContent: (
+
+                <div className="text-sm text-gray-700">
+                    <div className="font-semibold text-red-600 mb-1">售前咨询</div>
+                    <div className="text-xs text-gray-500 mt-1">周一至周日 9:00-22:00</div>
+                </div>
+            )
         },
         {
             id: 'app-exclusive',
@@ -57,12 +65,11 @@ const RightNavBar: React.FC = () => {
             hasPopup: true,
             popupContent: (
                 <div className="text-sm text-gray-700">
-                    <div className="font-semibold mb-1">APP专享福利</div>
-                    <div className="text-xs">
-                        <div>• 新人专享大礼包</div>
-                        <div>• 会员专属优惠</div>
-                        <div>• 积分兑换好礼</div>
-                    </div>
+                    <img
+                        className="w-[210px] inline-block border-none mr-0"
+                        src="https://p1.lefile.cn/fes/cms/2025/03/21/cc7rhde7bcq9tz8qwwxrhu5nw2tu3g377335.jpg"
+                        alt="扫码下载"
+                    />
                 </div>
             )
         },
@@ -133,8 +140,10 @@ const RightNavBar: React.FC = () => {
     };
 
     return (
-        <div className='top-[20%] block w-[70px] h-auto z-[11112] fixed right-5 bg-white/50 shadow-md backdrop-blur-md rounded-lg overflow-hidden transition-all duration-300'>
-            {navItemsConfig.map(renderNavItem)}
+        <div className='top-[20%] block w-[70px] h-auto z-[11112] fixed right-5 bg-white/50 shadow-md backdrop-blur-md rounded-lg overflow-visible transition-all duration-300'>
+            <ul>
+                {navItemsConfig.map(renderNavItem)}
+            </ul>
         </div>
     );
 };
