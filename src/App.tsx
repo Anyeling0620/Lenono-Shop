@@ -2,7 +2,7 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-14 19:42:20
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-22 12:32:21
+ * @LastEditTime: 2025-11-23 15:39:53
  * @FilePath: \lenovo-shop\src\App.tsx
  * @Description: 
  * 
@@ -15,6 +15,7 @@ import Reg from "./pages/Auth/Register"
 import Index from "./pages/Index"
 import MainLayout from "./Component/Layout/MainLayout"
 import NotFound from "./pages/404"
+import NewProduct from "./pages/NewProduct"
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="/index" element={<Index />} />
           <Route path='/login' element={<Login />} />
           <Route path='/register' element={<Reg />} />
+          <Route path='/new-product' element={<NewProduct />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

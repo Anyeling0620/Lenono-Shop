@@ -2,7 +2,7 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-22 09:29:12
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-22 13:18:12
+ * @LastEditTime: 2025-11-23 17:54:21
  * @FilePath: \lenovo-shop\README.md
  * @Description: 
  * 
@@ -11,6 +11,8 @@
 ## React19 + vite + typeSricpt
 
 # lenovo-shop
+
+
 # v0.1.0
 
 ## 2025-11-21
@@ -18,7 +20,7 @@
 lenovo-shop
 ├─ 📁public
 ├─ 📁src
-│  ├─ 📁assets
+│  ├─ 📁assets                          // 静态资源
 │  │  ├─ 📄agreementContent.tsx         // 协议内容
 │  │  └─ 📄icon.ts                      // 图标
 │  ├─ 📁Component
@@ -78,7 +80,7 @@ lenovo-shop
 
 
 # v0.1.1
-# 2025-11-22
+## 2025-11-22
 ```
 lenovo-shop
 ├─ 📁src   
@@ -95,4 +97,88 @@ lenovo-shop
 │  │  ├─ 📄404.tsx                      // 新增404页面
 │  │  └─ 📄Index.tsx
 │  ├─ 📄App.tsx                         // 调整路由
+```
 
+# v0.1.2
+
+## 2025-11-22
+
+```
+lenovo-shop
+├─ 📁public                             // 静态资源 
+│  └─ 📁images
+│     └─ 📁roll
+│        ├─ 📄1.png
+│        ├─ 📄2.png
+│        ├─ 📄3.png
+│        ├─ 📄4.png
+│        └─ 📄5.png
+├─ 📁src
+│  ├─ 📁Component
+│  │  ├─ 📁Layout
+│  │  │  └─ 📄MainLayout.tsx
+│  │  └─ 📁RightNavBar                  // 逻辑调整
+│  │     ├─ 📄NavItem.tsx
+│  │     ├─ 📄RightNavBar.tsx       
+│  │     ├─ 📄ScrollToTop.tsx
+│  │     └─ 📄SpecialNavItem.tsx
+│  ├─ 📁pages
+│  │  ├─ 📄FlashSale.tsx
+│  │  ├─ 📄Index.tsx
+│  │  ├─ 📄QuickAccess.tsx
+│  │  ├─ 📄Recommended.tsx        
+│  │  └─ 📄Roll.tsx                     // 轮播图
+│  ├─ 📁utils                           // 新增工具文件夹
+│     └─ 📄imageConfig.ts               // 新增图片工具
+├─ 📄.env.development                   // 新增开发环境配置
+
+```
+
+v0.1.5
+
+## 2025-11-23
+
+
+```
+lenovo-shop
+├─ 📁public
+├─ 📁src
+│  ├─ 📁Component
+│  │  ├─ 📁Carousel                      // 新增轮播图组件
+│  │  │  ├─ 📄Carousel.tsx
+│  │  │  ├─ 📄CarouselItem.tsx
+│  │  │  ├─ 📄CarouselTrack.tsx
+│  │  │  ├─ 📄Indicators.tsx
+│  │  │  └─ 📄NavigationButtons.tsx
+│  │  ├─ 📁QuickAccess                // 快速通道组件
+│  │  │  ├─ 📄QuickAccess.tsx
+│  │  │  └─ 📄QuickItem.tsx
+│  │  └─ 📄Roll.tsx
+│  ├─ 📁pages
+│  │  ├─ 📄404.tsx
+│  │  ├─ 📄FlashSale.tsx            // 待重构       
+│  │  ├─ 📄Index.tsx
+│  │  ├─ 📄NewProduct.tsx
+│  │  └─ 📄Recommended.tsx
+│  ├─ 📁types
+│  │  ├─ 📄carouselItem.ts
+│  │  └─ 📄quickAccessItems.ts
+│  ├─ 📄App.tsx
+│  ├─ 📄index.css
+│  └─ 📄main.tsx
+├─ 📄.env.development           // 开发环境配置文件
+├─ 📄.gitignore                 // 请勿随意修改配置文件，可能会导致各种错误    
+├─ 📄eslint.config.js
+├─ 📄index.html
+├─ 📄LICENSE
+├─ 📄package-lock.json
+├─ 📄package.json
+├─ 📄pnpm-lock.yaml
+├─ 📄postcss.config.js
+├─ 📄README.md
+├─ 📄tailwind.config.js
+├─ 📄tsconfig.app.json
+├─ 📄tsconfig.json
+├─ 📄tsconfig.node.json
+└─ 📄vite.config.ts
+```

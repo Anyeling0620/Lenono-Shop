@@ -102,7 +102,7 @@ const RightNavBar: React.FC = () => {
       // 使用useEffect添加滚动监听器，检查滚动位置
       useEffect(() => {
         const checkScrollPosition = () => {
-          setIsAtTop(window.scrollY === 0);  // 当滚动位置为0时，设置isAtTop为true
+          setIsAtTop(window.scrollY === 0);  
         };
     
         window.addEventListener('scroll', checkScrollPosition);
