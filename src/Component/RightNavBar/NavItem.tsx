@@ -93,7 +93,6 @@ const NavItem: React.FC<NavItemProps> = ({
                     <li className="inline relative">
                             {children}
                     </li>
-             
                 </ul>
             )}
             </li>

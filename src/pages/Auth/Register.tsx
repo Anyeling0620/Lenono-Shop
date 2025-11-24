@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import AuthForm from "../../Component/Auth/AuthForm";
+import AuthForm from "../../component/Auth/AuthForm";
 import AuthBackground from "./AuthBackground";
 
 const Register: React.FC = () => {

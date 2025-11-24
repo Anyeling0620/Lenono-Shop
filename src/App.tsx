@@ -12,8 +12,8 @@
 import { Routes, Route } from "react-router-dom"
 import Login from "./pages/Auth/Login"
 import Reg from "./pages/Auth/Register"
-import Index from "./pages/Index"
-import MainLayout from "./Component/Layout/MainLayout"
+import Index from "./pages"
+import MainLayout from "./component/Layout/MainLayout"
 import NotFound from "./pages/404"
 import NewProduct from "./pages/NewProduct"
 

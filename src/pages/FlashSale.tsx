@@ -34,7 +34,6 @@ const FlashSale = () => {
                     <i className='text-[16px] inline-block w-[30px] h-[30px] leading-[30px] bg-[#242424] rounded text-white mr-1 ml-1'>{time.time2 || '00'}</i>
                     <i className='text-[16px] inline-block w-[30px] h-[30px] leading-[30px] bg-[#242424] rounded text-white mr-1 ml-1'>{time.time3 || '00'}</i>
                   </div>
-
                 </div>
                 <div className=' block'>
                   <span className='text-[20px] text-white font-semibold'> {time.time || '12:00'}</span>
@@ -46,12 +45,9 @@ const FlashSale = () => {
                     <i className='text-[16px] inline-block w-[30px] h-[30px] leading-[30px] bg-[#242424] rounded text-white mr-1 ml-1'>{time.time2 || '00'}</i>
                     <i className='text-[16px] inline-block w-[30px] h-[30px] leading-[30px] bg-[#242424] rounded text-white mr-1 ml-1'>{time.time3 || '00'}</i>
                   </div>
-
                 </div>
-
               </div>
             </div>
-
           </Link>
           <div className='w-[918px] absolute left-[230px] right-[49px] overflow-hidden bg-white '>
             <div className='h-[66px] leading-[66px] bg-white border-b border-b-[#e8e8e8]  '>
@@ -83,14 +79,10 @@ const FlashSale = () => {
                   </div>
                 </li>
               </ul>
-
-
             </div>
-
             <div className='my-0 ml-[23px] mr-0'>
               <div className='m-0'>
                 <ul className='w-full text-[0px] h-[273px] overflow-hidden list-none'>
-
                   <li className='w-[195px] inline-block mr-[23px] mt-[17px] border-r border-[#e8e8e8] pr-[10px] list-none'>
                     <Link to={''} className='inline-block no-underline'>
                       <div className='w-[160px] h-[160px] leading-[160px] text-center mx-auto'>
@@ -136,9 +128,9 @@ const FlashSale = () => {
                           <span className='text-base text-[#e72d21] font-bold '>¥</span>
                           <span className='text-base text-[#e2231a] font-semibold'>9.9</span>
                         </div>
-                        <div className='inline-block text-[0px] text-[#858585]'>
-                          <span className='text-sm text-[#858585]  font-bold '>¥</span>
-                          <span className='text-sm text-[#858585] line-through'>29.9</span>
+                        <div className='inline-block  text-[#858585]'>
+                          <span className='text-sm font-bold '>¥</span>
+                          <span className='text-sm line-through '>29.9</span>
                         </div>
                       </div>
                     </Link>
@@ -161,9 +153,9 @@ const FlashSale = () => {
                           <span className='text-base text-[#e72d21] font-bold '>¥</span>
                           <span className='text-base text-[#e2231a] font-semibold'>9.9</span>
                         </div>
-                        <div className='inline-block text-[0px] text-[#858585]'>
-                          <span className='text-sm text-[#858585]  font-bold '>¥</span>
-                          <span className='text-sm text-[#858585] line-through'>29.9</span>
+                        <div className='inline-block  text-[#858585]'>
+                          <span className='text-sm font-bold '>¥</span>
+                          <span className='text-sm line-through '>29.9</span>
                         </div>
                       </div>
                     </Link>
@@ -186,20 +178,16 @@ const FlashSale = () => {
                           <span className='text-base text-[#e72d21] font-bold '>¥</span>
                           <span className='text-base text-[#e2231a] font-semibold'>9.9</span>
                         </div>
-                        <div className='inline-block text-[0px] text-[#858585]'>
-                          <span className='text-sm text-[#858585]  font-bold '>¥</span>
-                          <span className='text-sm text-[#858585] line-through'>29.9</span>
+                        <div className='inline-block  text-[#858585]'>
+                          <span className='text-sm font-bold '>¥</span>
+                          <span className='text-sm line-through '>29.9</span>
                         </div>
                       </div>
                     </Link>
                   </li>
                 </ul>
               </div>
-
             </div>
-
-
-
           </div>
           <div className='absolute right-0 w-[49px] h-[340px] bg-gradient-to-br from-[#ec1111] from-1% to-[#ff8200] to-99%'>
             <div className="absolute inset-0 m-auto w-[18px] h-[106px] text-sm text-white text-center cursor-pointer">

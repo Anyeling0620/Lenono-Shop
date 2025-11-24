@@ -1,4 +1,4 @@
-import Carousel from '../Component/Carousel/Carousel'
+import Carousel from '../component/Carousel/Carousel'
 import type { CarouselItemType } from '../types/carouselItem';
 
 const NewProduct = () => {

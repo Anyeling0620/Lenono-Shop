@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import SpecialNavItem from './SpecialNavItem';
 import NavItem from './NavItem';
 import ScrollToTop from './ScrollToTop';
+import { userIcon,userSelectIcon } from '../../assets/icon';
+import UserNavItem from './userNavItem';
 
 interface NavItemConfig {
     id: string;
-    type: 'special' | 'normal' | 'scroll-top';
+    type: 'user' | 'normal' | 'scroll-top';
     normalImage: string;
     hoverImage?: string;
     href?: string;
@@ -19,10 +20,11 @@ const RightNavBar: React.FC = () => {
     // 导航项配置数据
     const navItemsData: NavItemConfig[] = [
         {
-            id: 'lenovo-enjoy',
-            type: 'special',
-            normalImage: 'https://p1.lefile.cn/mobile/lc/app/component/237831153a444378ba6196713e06a0c0.jpg',
-            href: '/lenovo-enjoy',
+            id: 'user-center',
+            type: 'user',
+            normalImage: userIcon,
+            hoverImage: userSelectIcon,
+            href: '/user-center',
             alt: '联想乐享'
         },
         {
@@ -49,7 +51,6 @@ const RightNavBar: React.FC = () => {
             alt: '人工咨询',
             hasPopup: true,
             popupContent: (
-
                 <div className="text-sm text-gray-700">
                     <div className="font-semibold text-red-600 mb-1">售前咨询</div>
                     <div className="text-xs text-gray-500 mt-1">周一至周日 9:00-22:00</div>
@@ -90,6 +91,14 @@ const RightNavBar: React.FC = () => {
             alt: '有奖调研'
         },
         {
+            id:'shopping-cart',
+            type: 'normal',
+            normalImage: 'https://p4.lefile.cn/fes/cms/2022/02/15/bdf8xwarfegcq94nrcah7fru6bie8f994693.png',
+            hoverImage:'https://p3.lefile.cn/fes/cms/2022/02/15/zjp7x2qq65ixfzmjkslujwrln5619w815717.png',
+            href: '/shopping-cart',
+            alt: '购物车'
+        },
+        {
             id: 'scroll-to-top',
             type: 'scroll-top',
             normalImage: 'https://p4.lefile.cn/fes/cms/2024/07/02/v8siswctj3g5bkdgpkv0c899soq6ri693857.png',
@@ -128,11 +137,12 @@ const RightNavBar: React.FC = () => {
     // 渲染导航项
     const renderNavItem = (item: NavItemConfig) => {
         switch (item.type) {
-            case 'special':
+            case 'user':
                 return (
-                    <SpecialNavItem
+                    <UserNavItem
                         key={item.id}
-                        image={item.normalImage}
+                        normalImage={item.normalImage}
+                        hoverImage={item.hoverImage}
                         href={item.href || '#'}
                         alt={item.alt}
                     />

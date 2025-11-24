@@ -2,7 +2,7 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-18 20:09:36
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-23 16:21:22
+ * @LastEditTime: 2025-11-24 12:07:02
  * @FilePath: \lenovo-shop\src\pages\Index.tsx
  * @Description: 
  * 
@@ -10,9 +10,9 @@
  */
 
 import React from 'react';
-import QuickAccess from '../Component/QuickAccess/QuickAccess';
+import QuickAccess from '../component/QuickAccess/QuickAccess';
 import type { CarouselItemType } from '../types/carouselItem';
-import Carousel from '../Component/Carousel/Carousel';
+import Carousel from '../component/Carousel/Carousel';
 import FlashSale from './FlashSale';
 
 
