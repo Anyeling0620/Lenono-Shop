@@ -2,14 +2,13 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-20 20:38:53
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-20 22:14:00
- * @FilePath: \lenovo-shop\src\Component\Header\Navbar.tsx
+ * @LastEditTime: 2025-11-24 16:25:53
+ * @FilePath: \lenovo-shop\src\component\Header\Navbar.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import React, { useState, useTransition } from "react";
 import { Link, useLocation } from "react-router-dom";
 import type { NavItem } from "../../types/navItem";
-
 
 
 interface NavbarProps {

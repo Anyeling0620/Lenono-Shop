@@ -15,6 +15,7 @@ export const SubmitButton: React.FC<SubmitButtonProps> = ({
   type = 'submit',
   onClick
 }) => {
+  
   return (
     <button 
       type={type}

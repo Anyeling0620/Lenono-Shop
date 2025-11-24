@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import NavItem from './NavItem';
 import ScrollToTop from './ScrollToTop';
-import { userIcon,userSelectIcon } from '../../assets/icon';
-import UserNavItem from './userNavItem';
+import { userIcon,userHoverIcon } from '../../assets/icon';
+import UserNavItem from './UserNavItem';
 
 interface NavItemConfig {
     id: string;
@@ -23,7 +23,7 @@ const RightNavBar: React.FC = () => {
             id: 'user-center',
             type: 'user',
             normalImage: userIcon,
-            hoverImage: userSelectIcon,
+            hoverImage: userHoverIcon,
             href: '/user-center',
             alt: '联想乐享'
         },
