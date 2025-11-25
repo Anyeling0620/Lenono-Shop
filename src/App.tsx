@@ -11,7 +11,7 @@
 // import AgreementModal from "./Component/AgreementModal "
 import { Routes, Route } from "react-router-dom"
 import Login from "./pages/Auth/Login"
-import Reg from "./pages/Auth/Register"
+import Register from "./pages/Auth/Register"
 import MainLayout from "./component/Layout/MainLayout"
 import NotFound from "./pages/404"
 import NewProduct from "./pages/NewProduct"
@@ -34,7 +34,7 @@ function App() {
           <Route path="/" element={<Index />} />
           <Route path="index" element={<Index />} />
           <Route path='login' element={<Login />} />
-          <Route path='register' element={<Reg />} />
+          <Route path='register' element={<Register />} />
           <Route path='new-product' element={<NewProduct />} />
         </Route>
         <Route path="*" element={<NotFound />} />

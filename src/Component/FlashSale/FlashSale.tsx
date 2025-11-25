@@ -7,7 +7,7 @@ import SessionTab from './SessionTab';
 import type { Product, flashSaleMenu, TimeInfo } from '../../types/flashSale';
 
 // Mock data - 在实际项目中应该从 API 获取
-const mockSessions: flashSaleMenu[]  = [
+const mockSessions: flashSaleMenu[] = [
     {
         id: '1',
         time: '2025-11-26-12-00-00',
@@ -22,7 +22,7 @@ const mockSessions: flashSaleMenu[]  = [
                 discount: 4.6,
                 link: '/product/1'
             },
-             {
+            {
                 id: '2',
                 name: '联想有线鼠标 M280',
                 image: 'https://p3.lefile.cn/product/adminweb/2025/08/19/rUVzuGyeMITeoRCvxtdtW7CKe-8992.jpg',
@@ -31,7 +31,7 @@ const mockSessions: flashSaleMenu[]  = [
                 discount: 4.6,
                 link: '/product/1'
             },
-             {
+            {
                 id: '3',
                 name: '联想有线鼠标 M280',
                 image: 'https://p3.lefile.cn/product/adminweb/2025/08/19/rUVzuGyeMITeoRCvxtdtW7CKe-8992.jpg',
@@ -40,7 +40,7 @@ const mockSessions: flashSaleMenu[]  = [
                 discount: 4.6,
                 link: '/product/1'
             },
-             {
+            {
                 id: '4',
                 name: '联想有线鼠标 M280',
                 image: 'https://p3.lefile.cn/product/adminweb/2025/08/19/rUVzuGyeMITeoRCvxtdtW7CKe-8992.jpg',
@@ -51,12 +51,12 @@ const mockSessions: flashSaleMenu[]  = [
             },
         ]
     },
-      {
+    {
         id: '2',
-        time: '2025-11-25-18-00-00',
+        time: '2025-11-27-18-00-00',
         duration: '6h',
         products: [
-         {
+            {
                 id: '1',
                 name: '啊哈哈',
                 image: 'https://p3.lefile.cn/product/adminweb/2025/08/19/rUVzuGyeMITeoRCvxtdtW7CKe-8992.jpg',
@@ -66,7 +66,41 @@ const mockSessions: flashSaleMenu[]  = [
                 link: '/product/1'
             },
         ]
-      }
+    },
+    {
+        id: '3',
+        time: '2025-11-25-18-00-00',
+        duration: '32h',
+        products: [
+            {
+                id: '1',
+                name: '啊哈哈',
+                image: 'https://p3.lefile.cn/product/adminweb/2025/08/19/rUVzuGyeMITeoRCvxtdtW7CKe-8992.jpg',
+                currentPrice: 19.9,
+                originalPrice: 29.9,
+                discount: 4.6,
+                link: '/product/1'
+            },
+             {
+                id: '2',
+                name: '啊哈哈啊啊',
+                image: 'https://p3.lefile.cn/product/adminweb/2025/08/19/rUVzuGyeMITeoRCvxtdtW7CKe-8992.jpg',
+                currentPrice: 19.9,
+                originalPrice: 29.9,
+                discount: 4.6,
+                link: '/product/1'
+            },
+             {
+                id: '3',
+                name: '啊哈a哈',
+                image: 'https://p3.lefile.cn/product/adminweb/2025/08/19/rUVzuGyeMITeoRCvxtdtW7CKe-8992.jpg',
+                currentPrice: 19.9,
+                originalPrice: 29.9,
+                discount: 4.6,
+                link: '/product/1'
+            },
+        ]
+    }
 ];
 
 const FlashSale: React.FC = () => {
@@ -78,7 +112,7 @@ const FlashSale: React.FC = () => {
         duration: activeSession.duration,
         time: activeSession.time
     };
-    if(activeSession.id==='') return null;
+    if (activeSession.id === '') return null;
 
     return (
         <div className="w-full mx-auto my-0 relative">
