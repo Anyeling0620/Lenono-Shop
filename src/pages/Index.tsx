@@ -13,8 +13,7 @@ import React from 'react';
 import QuickAccess from '../component/QuickAccess/QuickAccess';
 import type { CarouselItemType } from '../types/carouselItem';
 import Carousel from '../component/Carousel/Carousel';
-import FlashSale from './FlashSale';
-
+import FlashSale from '../component/FlashSale/FlashSale';
 
 
 const rollData: CarouselItemType[] = [

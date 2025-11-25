@@ -1,3 +1,13 @@
+/*
+ * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
+ * @Date: 2025-11-24 23:02:09
+ * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
+ * @LastEditTime: 2025-11-25 22:11:48
+ * @FilePath: \lenovo-shop\src\component\QuickAccess\QuickItem.tsx
+ * @Description: 
+ * 
+ * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
+ */
 import { useState, type FC } from 'react'
 import { Link } from 'react-router-dom';
 import type { QuickAccessItems } from '../../types/quickAccessItems';
@@ -14,7 +24,6 @@ const QuickItem: FC<QuickItemProps> = ({
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
     return (
         <li
-            key={index}
             className={`quick-access-li w-[90px] h-[90px] aspect-square bg-white rounded-sm transition-all duration-300 ease-in-out ${hoveredIndex === index
                 ? 'transform -translate-y-1 shadow-md'
                 : 'shadow-none'

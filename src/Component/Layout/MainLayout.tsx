@@ -24,7 +24,9 @@ export default function MainLayout() {
       <Header />
       <RightNavBar />
       <Outlet />
-      {!hideFooter && <Footer />}
+      {!hideFooter
+        && <Footer />
+      }
     </>
   );
 }
