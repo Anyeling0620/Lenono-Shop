@@ -10,8 +10,9 @@ export interface MainProduct {
   link: string;         // 产品链接
 }
 
+import type { CarouselItemType } from "./carouselItem";
 export interface MainProductCategory {
   category: string;         // 产品类别名称  
-  image: string[];          // 类别图片
+  image: CarouselItemType[];          // 类别图片
   products: MainProduct[];  // 产品列表
 }
