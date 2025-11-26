@@ -14,7 +14,7 @@ import QuickAccess from '../component/QuickAccess/QuickAccess';
 import type { CarouselItemType } from '../types/carouselItem';
 import Carousel from '../component/Carousel/Carousel';
 import FlashSale from '../component/FlashSale/FlashSale';
-
+import MainProduct from '../Component/MainProduct/MainProduct';
 
 const rollData: CarouselItemType[] = [
   {
@@ -55,6 +55,7 @@ const Index: React.FC = () => {
       />
       <QuickAccess/>
       <FlashSale />
+      <MainProduct />
     </div>
 
   );
