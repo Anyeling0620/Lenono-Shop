@@ -125,7 +125,7 @@ export const getStatusText = (dateTimeStr: string, durationStr: string): string 
   
   if (now < startTime) {
     if (isTomorrowSession(dateTimeStr)) {
-      return '明日开始';
+      return '开始倒计时';
     } else {
       return '即将开始';
     }

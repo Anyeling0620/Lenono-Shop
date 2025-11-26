@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import NavItem from './NavItem';
 import ScrollToTop from './ScrollToTop';
-import { userIcon,userHoverIcon } from '../../assets/icon';
+import { userIcon, userHoverIcon, qrcodeIcon } from '../../assets/icon';
 import UserNavItem from './UserNavItem';
 
 interface NavItemConfig {
@@ -65,12 +65,16 @@ const RightNavBar: React.FC = () => {
             alt: 'APP专享',
             hasPopup: true,
             popupContent: (
-                <div className="text-sm text-gray-700">
-                    <img
-                        className="w-[210px] inline-block border-none mr-0"
-                        src="https://p1.lefile.cn/fes/cms/2025/03/21/cc7rhde7bcq9tz8qwwxrhu5nw2tu3g377335.jpg"
-                        alt="扫码下载"
-                    />
+                <div className="text-sm text-gray-700 flex">
+                    <div className='mr-auto'>
+                        <div className="font-semibold text-red-600 mb-1">联想APP</div>
+                        <div className="text-xs text-gray-500 mt-1">新人扫码下载</div>
+                        <div className="text-xs text-gray-500 mt-1">享受多重福利</div>
+                    </div>
+                    <div className='ml-auto'>
+                <img src={qrcodeIcon} alt="联想APP" className='w-[70px]' />
+                    </div>
+
                 </div>
             )
         },
@@ -91,10 +95,10 @@ const RightNavBar: React.FC = () => {
             alt: '有奖调研'
         },
         {
-            id:'shopping-cart',
+            id: 'shopping-cart',
             type: 'normal',
             normalImage: 'https://p4.lefile.cn/fes/cms/2022/02/15/bdf8xwarfegcq94nrcah7fru6bie8f994693.png',
-            hoverImage:'https://p3.lefile.cn/fes/cms/2022/02/15/zjp7x2qq65ixfzmjkslujwrln5619w815717.png',
+            hoverImage: 'https://p3.lefile.cn/fes/cms/2022/02/15/zjp7x2qq65ixfzmjkslujwrln5619w815717.png',
             href: '/shopping-cart',
             alt: '购物车'
         },
@@ -106,33 +110,33 @@ const RightNavBar: React.FC = () => {
         }
     ];
 
-      const [isAtTop, setIsAtTop] = useState(true);       // 控制是否在页面顶部
-    
-      // 使用useEffect添加滚动监听器，检查滚动位置
-      useEffect(() => {
+    const [isAtTop, setIsAtTop] = useState(true);       // 控制是否在页面顶部
+
+    // 使用useEffect添加滚动监听器，检查滚动位置
+    useEffect(() => {
         const checkScrollPosition = () => {
-          setIsAtTop(window.scrollY === 0);  
+            setIsAtTop(window.scrollY === 0);
         };
-    
+
         window.addEventListener('scroll', checkScrollPosition);
         checkScrollPosition(); // 初始检查
-    
+
         // 清理函数，移除事件监听器
         return () => window.removeEventListener('scroll', checkScrollPosition);
-      }, []);
-    
-      // 处理点击事件，平滑滚动到页面顶部
-      const handleClick = () => {
+    }, []);
+
+    // 处理点击事件，平滑滚动到页面顶部
+    const handleClick = () => {
         window.scrollTo({
-          top: 0,
-          behavior: 'smooth'
+            top: 0,
+            behavior: 'smooth'
         });
-      };
-    
-      // 如果在页面顶部，则不渲染任何内容
-      if (isAtTop) {
+    };
+
+    // 如果在页面顶部，则不渲染任何内容
+    if (isAtTop) {
         return null; // 在页面顶部时不显示
-      }
+    }
 
     // 渲染导航项
     const renderNavItem = (item: NavItemConfig) => {
