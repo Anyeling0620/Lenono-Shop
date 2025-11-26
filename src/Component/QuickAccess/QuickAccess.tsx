@@ -24,10 +24,10 @@ const QuickAccess = () => {
     { label: '氪金通道6', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
     { label: '氪金通道7', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
     { label: '氪金通道8', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
-    { label: '氪金通道5', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
-    { label: '氪金通道6', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
-    { label: '氪金通道7', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
-    { label: '氪金通道8', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
+    { label: '氪金通道9', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
+    { label: '氪金通道10', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
+    { label: '氪金通道11', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
+    { label: '氪金通道12', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
   ];
 
   return (
@@ -35,6 +35,7 @@ const QuickAccess = () => {
       <ul className="flex justify-center bg-white items-center pb-1 list-none">
         {navItems.map((item, index) => (
          <QuickItem 
+            key={item.label}
             item={item}
             index = {index}
             />

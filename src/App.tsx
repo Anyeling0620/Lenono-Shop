@@ -2,7 +2,7 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-14 19:42:20
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-24 23:03:11
+ * @LastEditTime: 2025-11-25 21:50:16
  * @FilePath: \lenovo-shop\src\App.tsx
  * @Description: 
  * 
@@ -25,14 +25,17 @@ import { Toaster } from "react-hot-toast"
 function App() {
   return (
     <>
-    <Toaster position="top-center" reverseOrder={false} />  
+    <Toaster position="top-center" reverseOrder={false} 
+    toastOptions={{
+      style:{}
+    }}/>  
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<Index />} />
-          <Route path="/index" element={<Index />} />
-          <Route path='/login' element={<Login />} />
-          <Route path='/register' element={<Reg />} />
-          <Route path='/new-product' element={<NewProduct />} />
+          <Route path="index" element={<Index />} />
+          <Route path='login' element={<Login />} />
+          <Route path='register' element={<Reg />} />
+          <Route path='new-product' element={<NewProduct />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

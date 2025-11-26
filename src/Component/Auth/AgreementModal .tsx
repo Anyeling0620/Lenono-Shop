@@ -40,9 +40,7 @@ const AgreementModal: React.FC<AgreementModalProps> = ({ visible, onConfirm, onC
         {/* 协议滚动区域 */}
         <div className="h-[303px] overflow-y-scroll mb-4 p-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-400 [&::-webkit-scrollbar-thumb]:rounded">
           <div className="space-y-4">
-            <p className="text-[13px] text-[#252525] leading-5">
               {agreementContent}
-            </p>
           </div>
         </div>
 

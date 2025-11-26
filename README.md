@@ -2,7 +2,7 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-22 09:29:12
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-24 12:43:22
+ * @LastEditTime: 2025-11-26 00:15:06
  * @FilePath: \lenovo-shop\README.md
  * @Description:
  *
@@ -156,6 +156,25 @@ lenovo-shop                 // 项目根目录
 
 
 ### 项目日志
-- v1.0.0  2025-11-24  
+### v1.0.0  2025-11-24  
 实现功能： 见项目目录
 
+### v1.1.0 2025-11-26 
+#### 更新： 
+1. 新增商品秒杀相关接口声明
+2. 新增时间相关工具函数
+3. 重构商品秒杀组件
+4. 修复了一些bug
+```
+📁FlashSale
+├─ 📄FlashSale.tsx
+├─ 📄ProductCard.tsx
+├─ 📄SessionTab.tsx
+└─ 📄TimeDisplay.tsx
+
+📁types
+└─ 📄flashSale.ts
+
+📁utils
+└─ 📄timeCalculator.ts
+```

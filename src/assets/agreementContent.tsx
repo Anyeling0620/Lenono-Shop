@@ -1,4 +1,4 @@
-export const agreementContent = <div className="text-[12px] text-[#353434]">
+export const agreementContent = <div className="text-[13px] text-[#252525] leading-5">
     <p className="pb-1">
         最新更新：2024年9月12日
     </p>
