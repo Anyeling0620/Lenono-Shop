@@ -2,7 +2,7 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-20 20:39:28
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-24 13:00:36
+ * @LastEditTime: 2025-11-26 20:07:34
  * @FilePath: \lenovo-shop\src\component\Header\AuthLinks.tsx
  * @Description: 
  * 
@@ -27,35 +27,59 @@ const AuthLinks: React.FC = () => {
         setShowAgreement(false);
         navigate("/register");
     };
+    const handleLodin = () => {
+        navigate("/login");
+    }
+    const handleLogout = () => {
+        // 处理登出逻辑
+    }
 
     return (<>
         <div className="float-right relative">
             <div className="leading-[60px] float-left relative text-[12.5px] flex items-center gap-2">
-                <span
-                    className="text-[#b5b5b5] hover:text-red-500 cursor-pointer transition-colors duration-200"
-                    onClick={handleRegisterClick}
-                >
-                    注册
-                </span>
-
-                <i className="border-l h-[11px] inline-block my-[-1px] mx-2"></i>
-
-                <span
-                    className="text-[#b5b5b5] hover:text-red-500 cursor-pointer transition-colors duration-200"
-                    onClick={() => navigate("/login")}
-                >
-                    登陆
-                </span>
+                {false && <>
+                    <AuthLink onClick={handleRegisterClick}>
+                        注册
+                    </AuthLink>
+                    <i className="border-l h-[11px] inline-block my-[-1px] mx-2"></i>
+                    <AuthLink onClick={handleLodin}>
+                        登陆
+                    </AuthLink>
+                </>}
+                {
+                    true &&
+                    <>
+                        <span className="text-red-500 cursor-pointer truncate max-w-[110px] overflow-hidden hover:underline decoration-4 underline-offset-[22px] transition-all duration-300">
+                            魔法少女小圆
+                        </span>
+                        <i className="border-l h-[11px] inline-block my-[-1px] mx-2"></i>
+                        <AuthLink onClick={handleLogout}>
+                            登出
+                        </AuthLink>
+                    </>
+                }
             </div>
         </div>
         <AgreementModal
-        visible={showAgreement}
-        onConfirm={handleConfirm}
-        onClose={handleClose}
-      />
+            visible={showAgreement}
+            onConfirm={handleConfirm}
+            onClose={handleClose}
+        />
     </>
 
     );
 };
+
+
+const AuthLink: React.FC<{ children: React.ReactNode; onClick: () => void }> = ({ children, onClick }) => {
+    return (
+        <span
+            className="text-[#b5b5b5] hover:text-red-500 cursor-pointer transition-colors duration-200"
+            onClick={onClick}
+        >
+            {children}
+        </span>
+    );
+}
 
 export default AuthLinks;

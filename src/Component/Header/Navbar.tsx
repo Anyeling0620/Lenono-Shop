@@ -25,7 +25,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
   // 状态管理：当前激活的导航项路径
   const [active, setActive] = useState(location.pathname); 
   // 使用React 18的Transition API，优化状态更新时的渲染性能
-  const [isPending, startTransition] = useTransition(); 
+  const [, startTransition] = useTransition(); 
 
   /**
    * 处理导航项点击事件
@@ -37,8 +37,6 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
       setActive(path);
     });
   };
-
-  if(isPending) return <div></div> 
 
   return (
     <ul className="float-left h-[60px] ml-[62px] m-0 list-none">

@@ -13,12 +13,10 @@ interface CategoryProps {
 
 const Category = ({ name, image, products }: CategoryProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
   const timerRef = useRef<number | null>(null);
 
   // 自动轮播切换
   const handleNavigate = useCallback((direction: 'next' | 'prev') => {
-    setIsTransitioning(true);
     setTimeout(() => {
       setCurrentImageIndex((prev) => {
         if (direction === "next") {
@@ -26,7 +24,6 @@ const Category = ({ name, image, products }: CategoryProps) => {
         }
         return (prev - 1 + image.length) % image.length;
       });
-      setIsTransitioning(false);
     }, 300); // 与 transition 时间匹配
   }, [image.length]);
 
@@ -34,7 +31,7 @@ const Category = ({ name, image, products }: CategoryProps) => {
   const startAutoPlay = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     if (image.length <= 1) return;
-    
+
     timerRef.current = window.setInterval(() => {
       handleNavigate("next");
     }, 7000);
@@ -57,10 +54,8 @@ const Category = ({ name, image, products }: CategoryProps) => {
   // 点击指示器处理
   const handleIndicatorClick = (index: number) => {
     stopAutoPlay();
-    setIsTransitioning(true);
     setTimeout(() => {
       setCurrentImageIndex(index);
-      setIsTransitioning(false);
       setTimeout(() => startAutoPlay(), 2000);
     }, 300);
   };
@@ -76,22 +71,28 @@ const Category = ({ name, image, products }: CategoryProps) => {
       {/* 卡片部分 */}
       <div className="grid grid-cols-5 gap-3">
         {/* 左侧轮播图片区域 */}
-        <div className="col-span-1 relative hover:opacity-70 transition-opacity duration-100">
-          <a 
-            href={image[currentImageIndex]?.linkUrl} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="block w-full h-full"
+        <div className="col-span-1 relative overflow-hidden">
+          <div
+            className={`flex transition-transform duration-500 ease-in-out h-full`}
+            style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
           >
-            <img 
-              src={image[currentImageIndex]?.imageName} 
-              alt={image[currentImageIndex]?.alt || name}
-              className={`w-full h-auto object-cover transition-opacity duration-500 ${
-                isTransitioning ? 'opacity-0' : 'opacity-100'
-              }`}
-            />
-          </a>
-          
+            {image.map((img, index) => (
+              <a
+                key={index}
+                href={img.linkUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full h-full flex-shrink-0"
+              >
+                <img
+                  src={img.imageName}
+                  alt={img.alt || name}
+                  className="w-full h-full object-cover"
+                />
+              </a>
+            ))}
+          </div>
+
           {/* 指示器 */}
           {image.length > 1 && (
             <Indicators
@@ -101,8 +102,9 @@ const Category = ({ name, image, products }: CategoryProps) => {
             />
           )}
         </div>
-        
-        
+
+
+
         {/* 右侧卡片区域 */}
         <div className="col-span-4 grid grid-rows-2 gap-3">
           {/* 上半部分4个卡片 */}

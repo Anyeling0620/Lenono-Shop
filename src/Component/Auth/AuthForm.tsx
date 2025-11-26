@@ -21,6 +21,9 @@ async function formAction(_prevState: FormState, formData: FormData): Promise<Fo
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
   const verificationCode = formData.get('verificationCode') as string;
+  const registerPassword = formData.get('registerPassword') as string;
+  const registerPasswordConfirm = formData.get('registerPasswordConfirm') as string;
+  
 
   // 初始化错误对象
   const errors: FormState['errors'] = {};
@@ -40,6 +43,20 @@ async function formAction(_prevState: FormState, formData: FormData): Promise<Fo
   } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
     errors.password = '密码必须包含大小写字母和数字';
   }
+  if(!registerPassword){
+    errors.registerPassword = '密码不能为空';
+  }else if (registerPassword.length < 6) {
+    errors.registerPassword = '密码至少需要6位字符';
+  } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(registerPassword)) {
+    errors.registerPassword = '密码必须包含大小写字母和数字';
+  }
+  
+  if(!registerPasswordConfirm){
+    errors.registerPasswordConfirm = '确认密码不能为空';
+  }else if (registerPasswordConfirm !== registerPassword) {
+    errors.registerPasswordConfirm = '两次输入的密码不一致';
+  }
+
 
   // 验证码验证
   if (!verificationCode) {
@@ -97,6 +114,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
   const [mode, setMode] = useState<Mode>('quick');
   // 用户协议同意状态
   const [agreed, setAgreed] = useState(false);
+
+  // 注册时是否显示密码设置框
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+
   // 验证码相关状态和操作
   const {
     isSending,    // 是否正在发送验证码
@@ -173,6 +194,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
                 placeholder="请输入验证码"
                 value={state.data.verificationCode}
                 error={state.errors.verificationCode}
+                onVerify={setShowPassword}
                 verificationSent={isSending}
                 countdown={countdown}
                 onSendCode={handleSendCode}
@@ -190,6 +212,28 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
               />
             )}
 
+            {/* 注册模式下的密码输入框 */}
+            {showPassword && type === 'register' && (
+              <FormField
+                name="registerPassword"
+                type="password"
+                placeholder="请输入密码"
+                value={state.data.password}
+                error={state.errors.registerPassword}
+              />
+            )}
+
+            {/* 注册模式下的确认密码输入框 */}
+            {showPassword && type === 'register' && (
+              <FormField
+                name="registerPasswordConfirm"
+                type="password"
+                placeholder="请输入密码"
+                value={state.data.password}
+                error={state.errors.registerPasswordConfirm}
+              />
+            )}
+
             {/* 用户协议复选框 */}
             <AgreementCheckbox
               agreed={agreed}
@@ -204,7 +248,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
             />
 
             {/* 切换登录/注册的链接 */}
-            <div className="flex items-center text-[#252525] text-[13px] font-normal justify-end tracking-[0] mt-4">
+            <div className="flex items-center text-[#252525] text-[13px] font-normal justify-end tracking-[0] mt-4 pb-8">
               <span
                 className="cursor-pointer hover:text-[#e1140a] transition-colors"
                 onClick={onSwitchAuth}

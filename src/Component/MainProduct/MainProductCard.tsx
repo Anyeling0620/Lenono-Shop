@@ -24,10 +24,10 @@ const Card = ({ product }: CardProps) => {
   const finalPrice = product.originalPrice - product.coupon;
 
   return (
-    <div className="bg-white hover:shadow-2xl transition-shadow duration-700 text-center">
+    <div className="bg-white hover:shadow-2xl transition-shadow duration-300 text-center">
       <a href={product.link} target="_blank" className="block">
         {/* 图片居中 */}
-        <div className="flex justify-center mb-3 hover:opacity-70 transition-opacity duration-300">
+        <div className="flex justify-center mb-3 hover:opacity-90 transition-opacity duration-300">
           <img
             src={product.image}
             alt={product.name}

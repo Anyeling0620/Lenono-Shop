@@ -9,6 +9,7 @@ interface VerificationCodeFieldProps {
   verificationSent: boolean;
   countdown: number;
   onSendCode: () => void;
+  onVerify?: (value: boolean) => void;
   onChange?: (value: string) => void;
 }
 
@@ -23,14 +24,22 @@ export const VerificationCodeField: React.FC<VerificationCodeFieldProps> = ({
   error,          // 错误信息
   verificationSent, // 验证码是否已发送
   countdown,      // 重发验证码倒计时
+  onVerify,       // 验证码是否输入正确格式的回调函数
   onSendCode,     // 发送验证码的回调函数
 }) => {
   // 内部状态管理，用于处理输入框的值
   const [internalValue, setInternalValue] = useState(value);
   // 处理输入框值变化的函数
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInternalValue(e.target.value);
-  }
+    const newValue = e.target.value;
+    setInternalValue(newValue);
+    if (newValue?.length === 6) {
+        onVerify?.(true);
+    } else {
+        onVerify?.(false);
+    }
+}
+
   return (
     // 主容器，设置高度、外边距和相对定位
     <div className="h-[56px] mt-[28px] relative w-[100%] flex">

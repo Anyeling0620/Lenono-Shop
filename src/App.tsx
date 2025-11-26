@@ -2,7 +2,7 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-14 19:42:20
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-25 21:50:16
+ * @LastEditTime: 2025-11-26 21:07:47
  * @FilePath: \lenovo-shop\src\App.tsx
  * @Description: 
  * 
@@ -17,6 +17,7 @@ import NotFound from "./pages/404"
 import NewProduct from "./pages/NewProduct"
 import Index from "./pages/Index"
 import { Toaster } from "react-hot-toast"
+import Search from "./pages/Search"
 
 /**
  * App组件：应用程序的主要组件，负责路由配置和布局
@@ -36,6 +37,7 @@ function App() {
           <Route path='login' element={<Login />} />
           <Route path='register' element={<Register />} />
           <Route path='new-product' element={<NewProduct />} />
+          <Route path="search" element={<Search />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

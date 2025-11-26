@@ -2,7 +2,7 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-18 20:09:36
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-24 12:07:02
+ * @LastEditTime: 2025-11-26 22:26:11
  * @FilePath: \lenovo-shop\src\pages\Index.tsx
  * @Description: 
  * 
@@ -14,7 +14,7 @@ import QuickAccess from '../component/QuickAccess/QuickAccess';
 import type { CarouselItemType } from '../types/carouselItem';
 import Carousel from '../component/Carousel/Carousel';
 import FlashSale from '../component/FlashSale/FlashSale';
-import MainProduct from '../Component/MainProduct/MainProduct';
+import MainProduct from '../component/MainProduct/MainProduct';
 
 const rollData: CarouselItemType[] = [
   {

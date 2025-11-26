@@ -22,7 +22,7 @@ const UserNavItem: React.FC<UserNavItemProps> = ({
   normalImage,
   hoverImage,
   href,
-  alt = "联想乐享"
+  alt
 }) => {
       const [isHovered, setIsHovered] = useState(false);
          

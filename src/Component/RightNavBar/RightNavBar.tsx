@@ -25,7 +25,15 @@ const RightNavBar: React.FC = () => {
             normalImage: userIcon,
             hoverImage: userHoverIcon,
             href: '/user-center',
-            alt: '联想乐享'
+            alt: '用户中心'
+        },
+         {
+            id: 'shopping-cart',
+            type: 'normal',
+            normalImage: 'https://p4.lefile.cn/fes/cms/2022/02/15/bdf8xwarfegcq94nrcah7fru6bie8f994693.png',
+            hoverImage: 'https://p3.lefile.cn/fes/cms/2022/02/15/zjp7x2qq65ixfzmjkslujwrln5619w815717.png',
+            href: '/shopping-cart',
+            alt: '购物车'
         },
         {
             id: 'hotline',
@@ -72,7 +80,7 @@ const RightNavBar: React.FC = () => {
                         <div className="text-xs text-gray-500 mt-1">享受多重福利</div>
                     </div>
                     <div className='ml-auto'>
-                <img src={qrcodeIcon} alt="联想APP" className='w-[70px]' />
+                        <img src={qrcodeIcon} alt="联想APP" className='w-[70px]' />
                     </div>
 
                 </div>
@@ -94,14 +102,7 @@ const RightNavBar: React.FC = () => {
             href: '/survey',
             alt: '有奖调研'
         },
-        {
-            id: 'shopping-cart',
-            type: 'normal',
-            normalImage: 'https://p4.lefile.cn/fes/cms/2022/02/15/bdf8xwarfegcq94nrcah7fru6bie8f994693.png',
-            hoverImage: 'https://p3.lefile.cn/fes/cms/2022/02/15/zjp7x2qq65ixfzmjkslujwrln5619w815717.png',
-            href: '/shopping-cart',
-            alt: '购物车'
-        },
+       
         {
             id: 'scroll-to-top',
             type: 'scroll-top',
@@ -164,7 +165,6 @@ const RightNavBar: React.FC = () => {
                 );
 
             case 'normal':
-            default:
                 return (
                     <NavItem
                         key={item.id}
@@ -177,13 +177,20 @@ const RightNavBar: React.FC = () => {
                         {item.popupContent}
                     </ NavItem>
                 );
+            default:
+                break;
         }
     };
 
     return (
         <div className='top-[20%] block w-[70px] h-auto z-[11112] fixed right-5 bg-white/50 shadow-md backdrop-blur-md rounded-lg overflow-visible transition-all duration-300'>
             <ul>
-                {navItemsData.map(renderNavItem)}
+                {navItemsData.filter(item=>{
+                    // if( ( 没有登陆 )&&(item.id === 'user-center' || item.id === 'shopping-cart')){
+                    //     return false;
+                    //}
+                    return true;
+                }).map(renderNavItem)}
             </ul>
         </div>
     );
