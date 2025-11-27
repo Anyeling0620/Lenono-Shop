@@ -178,3 +178,25 @@ lenovo-shop                 // 项目根目录
 📁utils
 └─ 📄timeCalculator.ts
 ```
+
+### v1.2.0 2025-11-27
+#### 更新：
+1. 新增搜索页面
+2. 新增筛选组件
+3. 新增分页
+4. 新增搜索结果卡片组件
+
+```
+📁Search
+├─ 📄ProductCard.tsx  // 搜索结果卡片组件
+├─ 📄ProductList.tsx  // 搜索结果列表组件
+├─ 📄SearchFilters.tsx  // 筛选组件
+├─ 📄SortOptions.tsx  // 排序选项组件
+└─ 📄Tag.tsx   // 标签组件
+📁pages 
+└─ 📄Search.tsx   // 搜索页面
+📁types
+├─ 📄searchFilter.ts  // 筛选类型
+├─ 📄searchProduct.ts  // 商品卡片类型
+└─ 📄searchResult.ts  // 搜索结果类型 
+```
