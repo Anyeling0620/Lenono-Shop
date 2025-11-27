@@ -2,7 +2,7 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-27 15:44:42
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-27 15:45:47
+ * @LastEditTime: 2025-11-27 23:31:19
  * @FilePath: \lenovo-shop\src\component\Search\Tag.tsx
  * @Description: 
  * 
@@ -30,10 +30,10 @@ const Tag: React.FC<TagProps> = ({ type, money, month }) => {
       case 'coupon':
         return (
           <i className={`${baseClasses} min-w-[44px] relative border border-[#FF2F2F]`}>
-            <span className='text-[#E1140A] text-left inline-block relative box-border pl-[3px] pr-[18px] leading-3'>
+            <span className='text-[#E1140A] text-left inline-block relative box-border pl-[3px] pr-[18px] leading-[14px]'>
               {money}元
             </span>
-            <span className='absolute -right-[1px] -top-[1px] bg-[#E1140A] text-white inline-block w-4 h-4 rounded-br-[1px] rounded-tr-[1px]'>
+            <span className='absolute -right-[1px] leading-[15px] -top-[1px] bg-[#E1140A] text-white inline-block w-4 h-4 rounded-br-[1px] rounded-tr-[1px]'>
               券
             </span>
           </i>
@@ -53,10 +53,10 @@ const Tag: React.FC<TagProps> = ({ type, money, month }) => {
       case 'installment':
         return (
           <i className={`${baseClasses} w-auto relative border border-[#FF2F2F]`}>
-            <span className='text-[#E1140A] text-left inline-block relative box-border pl-[1px] pr-[18px] leading-3'>
+            <span className='text-[#E1140A] text-left inline-block relative box-border pl-[1px] pr-[18px] leading-[14px]'>
               {month}期
             </span>
-            <span className='absolute -right-[16px] -top-[1px] bg-[#E1140A] text-white inline-block w-8 h-4 rounded-br-[1px] rounded-tr-[1px]'>
+            <span className='absolute -right-[16px] -top-[1px] bg-[#E1140A] text-white inline-block leading-[15px] w-8 h-4 rounded-br-[1px] rounded-tr-[1px]'>
               免息
             </span>
           </i>

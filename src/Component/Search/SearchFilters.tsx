@@ -5,26 +5,34 @@ import type { PriceRange, TabFilters,SearchFiltersType } from '../../types/searc
 
 
 
-
-interface SearchFiltersProps {  //  搜索过滤组件的props
-    filters: SearchFiltersType;  // 当前搜索过滤条件
-    onFiltersChange: (filters: SearchFiltersType) => void;  // 过滤条件变化时的回调函数
-    totalCount: number;    // 搜索结果的总数
+interface SortOption {
+    key: SearchFiltersType['sortBy'];
+    label: string;
 }
-
-const sortOptions = [
+const sortOptions:SortOption[] = [
     { key: 'recommend' as const, label: '推荐' },
     { key: 'new' as const, label: '新品' },
     { key: 'comment' as const, label: '评论' },
     { key: 'price' as const, label: '价格' }
 ];
-const filterItems = [
+interface FilterItem {
+    key: keyof TabFilters;
+    label: string;
+}
+const filterItems:FilterItem[] = [
     { key: 'self' as keyof TabFilters, label: '自营' },
     { key: 'discountCoupon' as keyof TabFilters, label: '优惠券' },
     { key: 'custom' as keyof TabFilters, label: '外观定制' },
     { key: 'installment' as keyof TabFilters, label: '分期免息' },
     { key: 'tradeIn' as keyof TabFilters, label: '以旧换新' }
 ];
+
+
+interface SearchFiltersProps {  //  搜索过滤组件的props
+    filters: SearchFiltersType;  // 当前搜索过滤条件
+    onFiltersChange: (filters: SearchFiltersType) => void;  // 过滤条件变化时的回调函数
+    totalCount: number ;    // 搜索结果的总数
+}
 
 const SearchFilters: React.FC<SearchFiltersProps> = ({
     filters,   // 当前搜索过滤条件
@@ -185,7 +193,7 @@ const FilterTags = ({
 const TotalCount = ({ totalCount }: { totalCount: number }) => (<li className='font-normal text-[12px]'>
     <span>
         共
-        <span className='text-red-600 text-sm mx-1 min-w-[10px]'>{totalCount}</span>
+        <span className='text-red-600 text-sm mx-1 inline-block w-[20px] text-center'>{totalCount}</span>
         件
     </span>
 </li>)
@@ -194,15 +202,11 @@ const TotalCount = ({ totalCount }: { totalCount: number }) => (<li className='f
 
 const PriceSearch = ({
     priceInput,
-    // searchKeyword,
     onPriceChange,
-    // onKeywordChange,
     onApply
 }: {
     priceInput: { min: string; max: string };
-    // searchKeyword: string;
     onPriceChange: (field: 'min' | 'max', value: string) => void;
-    // onKeywordChange: (value: string) => void;
     onApply: () => void;
 }) => {
     return (
@@ -222,13 +226,6 @@ const PriceSearch = ({
                 onChange={(e) => onPriceChange('max', e.target.value)}
                 className='w-[63px] mx-2 h-[22px] leading-6 align-middle px-[5px] py-0 rounded-sm font-normal border-[1px] border-[#dadada] outline-none'
             />
-            {/* <input
-                type="text"
-                placeholder='在结果中搜索'
-                value={searchKeyword}
-                onChange={(e) => onKeywordChange(e.target.value)}
-                className='align-middle px-3 w-[100px] h-[22px] mx-2 leading-6 font-normal border-[#dadada] border-[1px] rounded-sm outline-none'
-            /> */}
             <input
                 type='button'
                 value='确定'
