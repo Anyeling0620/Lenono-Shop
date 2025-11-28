@@ -10,8 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "ahooks": "^3.9.6",
     "antd": "^6.0.0",
+    "axios": "^1.13.2",
     "framer-motion": "^12.23.24",
+    "js-cookie": "^3.0.5",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hot-toast": "^2.6.0",
@@ -20,6 +23,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^24.10.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",

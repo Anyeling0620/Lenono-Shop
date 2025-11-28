@@ -2,14 +2,14 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-26 21:07:25
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-28 00:13:04
+ * @LastEditTime: 2025-11-28 23:49:11
  * @FilePath: \lenovo-shop\src\pages\Search.tsx
  * @Description: 
  * 
  * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
  */
 // pages/Search.tsx
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ConfigProvider, Pagination } from 'antd';
 import ProductList from '../component/Search/ProductList';
@@ -17,6 +17,7 @@ import type { Product } from '../types/searchProduct';
 import type { SearchResult } from '../types/searchResult';
 import type { SearchFiltersType, SearchParams } from '../types/searchFilter';
 import SearchFilters from '../component/Search/SearchFilters';
+import { useRequest } from 'ahooks';
 
 // 模拟数据
 const mockProducts: Product[] = [
@@ -243,20 +244,46 @@ const mockSearchProducts = async (params: SearchParams): Promise<SearchResult> =
   return {
     products: mockProducts, // 实际的产品数据
     totalCount: mockProducts.length,
-    currentPage: params.page,
-    totalPages: Math.ceil(mockProducts.length / params.pageSize)
+    currentPage: params.page as number,
+     totalPages: Math.ceil(mockProducts.length / (params.pageSize as number)),
   };
 };
 
 const pageSizeConst = 12 
 
+/**
+ * 搜索组件
+ * 用于展示搜索页面，包含搜索筛选栏、商品列表和分页功能
+ */
+/**
+ * 搜索页面组件
+ * @component
+ * @returns {JSX.Element} 搜索页面
+ */
 const Search: React.FC = () => {
+  /**
+   * 使用URLSearchParams获取URL中的搜索参数
+   * @type {URLSearchParams}
+   */
   const [searchParams] = useSearchParams();
-  const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
-  const [currentPage, setCurrentPage] = useState(1); // 用于分页查询
-  const [loading, setLoading] = useState(false);
-  const keyword = searchParams.get('q');  // 用于初次加载页面获取数据
-  const [filters, setFilters] = useState<SearchFiltersType>({  // 用于筛选数据查询
+  
+  /**
+   * 当前页码状态，用于分页查询
+   * @type {number}
+   */
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  /**
+   * 从URL参数中获取的搜索关键词
+   * @type {string | null}
+   */
+  const keyword = searchParams.get('q');
+  
+  /**
+   * 搜索筛选条件状态
+   * @type {SearchFiltersType}
+   */
+  const [filters, setFilters] = useState<SearchFiltersType>({
     sortBy: 'recommend',
     priceOrder: 'desc',
     commentOrder: 'desc',
@@ -272,41 +299,65 @@ const Search: React.FC = () => {
     keyword: keyword || undefined,
   });
 
- // 执行搜索
-  const performSearch = useCallback(async () => {
-  setLoading(true);
-  try {
-    const searchParams: SearchParams = {
-      ...filters,
-      page: currentPage,
-      pageSize: pageSizeConst
-    };
+  /**
+   * 使用useRequest管理搜索请求
+   * @type {Object}
+   * @property {Object} data - 搜索结果数据
+   * @property {boolean} loading - 加载状态
+   * @property {Function} run - 触发搜索的函数
+   */
+  const {
+    data: searchResult,
+    loading, 
+    run: performSearch,
+  } = useRequest(
+    async (searchFilters: SearchFiltersType) => {
+      const searchParams: SearchParams = {
+        ...searchFilters,
+        pageSize: pageSizeConst
+      };
+      return await mockSearchProducts(searchParams);
+    },
+    {
+      manual: true,
+      debounceWait: 300,
+      debounceLeading: true,
+    }
+  );
+  
+  /**
+   * 初始搜索和关键词变化时的副作用
+   */
+  useEffect(() => {
+    if (keyword) {
+      const newFilters = { ...filters, keyword:keyword };
+      performSearch(newFilters);
+    }
+  }, [filters, keyword, performSearch]);
 
-    const result = await mockSearchProducts(searchParams);
-    setSearchResult(result);
-  } catch (error) {
-    console.error('搜索失败:', error);
-  } finally {
-    setLoading(false);
-  }
-}, [filters]); // 添加依赖项
+  /**
+   * 筛选条件变化时的副作用
+   */
+  useEffect(() => {
+    performSearch(filters);
+  }, [filters, performSearch]);
 
-useEffect(() => {
-  performSearch();
-  return () => {
-    setSearchResult(null);
-  }
-}, [keyword, filters, performSearch]); // 添加 performSearch 到依赖数组
-
-  const handleFiltersChange = (newFilters: SearchFiltersType) => {  // 筛选条件变化时重新搜索
+  /**
+   * 处理筛选条件变化的函数
+   * @param {SearchFiltersType} newFilters - 新的筛选条件
+   */
+  const handleFiltersChange = (newFilters: SearchFiltersType) => {
     setFilters(newFilters);
-    setCurrentPage(1); // 重置到第一页
+    setCurrentPage(1);
   };
 
-  const handlePageChange = (page: number) => { // 分页查询
+  /**
+   * 处理分页变化的函数
+   * @param {number} page - 新的页码
+   */
+  const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-
 
   return (
     <div className='bg-[#efefef] '>
@@ -344,11 +395,11 @@ useEffect(() => {
           align='center'
           pageSize={pageSizeConst}
           current={currentPage}
-          hideOnSinglePage={false} // 当总页数小于等于1时隐藏分页器
+          hideOnSinglePage={false}
           className='py-10'
           onChange={handlePageChange}
           total={searchResult?.totalCount || 0}
-          showSizeChanger={false} // 隐藏每页显示数量选择器
+          showSizeChanger={false}
         />
       </ConfigProvider>
     </div>

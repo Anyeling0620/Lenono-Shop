@@ -2,16 +2,16 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-20 20:39:48
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-28 00:39:00
+ * @LastEditTime: 2025-11-28 22:59:45
  * @FilePath: \lenovo-shop\src\component\Header\SearchBar.tsx
  * @Description: 
  * 
  * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
  */
 
-import React, { useCallback, useRef, useState, type KeyboardEvent } from "react";
+import React, {  useRef, useState, type KeyboardEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import useDebouncedCallback from "../../hooks/useDebouncedCallback";
+import { useRequest } from "ahooks";
 
 /**
  * 搜索栏组件
@@ -21,36 +21,38 @@ const SearchBar: React.FC = () => {
   // 使用useState管理搜索关键词状态
   const [keyword, setKeyword] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const [warnInput, setWarnInput] = useState(false)
+  const [warnInput, setWarnInput] = useState(false)  // 是否警告输入框为空
   // 使用useNavigate获取导航函数，用于页面跳转
   const navigate = useNavigate();
 
-  // 处理搜索按钮点击事件
-
-  const isWarnInput = useCallback(() => {
+  const isWarnInput = () =>{
     if (warnInput) return;
     setWarnInput(true);
     setTimeout(() => {
       setWarnInput(false);
     }, 800);
-  }, [warnInput])
-
-  const handleSearch = useCallback(() => {
-    // 检查关键词是否为空或只包含空格
-    if (!keyword.trim()) {
-      inputRef.current?.focus();
-      isWarnInput();
-      return;
+  }
+  const { run: debouncedSearch } = useRequest(
+     (searchKeyword: string) => {  
+      if (!searchKeyword.trim()) {
+        inputRef.current?.focus();
+        isWarnInput();
+        return Promise.reject("搜索关键词不能为空");
+      }
+      navigate(`/search?q=${encodeURIComponent(searchKeyword.trim())}`)
+      return Promise.resolve("搜索成功"); 
+    },
+    {
+      debounceWait:300,
+      debounceLeading: true,
+      manual: true // 手动触发请求
     }
-    // 导航到搜索结果页面，并将关键词进行URL编码
-    navigate(`/search?q=${encodeURIComponent(keyword.trim())}`)
-  }, [keyword, navigate, isWarnInput]);
-
-  const debounceSearch = useDebouncedCallback(handleSearch, 300);
+  );
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") debounceSearch();
-  };
+    if (e.key === "Enter") 
+      debouncedSearch(keyword);
+  }
 
   const handleClear = () => {
     setKeyword("");
@@ -62,7 +64,7 @@ const SearchBar: React.FC = () => {
       <div className="relative w-full h-full">
         <div className="absolute top-0 left-0 w-full h-full bg-[#f4f4f4] z-0 rounded-sm"></div>
         <button
-          onClick={debounceSearch}
+          onClick={() => debouncedSearch(keyword)}
           className="absolute left-[10px] top-[50%] -translate-y-1/2 z-10 w-[30px] h-[30px] flex items-center justify-center"
         >
           <img
