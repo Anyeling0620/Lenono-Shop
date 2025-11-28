@@ -2,7 +2,7 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-26 21:07:25
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-28 23:49:11
+ * @LastEditTime: 2025-11-28 23:58:50
  * @FilePath: \lenovo-shop\src\pages\Search.tsx
  * @Description: 
  * 
@@ -361,7 +361,7 @@ const Search: React.FC = () => {
 
   return (
     <div className='bg-[#efefef] '>
-      <div className='h-1'></div>
+      <div className='h-[2px]'></div>
 
       {/* 搜索筛选栏 */}
       <SearchFilters

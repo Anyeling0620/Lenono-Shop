@@ -2,7 +2,7 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-22 13:39:26
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-28 22:15:28
+ * @LastEditTime: 2025-11-28 23:57:03
  * @FilePath: \lenovo-shop\src\component\Header\Header.tsx
  * @Description: 
  * 
@@ -35,7 +35,7 @@ const Header: React.FC = () => {
     const isHidden: boolean = hiddenPaths.paths.includes(location.pathname)
 
     return (
-        <header className="bg-white top-0 left-0 min-w-[1200px]">
+        <header className="bg-white fixed top-0 left-0 min-w-[1200px] w-full z-50 shadow-md h-[60px]">
             <div className="w-[1200px] m-auto h-[60px] relative">
                 <Logo />
                 {!isHidden &&

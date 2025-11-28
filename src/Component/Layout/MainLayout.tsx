@@ -23,7 +23,11 @@ export default function MainLayout() {
     <>
       <Header />
       <RightNavBar />
-      <Outlet />
+      {/* 修改这里：添加一个 div 包裹 Outlet，并设置 pt-[60px] */}
+      {/* 这样内容就会往下移 60px，刚好露出 Header */}
+      <div className="pt-[60px] min-h-screen"> 
+        <Outlet />
+      </div>
       {!hideFooter
         && <Footer />
       }
