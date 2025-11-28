@@ -35,7 +35,7 @@ const Header: React.FC = () => {
     const isHidden: boolean = hiddenPaths.paths.includes(location.pathname)
 
     return (
-        <header className="bg-white top-0 left-0 min-w-[1200px]">
+        <header className="bg-white fixed top-0 left-0 min-w-[1200px] w-full z-50 shadow-md">
             <div className="w-[1200px] m-auto h-[60px] relative">
                 <Logo />
                 {!isHidden &&
