@@ -10,7 +10,11 @@ const Card = ({ product }: CardProps) => {
   const featuresText = product.features.join(" | ");
   const tags = [];
   if (product.coupon > 0) {
-    tags.push({ type: "coupon", text: `${product.coupon}元券`, value: product.coupon });
+    tags.push({
+      type: "coupon",
+      text: `${product.coupon}元券`,
+      value: product.coupon,
+    });
   }
   if (product.customerize) {
     tags.push({ type: "normal", text: "外观定制" });
@@ -25,7 +29,7 @@ const Card = ({ product }: CardProps) => {
     <div className="bg-white hover:shadow-2xl transition-shadow duration-300 text-center">
       {/* 2. 关键修改：将 a 标签改为 Link，to 属性指向详情页路由 */}
       {/* 这里的 product.id 对应 App.tsx 中的 :id */}
-      <Link to={`/product/${product.id}`} className="block" target="_blank"> 
+      <Link to={`/product/${product.id}`} className="block" target="_blank">
         {/* 图片居中 */}
         <div className="flex justify-center mb-3 hover:opacity-90 transition-opacity duration-300">
           <img
@@ -49,16 +53,38 @@ const Card = ({ product }: CardProps) => {
         <div className="h-[18px] overflow-hidden flex justify-center gap-1 mt-2">
           {tags.map((tag, index) =>
             tag.type === "coupon" ? (
-              <div key={tag.text} className={`flex rounded-[2px] overflow-hidden text-xs h-[18px] ${index === 0 ? "border-[.5px] border-[#ef1e0b]" : "border-[.5px] border-[#000000]"}`}>
-                <span className={`bg-white ${index === 0 ? "text-[#ef1e0b]" : "text-[#000000]"} px-1 flex items-center border-r-[#ef1e0b] border-[.5px]`}>
+              <div
+                key={tag.text}
+                className={`flex rounded-[2px] overflow-hidden text-xs h-[18px] ${
+                  index === 0
+                    ? "border-[.5px] border-[#ef1e0b]"
+                    : "border-[.5px] border-[#000000]"
+                }`}
+              >
+                <span
+                  className={`bg-white ${
+                    index === 0 ? "text-[#ef1e0b]" : "text-[#000000]"
+                  } px-1 flex items-center border-r-[#ef1e0b] border-[.5px]`}
+                >
                   {tag.value}元
                 </span>
-                <span className={`px-1 flex items-center bg-white ${index === 0 ? "text-[#ef1e0b]" : "text-[#000000]"}`}>
+                <span
+                  className={`px-1 flex items-center bg-white ${
+                    index === 0 ? "text-[#ef1e0b]" : "text-[#000000]"
+                  }`}
+                >
                   券
                 </span>
               </div>
             ) : (
-              <span key={tag.text} className={`border-[.5px] rounded-[2px] text-xs px-1 py-0.5 h-[18px] flex items-center ${index === 0 ? "border-[#ef1e0b] text-[#ef1e0b]" : "border-[#000000] text-[#000000]"}`}>
+              <span
+                key={tag.text}
+                className={`border-[.5px] rounded-[2px] text-xs px-1 py-0.5 h-[18px] flex items-center ${
+                  index === 0
+                    ? "border-[#ef1e0b] text-[#ef1e0b]"
+                    : "border-[#000000] text-[#000000]"
+                }`}
+              >
                 {tag.text}
               </span>
             )
