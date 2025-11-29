@@ -1,166 +1,241 @@
-import { useActionState, useState } from "react";
+/*
+ * @Author: 不见霞
+ * @FilePath: \lenovo-shop\src\component\Auth\AuthForm.tsx
+ * @Description: 登录/注册表单（基于react-hook-form + zod重构）
+ */
+import { useState, useRef } from "react";
+import { useForm, type FieldErrors } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import AgreementCheckbox from "./AgreementCheckbox";
 import FormField from "./FormField";
 import LoginModeTabs from "./LoginModeTabs";
 import SubmitButton from "./SubmitButton";
 import VerificationCodeField from "./VerificationCodeField";
-import type { FormState } from "../../types/formState";
 import useVerificationCode from "../../hooks/useVerificationCode";
+import { axiosInstance } from "../../utils/axios";
+import toast from "react-hot-toast";
+import { globalErrorHandler } from "../../utils/GlobalAxiosErrorHandler";
 
-
+// 组件属性类型
 interface AuthFormProps {
   type: 'login' | 'register';
   onSwitchAuth: () => void;
 }
 
-type Mode = 'quick' | 'password'
+// 登录模式类型
+type Mode = 'quick' | 'password';
 
+// ========== Zod 验证 Schema（适配v4） ==========
+// 快捷登录Schema
+const loginQuickSchema = z.object({
+  email: z.string()
+    .nonempty('邮箱不能为空')
+    .email('请输入有效的邮箱地址'),
+  verificationCode: z.string()
+    .nonempty('验证码不能为空')
+    .regex(/^\d{6}$/, '验证码必须是6位数字'),
+});
 
-async function formAction(_prevState: FormState, formData: FormData): Promise<FormState> {
-  // 从 FormData 中提取数据
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
-  const verificationCode = formData.get('verificationCode') as string;
-  const registerPassword = formData.get('registerPassword') as string;
-  const registerPasswordConfirm = formData.get('registerPasswordConfirm') as string;
-  
+// 密码登录Schema
+const loginPasswordSchema = z.object({
+  email: z.string()
+    .nonempty('邮箱不能为空')
+    .email('请输入有效的邮箱地址'),
+  password: z.string()
+    .nonempty('密码不能为空')
+    .min(6, '密码至少需要6位字符')
+    .regex(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, '密码必须包含大小写字母和数字'),
+});
 
-  // 初始化错误对象
-  const errors: FormState['errors'] = {};
+// 注册Schema
+const registerSchema = z.object({
+  email: z.string()
+    .nonempty('邮箱不能为空')
+    .email('请输入有效的邮箱地址'),
+  verificationCode: z.string()
+    .nonempty('验证码不能为空')
+    .regex(/^\d{6}$/, '验证码必须是6位数字'),
+  registerPassword: z.string()
+    .nonempty('密码不能为空')
+    .min(6, '密码至少需要6位字符')
+    .regex(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, '密码必须包含大小写字母和数字'),
+  registerPasswordConfirm: z.string().nonempty('确认密码不能为空'),
+}).refine(data => data.registerPassword === data.registerPasswordConfirm, {
+  message: '两次输入的密码不一致',
+  path: ['registerPasswordConfirm'],
+});
 
-  // 邮箱验证
-  if (!email) {
-    errors.email = '邮箱不能为空';
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    errors.email = '请输入有效的邮箱地址';
-  }
+// ========== 推导表单值类型 ==========
+type LoginQuickValues = z.infer<typeof loginQuickSchema>;
+type LoginPasswordValues = z.infer<typeof loginPasswordSchema>;
+type RegisterValues = z.infer<typeof registerSchema>;
 
-  // 密码验证
-  if (!password) {
-    errors.password = '密码不能为空';
-  } else if (password.length < 6) {
-    errors.password = '密码至少需要6位字符';
-  } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-    errors.password = '密码必须包含大小写字母和数字';
-  }
-  if(!registerPassword){
-    errors.registerPassword = '密码不能为空';
-  }else if (registerPassword.length < 6) {
-    errors.registerPassword = '密码至少需要6位字符';
-  } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(registerPassword)) {
-    errors.registerPassword = '密码必须包含大小写字母和数字';
-  }
-  
-  if(!registerPasswordConfirm){
-    errors.registerPasswordConfirm = '确认密码不能为空';
-  }else if (registerPasswordConfirm !== registerPassword) {
-    errors.registerPasswordConfirm = '两次输入的密码不一致';
-  }
+// ========== 推导错误类型（替代inferFormErrors） ==========
+type LoginQuickErrors = FieldErrors<LoginQuickValues>;
+type LoginPasswordErrors = FieldErrors<LoginPasswordValues>;
 
+// ========== 条件类型：根据mode限定允许的字段 ==========
+type LoginFieldKeys<T extends Mode> = T extends 'quick' 
+  ? keyof LoginQuickValues 
+  : keyof LoginPasswordValues;
 
-  // 验证码验证
-  if (!verificationCode) {
-    errors.verificationCode = '验证码不能为空';
-  } else if (!/^\d{6}$/.test(verificationCode)) {
-    errors.verificationCode = '验证码必须是6位数字';
-  }
-
-  // 如果有错误，返回错误信息
-  if (Object.keys(errors).length > 0) {
-    return {
-      data: { email, password, verificationCode },
-      errors,
-      message: '请检查表单错误'
-    };
-  }
-
-  try {
-    // 模拟 API 调用
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // 这里可以添加实际的注册/登录逻辑
-    // const response = await fetch('/api/auth', {
-    //   method: 'POST',
-    //   body: JSON.stringify({ email, password, verificationCode })
-    // });
-    
-    // if (!response.ok) {
-    //   throw new Error('注册失败');
-    // }
-
-    // 成功返回
-    return {
-      data: { email: '', password: '', verificationCode: '' }, // 清空表单
-      errors: {},
-      message: '注册成功！'
-    };
-  } catch (error) {
-    // 处理服务器错误
-    return {
-      data: { email, password, verificationCode },
-      errors: {},
-      message: error instanceof Error ? error.message : '注册失败，请重试'
-    };
-  }
-}
 
 /**
  * 认证表单组件
- * 用于处理用户登录和注册的表单界面
- * @param props 组件属性，包含类型和切换认证方式的回调函数
+ * @component
+ * @param {Object} props - 组件属性
+ * @param {'login' | 'register'} props.type - 表单类型：登录或注册
+ * @param {Function} props.onSwitchAuth - 切换登录/注册模式的回调函数
+ * @returns {JSX.Element} 认证表单组件
  */
 const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
-  // 表单模式状态，用于区分快速登录和密码登录
+  /**
+   * 基础UI状态
+   */
   const [mode, setMode] = useState<Mode>('quick');
-  // 用户协议同意状态
   const [agreed, setAgreed] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  
+  /**
+   * 邮箱输入框ref，用于聚焦
+   */
+  const emailInputRef = useRef<HTMLInputElement>(null);
 
-  // 注册时是否显示密码设置框
-  const [showPassword, setShowPassword] = useState<boolean>(false);
+  /**
+   * 验证码Hook
+   */
+  const { isSending, countdown, startCountdown } = useVerificationCode();
 
-  // 验证码相关状态和操作
+  /**
+   * 登录表单初始化
+   * 包含表单注册、提交处理、错误状态和重置功能
+   */
   const {
-    isSending,    // 是否正在发送验证码
-    countdown,    // 验证码倒计时
-    startCountdown, // 开始倒计时函数
-  } = useVerificationCode();
-
-  // 表单状态管理，包括数据、错误信息和提示消息
-  const [state, submitAction, isPending] = useActionState<FormState,FormData>(formAction, {
-    data: {
-      email: '',           // 邮箱
-      password: '',        // 密码
-      verificationCode: '' // 验证码
-    },
-    errors: {
-      email: '',           // 邮箱错误信息
-      password: '',        // 密码错误信息
-      verificationCode: '' // 验证码错误信息
-    },
-    message:''           // 表单提交提示信息
+    register: loginRegister,
+    handleSubmit: loginHandleSubmit,
+    formState: { errors: loginErrors, isSubmitting: isLoginSubmitting },
+    reset: resetLogin,
+    watch: watchLogin,
+    setError: setLoginError,
+  } = useForm<LoginQuickValues | LoginPasswordValues>({
+    resolver: zodResolver(mode === 'quick' ? loginQuickSchema : loginPasswordSchema),
+    defaultValues: mode === 'quick' 
+      ? { email: '', verificationCode: '' } 
+      : { email: '', password: '' },
   });
 
-  // 根据认证类型设置标题、切换文本和按钮文本
+  /**
+   * 注册表单初始化
+   * 包含表单注册、提交处理、错误状态和重置功能
+   */
+  const {
+    register: registerRegister,
+    handleSubmit: registerHandleSubmit,
+    formState: { errors: registerErrors, isSubmitting: isRegisterSubmitting },
+    reset: resetRegister,
+    watch: watchRegister,
+    setError: setRegisterError,
+  } = useForm<RegisterValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      email: '',
+      verificationCode: '',
+      registerPassword: '',
+      registerPasswordConfirm: '',
+    },
+  });
+
+  /**
+   * 泛型类型守卫：精准获取登录错误
+   * @template T - 登录模式类型
+   * @param {T} currentMode - 当前登录模式
+   * @param {LoginFieldKeys<T>} field - 要获取错误的字段名
+   * @returns {FieldError | undefined} 表单字段错误
+   */
+  const getLoginError = <T extends Mode>(currentMode: T, field: LoginFieldKeys<T>) => {
+    if (currentMode === 'quick') {
+      return (loginErrors as LoginQuickErrors)[field as keyof LoginQuickValues];
+    }
+    return (loginErrors as LoginPasswordErrors)[field as keyof LoginPasswordValues];
+  };
+
+  /**
+   * 监听邮箱值（用于发送验证码）
+   */
+  const email = type === 'login' ? watchLogin('email', '') : watchRegister('email', '');
+
+  /**
+   * 发送验证码逻辑
+   * 包含邮箱格式验证和API调用
+   */
+  const handleSendCode = async () => {
+    const emailResult = z.string().min(1, '邮箱不能为空').email( '请输入有效的邮箱地址').safeParse(email);
+    if (!emailResult.success) {
+      const errorMessage = emailResult.error.issues[0].message;
+      if (type === 'login') {
+        setLoginError('email', { message: errorMessage });
+      } else {
+        setRegisterError('email', { message: errorMessage });
+      }
+      emailInputRef.current?.focus();
+      return;
+    }
+
+    try {
+      await axiosInstance.post('/send-verification-code', { email });
+      startCountdown();
+    } catch (error) {
+      globalErrorHandler.handle(error, toast.error);
+    }
+  };
+
+  /**
+   * 登录提交逻辑
+   * @param {LoginQuickValues | LoginPasswordValues} data - 表单数据
+   */
+  const onLoginSubmit = async (data: LoginQuickValues | LoginPasswordValues) => {
+    try {
+      const payload = mode === 'quick' 
+        ? { ...data, mode: 'quick' } 
+        : { ...data, mode: 'password' };
+      await axiosInstance.post('/auth/login', payload);
+      toast.success('登录成功！');
+      resetLogin();
+      setAgreed(false);
+    } catch (error) {
+      globalErrorHandler.handle(error, toast.error);
+    }
+  };
+
+  /**
+   * 注册提交逻辑
+   * @param {RegisterValues} data - 表单数据
+   */
+  const onRegisterSubmit = async (data: RegisterValues) => {
+    try {
+      await axiosInstance.post('/auth/register', data);
+      toast.success('注册成功！');
+      resetRegister();
+      setAgreed(false);
+      setShowPassword(false);
+    } catch (error) {
+      globalErrorHandler.handle(error, toast.error);
+    }
+  };
+
+  /**
+   * UI文本配置
+   */
   const title = type === 'login' ? '联想会员登录' : '注册联想账号';
   const switchText = type === 'login' ? '注册账号' : '登录账号';
   const buttonText = type === 'login' ? '登录' : '注册';
-
-
-  /**
-   * 处理发送验证码的逻辑
-   * 点击发送验证码按钮时触发
-   */
-  const handleSendCode = async () => {
-
-    // 这里处理发送验证码逻辑
-
-    startCountdown(); // 开始倒计时
-
-  }
+  const isSubmitting = type === 'login' ? isLoginSubmitting : isRegisterSubmitting;
+  const handleSubmit = type === 'login' ? loginHandleSubmit(onLoginSubmit) : registerHandleSubmit(onRegisterSubmit);
 
   return (
     <div className="bg-white/95 rounded float-right h-auto mb-[80px] min-h-[586px] relative right-[30px] w-[460px]">
-      <div className=" block">
+      <div className="block">
         {/* 标题区域 */}
         <div className="text-[#252525] text-[30px] font-bold tracking-normal m-[58px_54px_35px_50px]">
           {title}
@@ -168,32 +243,42 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
 
         {/* 表单区域 */}
         <div className="box-border px-[45px] py-0 w-[100%]">
-          {/* 登录模式下显示快速登录/密码登录切换标签 */}
+          {/* 登录模式切换标签 */}
           {type === 'login' && (
             <LoginModeTabs
               mode={mode}
-              onModeChange={setMode}
+              onModeChange={(newMode) => {
+                setMode(newMode);
+                resetLogin(newMode === 'quick' ? { email, verificationCode: '' } : { email, password: '' });
+              }}
             />
           )}
 
           {/* 表单主体 */}
-          <form action={submitAction}>
+          <form onSubmit={handleSubmit}>
             {/* 邮箱输入框 */}
             <FormField
-              name="email"
               type="email"
               placeholder="请输入邮箱号"
-              value={state.data.email}
-              error={state.errors.email}
+              {...(type === 'login' ? loginRegister('email') : registerRegister('email'))}
+              error={type === 'login' ? getLoginError(mode, 'email')?.message : registerErrors.email?.message}
+              ref={(el) => {
+                emailInputRef.current = el;
+                const registerRef = type === 'login' 
+                  ? loginRegister('email').ref 
+                  : registerRegister('email').ref;
+                if (typeof registerRef === 'function') {
+                  registerRef(el);
+                }
+              }}
             />
 
-            {/* 快速登录模式或注册模式下的验证码输入框 */}
+            {/* 验证码输入框（快捷登录/注册显示） */}
             {(mode === 'quick' || type === 'register') && (
               <VerificationCodeField
-                name="verificationCode"
                 placeholder="请输入验证码"
-                value={state.data.verificationCode}
-                error={state.errors.verificationCode}
+                {...(type === 'login' ? loginRegister('verificationCode') : registerRegister('verificationCode'))}
+                error={type === 'login' ? getLoginError('quick', 'verificationCode')?.message : registerErrors.verificationCode?.message}
                 onVerify={setShowPassword}
                 verificationSent={isSending}
                 countdown={countdown}
@@ -201,36 +286,33 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
               />
             )}
 
-            {/* 密码登录模式下的密码输入框 */}
+            {/* 密码登录-密码输入框 */}
             {mode === 'password' && type === 'login' && (
               <FormField
-                name="password"
                 type="password"
                 placeholder="请输入密码"
-                value={state.data.password}
-                error={state.errors.password}
+                {...loginRegister('password')}
+                error={getLoginError('password', 'password')?.message}
               />
             )}
 
-            {/* 注册模式下的密码输入框 */}
+            {/* 注册-密码输入框 */}
             {showPassword && type === 'register' && (
               <FormField
-                name="registerPassword"
                 type="password"
-                placeholder="请输入密码"
-                value={state.data.password}
-                error={state.errors.registerPassword}
+                placeholder="请设置密码"
+                {...registerRegister('registerPassword')}
+                error={registerErrors.registerPassword?.message}
               />
             )}
 
-            {/* 注册模式下的确认密码输入框 */}
+            {/* 注册-确认密码输入框 */}
             {showPassword && type === 'register' && (
               <FormField
-                name="registerPasswordConfirm"
                 type="password"
-                placeholder="请输入密码"
-                value={state.data.password}
-                error={state.errors.registerPasswordConfirm}
+                placeholder="请确认密码"
+                {...registerRegister('registerPasswordConfirm')}
+                error={registerErrors.registerPasswordConfirm?.message}
               />
             )}
 
@@ -243,11 +325,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
             {/* 提交按钮 */}
             <SubmitButton
               label={buttonText}
-              loading={isPending}
+              loading={isSubmitting}
               disabled={!agreed}
             />
 
-            {/* 切换登录/注册的链接 */}
+            {/* 切换登录/注册链接 */}
             <div className="flex items-center text-[#252525] text-[13px] font-normal justify-end tracking-[0] mt-4 pb-8">
               <span
                 className="cursor-pointer hover:text-[#e1140a] transition-colors"
@@ -265,4 +347,3 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
 };
 
 export default AuthForm;
-
