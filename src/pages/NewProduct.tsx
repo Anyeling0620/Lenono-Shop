@@ -174,7 +174,7 @@ const NewProduct = () => {
     ];
 
     return (
-    <> 
+    <div className='bg-[#f5f5f5]'> 
     <Carousel
         data={carouselData}
         interval={3000}
@@ -182,20 +182,14 @@ const NewProduct = () => {
         className='h-[470px]'
     />
 
-    <div className="max-w-[1200px] mx-auto mt-12 space-y-12">
-                {productGroups.map((group, idx) => (
-                    <section key={idx}>
-                        {/* 标题 & 查看全部 */}
-                        <div className="flex items-center justify-between px-2 mb-4">
-                            <h2 className="text-[26px] font-semibold text-[#333]">{group.title}</h2>
-                            <Link
-                                to={group.link}
-                                className="text-[14px] text-[#666] hover:text-[#ca151e]">
-                                查看全部 ＞
-                            </Link>
+
+    <div className="w-[1200px] mx-auto py-[30px]">
+                {productGroups.map((group) => (
+                    <section key={group.title}>
+                        <div className="flex items-center justify-center w-full h-[120px] select-none">
+                            <h1 className="text-[34px] font-bold  text-[#4c4c4c]">{group.title}</h1>
                         </div>
 
-                        {/* 四个商品横排 */}
                         <ul className="grid grid-cols-4 gap-5">
                             {group.list.map(product => (
                                 <ProductCard key={product.id} product={product} />
@@ -204,7 +198,7 @@ const NewProduct = () => {
                     </section>
                 ))}
     </div>
-    </>
+    </div>
 
     )
 }

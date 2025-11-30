@@ -2,8 +2,8 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-22 13:38:47
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-23 16:16:58
- * @FilePath: \lenovo-shop\src\Component\QuickAccess\QuickAccess.tsx
+ * @LastEditTime: 2025-11-30 15:10:30
+ * @FilePath: \lenovo-shop\src\component\QuickAccess\QuickAccess.tsx
  * @Description: 
  * 
  * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
@@ -28,11 +28,12 @@ const QuickAccess = () => {
     { label: '氪金通道10', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
     { label: '氪金通道11', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
     { label: '氪金通道12', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
+    { label: '氪金通道02', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
   ];
 
   return (
     <div className='w-full h-[90px] z-0'>
-      <ul className="flex justify-center bg-white items-center pb-1 list-none">
+      <ul className="flex justify-center bg-white items-center  list-none">
         {navItems.map((item, index) => (
          <QuickItem 
             key={item.label}

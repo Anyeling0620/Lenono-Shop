@@ -21,9 +21,9 @@ import type { HiddenPaths } from '../../types/hiddenPaths'
 
 const navItems: NavItem[] = [
     { name: "新品", path: "/new-product" },
-    { name: "Lenovo电脑", path: "/lenovo-computer" },
-    { name: "ThinkPad电脑", path: "/thinkpad-computer" },
-    { name: "平板电脑", path: "/tablet" },
+    { name: "笔记本", path: "/lenovo-computer" },
+    { name: "平板", path: "/thinkpad-computer" },
+    { name: "台式机", path: "/tablet" },
     { name: "手机", path: "/phone" },
 ]
 

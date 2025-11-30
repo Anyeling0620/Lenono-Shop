@@ -141,9 +141,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                     {/* 价格范围和搜索 */}
                     <PriceSearch
                         priceInput={priceInput}
-                        // searchKeyword={searchKeyword}
                         onPriceChange={handlePriceInputChange}
-                        // onKeywordChange={setSearchKeyword}
                         onApply={applyPriceAndKeywordSFilter}
                     />
 

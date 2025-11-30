@@ -1,7 +1,9 @@
+
+
 // utils/GlobalAxiosErrorHandler.ts
 import type { AxiosError, AxiosResponse } from 'axios';
 
-type GlobalErrorType = 
+type GlobalErrorType =
   | 'network_error'    // 网络错误（无网络/跨域）
   | 'timeout_error'    // 请求超时
   | 'cancel_error'     // 请求取消
@@ -147,13 +149,13 @@ class GlobalAxiosErrorHandler {
         errorInfo.type = 'business_error';
         errorInfo.businessCode = responseData.code;
         // 优先用后端提示 → 业务码配置提示 → HTTP 状态码提示 → 默认提示
-        errorInfo.message = responseData.message 
+        errorInfo.message = responseData.message
           || this.defaultConfig.businessCodeMsgMap[responseData.code]
           || this.defaultConfig.httpStatusMsgMap[axiosError.response.status]
           || this.defaultConfig.unknownErrorMsg;
       } else {
         // 1.2.2 无业务码：用 HTTP 状态码提示
-        errorInfo.message = this.defaultConfig.httpStatusMsgMap[axiosError.response.status] 
+        errorInfo.message = this.defaultConfig.httpStatusMsgMap[axiosError.response.status]
           || this.defaultConfig.unknownErrorMsg;
       }
     }
@@ -207,7 +209,7 @@ class GlobalAxiosErrorHandler {
   /** 判断是否是后端业务码错误 */
   public isBusinessError(error: unknown, businessCode?: string): boolean {
     const errorInfo = this.parse(error);
-    return errorInfo.type === 'business_error' 
+    return errorInfo.type === 'business_error'
       && (businessCode ? errorInfo.businessCode === businessCode : true);
   }
 }
