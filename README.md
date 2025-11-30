@@ -2,7 +2,7 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-22 09:29:12
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-26 00:15:06
+ * @LastEditTime: 2025-11-29 18:10:58
  * @FilePath: \lenovo-shop\README.md
  * @Description:
  *
@@ -200,3 +200,9 @@ lenovo-shop                 // 项目根目录
 ├─ 📄searchProduct.ts  // 商品卡片类型
 └─ 📄searchResult.ts  // 搜索结果类型 
 ```
+
+### v2.0.0 2025-11-29
+#### 更新：
+1. 新增前端请求/响应拦截器，实现JWT认证，内置用户认证相关公共api
+2. 新增全局请求错误管理类
+3. 重写登陆注册表单

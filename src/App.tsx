@@ -1,14 +1,3 @@
-/*
- * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @Date: 2025-11-14 19:42:20
- * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-26 21:07:47
- * @FilePath: \lenovo-shop\src\App.tsx
- * @Description: 
- * 
- * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
- */
-// import AgreementModal from "./Component/AgreementModal "
 import { Routes, Route } from "react-router-dom"
 import Login from "./pages/Auth/Login"
 import Register from "./pages/Auth/Register"
