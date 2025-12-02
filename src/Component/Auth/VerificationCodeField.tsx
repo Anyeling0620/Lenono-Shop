@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { errIcon } from '../../assets/icon';
 import type { UseFormRegisterReturn } from 'react-hook-form';
 
@@ -25,12 +25,18 @@ export const VerificationCodeField: React.FC<VerificationCodeFieldProps> = ({
   onChange: rhfOnChange,
   ...rest
 }) => {
+  const [loading, setLoading] = useState(false);
   // 增强验证：输入6位数字后触发回调
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     rhfOnChange?.(e); // 调用 react-hook-form 的 onChange
     onVerify?.(value.length === 6 && /^\d{6}$/.test(value));
   };
+  const handleClick = async () => {
+    setLoading(true);
+    await onSendCode();
+    setLoading(false);
+  }
 
   return (
     <div className="h-[56px] mt-[28px] relative w-[100%] flex">
@@ -47,11 +53,11 @@ export const VerificationCodeField: React.FC<VerificationCodeFieldProps> = ({
         </div>
         <button
           type="button"
-          onClick={onSendCode}
+          onClick={handleClick}
           disabled={verificationSent}
           className="bg-[#fff1f1] border border-[#fadfdf] rounded-[4px] text-[#e1140a] cursor-pointer text-[14px] font-normal h-[56px] tracking-[0] ml-[5px] text-center whitespace-nowrap w-[122px] flex items-center justify-center px-[22px] disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:bg-[#ffe8e8]"
         >
-          {verificationSent ? `${countdown}秒后重发` : '获取验证码'}
+          {loading ? '正在发送中' : verificationSent ? `${countdown}秒后重发` : '获取验证码'}
         </button>
       </div>
       {error && (

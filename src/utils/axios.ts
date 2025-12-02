@@ -17,12 +17,12 @@ export const EVENT_NAMES = { /** * 定义事件名称的常量对象，使用 as
 } as const;
 
 export const API_PATHS = { /** * API路径常量定义 * 该对象包含了所有与认证相关的API端点路径 * 使用as const断言确保所有属性为只读字面量类型 */
-    REFRESH_TOKEN: '/api/auth/refresh', /**   * 刷新用户访问令牌的API路径   * 用于获取新的访问令牌，延长会话有效期   */
-    LOGIN_DEVICES: '/api/auth/devices', /**   * 获取用户登录设备列表的API路径   * 用于查询当前用户的所有登录设备信息   */
-    LOGOUT_DEVICE: '/api/auth/logout-device', /**   * 注销指定设备的API路径   * 用于从系统中移除指定的登录设备   */
-    LOGOUT_OTHER_DEVICES: '/api/auth/logout-other-devices', /**   * 注销其他所有设备的API路径   * 用于保留当前设备，注销所有其他登录设备   */
-    LOGIN_PATH: '/api/auth/login', /**   * 用户登录的API路径   * 用于用户登录并获取访问令牌   */
-    REGISTER_PATH: '/api/auth/register' /**   * 用户注册的API路径   * 用于用户注册并获取访问令牌   */
+    REFRESH_TOKEN: '/auth/refresh', /**   * 刷新用户访问令牌的API路径   * 用于获取新的访问令牌，延长会话有效期   */
+    LOGIN_DEVICES: '/auth/devices', /**   * 获取用户登录设备列表的API路径   * 用于查询当前用户的所有登录设备信息   */
+    LOGOUT_DEVICE: '/auth/logout-device', /**   * 注销指定设备的API路径   * 用于从系统中移除指定的登录设备   */
+    LOGOUT_OTHER_DEVICES: '/auth/logout-other-devices', /**   * 注销其他所有设备的API路径   * 用于保留当前设备，注销所有其他登录设备   */
+    LOGIN_PATH: '/auth/login', /**   * 用户登录的API路径   * 用于用户登录并获取访问令牌   */
+    REGISTER_PATH: '/auth/register' /**   * 用户注册的API路径   * 用于用户注册并获取访问令牌   */
 } as const;
 
 export type DeviceType = 'web' | 'mobile_web'; /** * 定义设备类型的联合类型 * 包括web端和移动网页端两种设备类型 */
@@ -507,36 +507,48 @@ class AxiosService {
         }
     }
 
+
+
     /**
      * 用户登录方法
      * @param {Object} loginInfo - 登录信息对象
-     * @param {string} loginInfo.email - 用户邮箱，必填
-     * @param {string} [loginInfo.password] - 用户密码，与verifyCode二选一
-     * @param {string} [loginInfo.verifyCode] - 验证码，与password二选一
+     * @param {string} loginInfo.email - 用户邮箱
+     * @param {string} loginInfo.mode - 登录模式，可选值：'quick'（验证码登录）或 'password'（密码登录）
+     * @param {string} [loginInfo.password] - 密码，当mode为'password'时必需
+     * @param {string} [loginInfo.verificationCode] - 验证码，当mode为'quick'时必需
      * @returns {Promise<string>} 返回设备ID
      * @throws {Error} 当邮箱为空时抛出错误
-     * @throws {Error} 当密码和验证码都为空时抛出错误
-     * @throws {Error} 当登录失败时抛出错误
+     * @throws {Error} 当mode为'quick'且验证码为空时抛出错误
+     * @throws {Error} 当mode为'password'且密码为空时抛出错误
+     * @throws {Error} 当登录失败时抛出错误信息
      */
     public async login(loginInfo: {
         email: string;
+        mode: string;
         password?: string;
-        verify_code?: string;
+        verificationCode?: string;
     }): Promise<string> {
+
         // 保留原有参数校验逻辑
         if (!loginInfo.email) {
             throw new Error('邮箱不能为空');
         }
-        if (!loginInfo.password && !loginInfo.verify_code) {
-            throw new Error('密码或验证码不能为空');
+        if (loginInfo.mode === 'quick' && !loginInfo.verificationCode) {
+            throw new Error('验证码不能为空');
+        }
+        if (loginInfo.mode === 'password' && !loginInfo.password) {
+            throw new Error('密码不能为空');
         }
 
         try {
             const response = await this.instance.post<AuthResponse>(
                 API_PATHS.LOGIN_PATH,
                 {
-                    ...loginInfo,
-                    device_id: this.deviceId, // 前端把生成的设备ID传给后端
+                    email: loginInfo.email,
+                    mode: loginInfo.mode,
+                    password: loginInfo.password,
+                    verification_code: loginInfo.verificationCode,
+                    device_id: this.deviceId,
                     device_type: this.deviceType,
                 },
                 { skipDeviceCheck: false }
@@ -577,35 +589,36 @@ class AxiosService {
      */
     public async register(registerInfo: {
         email: string;
-        verify_code: string;
-        password: string;
-        passwordConfirm: string;
+        verificationCode: string;
+        registerPassword: string;
+        registerPasswordConfirm: string;
     }): Promise<string> {
         // 保留原有参数校验逻辑
         if (!registerInfo.email) {
             throw new Error('注册邮箱不能为空');
         }
-        if (!registerInfo.verify_code) {
+        if (!registerInfo.verificationCode) {
             throw new Error('验证码不能为空');
         }
-        if (!registerInfo.password) {
+        if (!registerInfo.registerPassword) {
             throw new Error('密码不能为空');
         }
-        if (registerInfo.password !== registerInfo.passwordConfirm) {
-            throw new Error('两次输入的密码不一致，请重新输入');
-        }
-        if (registerInfo.password.length < 6) {
+        if (registerInfo.registerPassword.length < 6) {
             throw new Error('密码长度不能少于6位');
         }
-
+        if (registerInfo.registerPassword !== registerInfo.registerPasswordConfirm) {
+            throw new Error('两次输入的密码不一致，请重新输入');
+        }
+        
         try {
             const response = await this.instance.post<AuthResponse>(
                 API_PATHS.REGISTER_PATH,
                 {
                     email: registerInfo.email,
-                    verifyCode: registerInfo.verify_code,
-                    password: registerInfo.password,
-                    device_id: this.deviceId, // 前端把生成的设备ID传给后端
+                    verify_code: registerInfo.verificationCode,
+                    password: registerInfo.registerPassword,
+                    password_confirm: registerInfo.registerPasswordConfirm,
+                    device_id: this.deviceId, 
                     device_type: this.deviceType,
                 },
                 { skipDeviceCheck: false }

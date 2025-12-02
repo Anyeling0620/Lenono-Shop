@@ -13,9 +13,9 @@ import LoginModeTabs from "./LoginModeTabs";
 import SubmitButton from "./SubmitButton";
 import VerificationCodeField from "./VerificationCodeField";
 import useVerificationCode from "../../hooks/useVerificationCode";
-import { axiosInstance } from "../../utils/axios";
+import { axiosInstance, axiosService } from "../../utils/axios";
 import toast from "react-hot-toast";
-import { globalErrorHandler } from "../../utils/GlobalAxiosErrorHandler";
+import globalErrorHandler from "../../utils/globalAxiosErrorHandler";
 
 // 组件属性类型
 interface AuthFormProps {
@@ -183,7 +183,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
     }
 
     try {
-      await axiosInstance.post('/send-verification-code', { email });
+      await axiosInstance.put('/send-verification-code', { email:email });
+      await axiosInstance.post('/send-verification-code', { email:email });
       startCountdown();
     } catch (error) {
       globalErrorHandler.handle(error, toast.error);
@@ -199,7 +200,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
       const payload = mode === 'quick' 
         ? { ...data, mode: 'quick' } 
         : { ...data, mode: 'password' };
-      await axiosInstance.post('/auth/login', payload);
+      await axiosService.login(payload);
       toast.success('登录成功！');
       resetLogin();
       setAgreed(false);
@@ -214,7 +215,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
    */
   const onRegisterSubmit = async (data: RegisterValues) => {
     try {
-      await axiosInstance.post('/auth/register', data);
+      await axiosService.register(data);
       toast.success('注册成功！');
       resetRegister();
       setAgreed(false);

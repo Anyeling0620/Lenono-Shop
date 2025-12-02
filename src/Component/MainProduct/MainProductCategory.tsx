@@ -57,10 +57,8 @@ const Category = ({ name, image, products }: CategoryProps) => {
   // 点击指示器处理
   const handleIndicatorClick = (index: number) => {
     stopAutoPlay();
-    setTimeout(() => {
-      setCurrentImageIndex(index);
-      setTimeout(() => startAutoPlay(), 2000);
-    }, 300);
+    setCurrentImageIndex(index);
+    setTimeout(() => startAutoPlay(), 2000);
   };
 
   return (

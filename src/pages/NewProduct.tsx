@@ -1,7 +1,6 @@
 import Carousel from '../component/Carousel/Carousel'
 import type { CarouselItemType } from '../types/carouselItem';
 import ProductCard from '../component/Search/ProductCard';
-import { Link } from "react-router-dom";
 
 const NewProduct = () => {
     const carouselData: CarouselItemType[] = [
