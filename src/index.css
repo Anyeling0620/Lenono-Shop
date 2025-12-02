@@ -1,3 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  @keyframes border-blink {
+    0%, 100% { 
+      border-color: transparent;
+      box-shadow: none;
+    }
+    50% { 
+      border-color: #ef4444;
+      box-shadow: 0 0 0 1px rgb(239, 68, 68);
+    }
+  }
+  
+  .animate-border-blink {
+    animation: border-blink 0.4s ease-in-out;
+  }
+}

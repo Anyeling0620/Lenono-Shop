@@ -2,7 +2,7 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-22 09:29:12
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-26 00:15:06
+ * @LastEditTime: 2025-11-29 18:10:58
  * @FilePath: \lenovo-shop\README.md
  * @Description:
  *
@@ -186,3 +186,31 @@ lenovo-shop                 // 项目根目录
 📁utils
 └─ 📄timeCalculator.ts
 ```
+
+### v1.2.0 2025-11-27
+#### 更新：
+1. 新增搜索页面
+2. 新增筛选组件
+3. 新增分页
+4. 新增搜索结果卡片组件
+
+```
+📁Search
+├─ 📄ProductCard.tsx  // 搜索结果卡片组件
+├─ 📄ProductList.tsx  // 搜索结果列表组件
+├─ 📄SearchFilters.tsx  // 筛选组件
+├─ 📄SortOptions.tsx  // 排序选项组件
+└─ 📄Tag.tsx   // 标签组件
+📁pages 
+└─ 📄Search.tsx   // 搜索页面
+📁types
+├─ 📄searchFilter.ts  // 筛选类型
+├─ 📄searchProduct.ts  // 商品卡片类型
+└─ 📄searchResult.ts  // 搜索结果类型 
+```
+
+### v2.0.0 2025-11-29
+#### 更新：
+1. 新增前端请求/响应拦截器，实现JWT认证，内置用户认证相关公共api
+2. 新增全局请求错误管理类
+3. 重写登陆注册表单

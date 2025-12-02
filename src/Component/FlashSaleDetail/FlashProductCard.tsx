@@ -44,7 +44,7 @@ const FlashProductCard: React.FC<Props> = ({ product, status }) => {
       {/* 链接处理: 如果不可购买，禁用链接跳转 */}
       <Link 
         to={isSoldOut || isUpcoming ? '#' : link} 
-        className={`block flex-1 flex flex-col h-full text-decoration-none ${isSoldOut ? 'cursor-default' : ''}`}
+        className={`block flex-1 flex-col h-full text-decoration-none ${isSoldOut ? 'cursor-default' : ''}`}
         onClick={(e) => (isSoldOut || isUpcoming) && e.preventDefault()}
       >
         <div className="w-[160px] h-[160px] mx-auto overflow-hidden flex items-center justify-center mb-4 relative">

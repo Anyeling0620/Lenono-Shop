@@ -2,7 +2,7 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-23 13:37:33
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-24 16:24:32
+ * @LastEditTime: 2025-11-30 15:09:16
  * @FilePath: \lenovo-shop\src\component\Carousel\Carousel.tsx
  * @Description: 
  * 
@@ -83,7 +83,7 @@ const Carousel: React.FC<CarouselProps> = ({
     }
 
     return (
-        <div className={`bg-white/0 relative -top-1 z-0 ${className} z-10`}>
+        <div className={`bg-white/0 relative z-0 ${className} z-10`}>
             <CarouselTrack
                 data={data}
                 currentIndex={currentIndex}
