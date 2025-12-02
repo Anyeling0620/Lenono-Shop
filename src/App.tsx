@@ -18,6 +18,7 @@ import NewProduct from "./pages/NewProduct"
 import Index from "./pages/Index"
 import { Toaster } from "react-hot-toast"
 import Search from "./pages/Search"
+import FlashSalePage from "./pages/FlashSalePage"
 
 /**
  * App组件：应用程序的主要组件，负责路由配置和布局
@@ -38,6 +39,7 @@ function App() {
           <Route path='register' element={<Register />} />
           <Route path='new-product' element={<NewProduct />} />
           <Route path="search" element={<Search />} />
+          <Route path="flash-sale" element={<FlashSalePage />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
