@@ -16,16 +16,19 @@ const Category = ({ name, image, products }: CategoryProps) => {
   const timerRef = useRef<number | null>(null);
 
   // 自动轮播切换
-  const handleNavigate = useCallback((direction: 'next' | 'prev') => {
-    setTimeout(() => {
-      setCurrentImageIndex((prev) => {
-        if (direction === "next") {
-          return (prev + 1) % image.length;
-        }
-        return (prev - 1 + image.length) % image.length;
-      });
-    }, 300); // 与 transition 时间匹配
-  }, [image.length]);
+  const handleNavigate = useCallback(
+    (direction: "next" | "prev") => {
+      setTimeout(() => {
+        setCurrentImageIndex((prev) => {
+          if (direction === "next") {
+            return (prev + 1) % image.length;
+          }
+          return (prev - 1 + image.length) % image.length;
+        });
+      }, 300); // 与 transition 时间匹配
+    },
+    [image.length]
+  );
 
   // 开始自动播放
   const startAutoPlay = useCallback(() => {
@@ -59,7 +62,6 @@ const Category = ({ name, image, products }: CategoryProps) => {
       setTimeout(() => startAutoPlay(), 2000);
     }, 300);
   };
-
 
   return (
     <div className="pt-[20px] pb-[20px] w-[1200px]">
@@ -102,8 +104,6 @@ const Category = ({ name, image, products }: CategoryProps) => {
             />
           )}
         </div>
-
-
 
         {/* 右侧卡片区域 */}
         <div className="col-span-4 grid grid-rows-2 gap-3">

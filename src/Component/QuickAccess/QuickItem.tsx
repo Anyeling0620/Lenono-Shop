@@ -2,7 +2,7 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-24 23:02:09
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-25 22:11:48
+ * @LastEditTime: 2025-11-30 15:15:34
  * @FilePath: \lenovo-shop\src\component\QuickAccess\QuickItem.tsx
  * @Description: 
  * 
@@ -25,7 +25,7 @@ const QuickItem: FC<QuickItemProps> = ({
     return (
         <li
             className={`quick-access-li w-[90px] h-[90px] aspect-square bg-white rounded-sm transition-all duration-300 ease-in-out ${hoveredIndex === index
-                ? 'transform -translate-y-1 shadow-md'
+                ? 'transform -translate-y-0.5 shadow-md'
                 : 'shadow-none'
                 }`}
             onMouseEnter={() => setHoveredIndex(index)}

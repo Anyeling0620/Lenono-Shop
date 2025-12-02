@@ -2,7 +2,7 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-20 20:39:28
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-26 20:07:34
+ * @LastEditTime: 2025-11-30 17:06:55
  * @FilePath: \lenovo-shop\src\component\Header\AuthLinks.tsx
  * @Description: 
  * 
@@ -11,6 +11,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AgreementModal from "../Auth/AgreementModal ";
+import { Popover } from "antd";
+import UserInfoCard from "../UserInfoCard/UserInfoCard";
 
 /**
  * AuthLinks 组件：用于显示注册和登录链接
@@ -49,10 +51,11 @@ const AuthLinks: React.FC = () => {
                 {
                     true &&
                     <>
-                        <span className="text-red-500 cursor-pointer truncate max-w-[110px] overflow-hidden hover:underline decoration-4 underline-offset-[22px] transition-all duration-300">
-                            魔法少女小圆
-                        </span>
-                        <i className="border-l h-[11px] inline-block my-[-1px] mx-2"></i>
+                    {/* open={false} */}
+                        <Popover arrow={false} zIndex={1000}  placement={"bottomRight"}  content={<UserInfoCard />}>
+                            <></><User children="魔法少女" />
+                        </Popover>
+                        <i className="border-l h-[11px] inline-block my-[-1px] mx-2 rounded-e-sm"></i>
                         <AuthLink onClick={handleLogout}>
                             登出
                         </AuthLink>
@@ -69,6 +72,14 @@ const AuthLinks: React.FC = () => {
 
     );
 };
+
+const User: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    return (
+        <span className="text-red-500 cursor-pointer truncate max-w-[110px] overflow-hidden hover:underline decoration-4 underline-offset-[22px] transition-all duration-300">
+            {children}
+        </span>
+    );
+}
 
 
 const AuthLink: React.FC<{ children: React.ReactNode; onClick: () => void }> = ({ children, onClick }) => {

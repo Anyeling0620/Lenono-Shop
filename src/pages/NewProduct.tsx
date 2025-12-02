@@ -7,12 +7,17 @@ import {
     FundProjectionScreenOutlined, 
     MobileOutlined, 
     TabletOutlined, 
-    AppstoreOutlined, // 用于代替鼠标图标
+    AppstoreOutlined, 
     CustomerServiceOutlined 
 } from '@ant-design/icons';
 import Carousel from '../component/Carousel/Carousel';
+// 引入同学写的卡片组件，用于下半部分展示
+import ProductCard from '../component/Search/ProductCard'; 
 import type { CarouselItemType } from '../types/carouselItem';
+// 引入您定义的类型
 import type { MainTab, SubCategory, ProductItem } from '../types/newProductTab';
+// 引入同学定义的商品类型
+import type { Product } from '../types/searchProduct'; 
 
 // --- 1. 静态数据配置 ---
 
@@ -29,8 +34,8 @@ const mainTabs: MainTab[] = [
     { id: 'service', name: '服务' },
 ];
 
-// 二级分类配置 (Key对应MainTab的id)
-// 修改点：补全了手机、平板、选件、服务的子菜单，图标样式统一设置为 40px
+// --- 您的配置：二级分类图标 ---
+// 核心逻辑：这里定义了点击一级菜单（如手机）后，显示的二级图标
 const subCategoriesMap: Record<string, SubCategory[]> = {
     host: [
         { id: 'notebook', name: '笔记本新品', icon: <LaptopOutlined style={{ fontSize: '40px' }} /> },
@@ -51,8 +56,7 @@ const subCategoriesMap: Record<string, SubCategory[]> = {
     ]
 };
 
-// 商品数据模拟 (Key对应SubCategory的id)
-// 注意：这里补充了新ID对应的假数据，防止点击切换后下方空白
+// --- 您的配置：上半部分商品数据 ---
 const productsMap: Record<string, ProductItem[]> = {
     notebook: [
         {
@@ -90,68 +94,145 @@ const productsMap: Record<string, ProductItem[]> = {
             linkUrl: '#'
         }
     ],
+    // 补充其他分类的假数据，防止点击空白
     newPhone: [
-        {
-            id: 'p1',
-            name: 'moto razr 50 Ultra',
-            description: '骁龙8s Gen3 / 120Hz内屏 / AI影像',
-            price: 5699,
-            imageUrl: 'https://p2.lefile.cn/product/adminweb/2024/06/25/U1I8O9P0L.jpg', // 示例图
-            linkUrl: '#'
-        }
+        { id: 'p1', name: 'moto razr 50 Ultra', description: '骁龙8s Gen3 / 120Hz内屏', price: 5699, imageUrl: 'https://p2.lefile.cn/product/adminweb/2024/06/25/U1I8O9P0L.jpg', linkUrl: '#' }
     ],
     newPad: [
-        {
-            id: 'pad1',
-            name: '联想小新Pad Pro 12.7',
-            description: '天玑8300 / 2.9K屏幕 / 10200mAh电池',
-            price: 1899,
-            imageUrl: 'https://p4.lefile.cn/product/adminweb/2023/07/20/PadPro127.jpg',
-            linkUrl: '#'
-        }
+        { id: 'pad1', name: '联想小新Pad Pro 12.7', description: '天玑8300 / 2.9K屏幕', price: 1899, imageUrl: 'https://p4.lefile.cn/product/adminweb/2023/07/20/PadPro127.jpg', linkUrl: '#' }
     ],
     newAcc: [
-        {
-            id: 'acc1',
-            name: '联想异能者鼠标 M300',
-            description: '人体工学设计 / 1600DPI / 静音微动',
-            price: 59,
-            imageUrl: 'https://p1.lefile.cn/product/adminweb/2023/01/10/MouseM300.jpg',
-            linkUrl: '#'
-        }
+        { id: 'acc1', name: '联想异能者鼠标 M300', description: '人体工学设计 / 1600DPI', price: 59, imageUrl: 'https://p1.lefile.cn/product/adminweb/2023/01/10/MouseM300.jpg', linkUrl: '#' }
     ],
     newService: [
-        {
-            id: 'srv1',
-            name: '笔记本意外保修服务',
-            description: '1年意外保护 / 进液跌落均保修',
-            price: 199,
-            imageUrl: 'https://p2.lefile.cn/product/adminweb/2022/05/15/ServiceCard.jpg',
-            linkUrl: '#'
-        }
+        { id: 'srv1', name: '笔记本意外保修服务', description: '1年意外保护 / 进液跌落均保修', price: 199, imageUrl: 'https://p2.lefile.cn/product/adminweb/2022/05/15/ServiceCard.jpg', linkUrl: '#' }
     ]
 };
+
+// --- 同学的配置：下半部分商品组数据 ---
+const productGroups: { title: string; link: string; list: Product[] }[] = [
+    {
+        title: "笔记本",
+        link: "/notebook",
+        list: [
+            {
+                id: '101',
+                name: "联想小新Pro14 酷睿版14英寸轻薄笔记本 深灰色",
+                description: "英特尔酷睿Ultra5 / 32GB / 1T SSD / Windows 11 家庭版",
+                image: "https://p4.lefile.cn/product/adminweb/2024/01/17/2LCC5B1F9W3D9H7J.jpg",
+                link: "/product/1",
+                isDiscount: false,
+                currentPrice: 5999,
+                originalPrice: 0,
+                tags: { self: false, coupon: { money: 300 }, custom: true, tradeIn: true, installment: { month: 12 } }
+            },
+            {
+                id: '102',
+                name: "联想小新Pro14 GT AI 元启版14英寸轻薄笔记本 深灰色",
+                description: "酷睿Ultra5 / 32GB / 1T SSD / RTX 显卡增强",
+                image: "https://p2.lefile.cn/product/adminweb/2024/01/25/K7S9D3F2G5H1J4L.jpg",
+                link: "/product/2",
+                isDiscount: false,
+                currentPrice: 6399,
+                originalPrice: 0,
+                tags: { self: false, coupon: { money: 320 }, custom: true, tradeIn: true, installment: { month: 12 } }
+            },
+            {
+                id: '103',
+                name: "联想Y9000X 2025 16英寸轻薄创意本",
+                description: "酷睿Ultra9 / 32GB / RTX 4070 / WiFi 7",
+                image: "https://p3.lefile.cn/product/adminweb/2024/02/01/M5N6B7V8C9X0Z.jpg",
+                link: "/product/3",
+                isDiscount: true,
+                currentPrice: 10999,
+                originalPrice: 11999,
+                tags: { self: true, coupon: undefined, custom: true, tradeIn: true, installment: { month: 12 } }
+            },
+            {
+                id: '104',
+                name: "联想小新Air14 2025款 轻薄本",
+                description: "Ryzen 7 / 16GB / 1T SSD / 集显",
+                image: "https://p4.lefile.cn/product/adminweb/2024/01/17/2LCC5B1F9W3D9H7J.jpg",
+                link: "/product/4",
+                isDiscount: false,
+                currentPrice: 4999,
+                originalPrice: 0,
+                tags: { self: false, coupon: undefined, custom: false, tradeIn: true, installment: { month: 12 } }
+            }
+        ]
+    },
+    {
+        title: "台式机",
+        link: "/desktop",
+        list: [
+            {
+                id: '105',
+                name: "联想拯救者刃9000K 2025旗舰游戏台式机",
+                description: "酷睿i9 / RTX 4080 / 64GB / 2TB SSD",
+                image: "https://p1.lefile.cn/product/adminweb/2023/05/10/A1S2D3F4G5H6.jpg",
+                link: "/product/5",
+                isDiscount: true,
+                currentPrice: 18999,
+                originalPrice: 19999,
+                tags: { self: true, coupon: { money: 500 }, custom: true, tradeIn: true, installment: { month: 24 } }
+            },
+            {
+                id: '106',
+                name: "联想拯救者刃7000K 2025高性能电竞主机",
+                description: "酷睿i7 / RTX 4070 / 32GB / 1TB SSD",
+                image: "https://p1.lefile.cn/product/adminweb/2023/05/10/A1S2D3F4G5H6.jpg",
+                link: "/product/6",
+                isDiscount: false,
+                currentPrice: 12999,
+                originalPrice: 0,
+                tags: { self: false, coupon: { money: 300 }, custom: true, tradeIn: true, installment: { month: 12 } }
+            },
+            {
+                id: '107',
+                name: "联想启天K6 商用办公台式机",
+                description: "i5 / 16GB / 512GB SSD / Win11 专业版",
+                image: "https://p1.lefile.cn/product/adminweb/2023/05/10/A1S2D3F4G5H6.jpg",
+                link: "/product/7",
+                isDiscount: false,
+                currentPrice: 4999,
+                originalPrice: 0,
+                tags: { self: false, coupon: undefined, custom: false, tradeIn: true, installment: { month: 12 } }
+            },
+            {
+                id: '108',
+                name: "联想天逸510S 家用学习台式机",
+                description: "i5 / 16GB / 512GB SSD / 集显",
+                image: "https://p1.lefile.cn/product/adminweb/2023/05/10/A1S2D3F4G5H6.jpg",
+                link: "/product/8",
+                isDiscount: false,
+                currentPrice: 3899,
+                originalPrice: 0,
+                tags: { self: false, coupon: { money: 200 }, custom: false, tradeIn: true, installment: { month: 12 } }
+            }
+        ]
+    }
+];
 
 // --- 2. 页面组件 ---
 
 const NewProduct: React.FC = () => {
+    // 状态管理
     const [activeMainTab, setActiveMainTab] = useState<string>('host');
     const [activeSubTab, setActiveSubTab] = useState<string>('notebook');
 
-    // 处理一级Tab切换
+    // 处理一级Tab切换：点击一级菜单时，自动选中该分类下的第一个子菜单
     const handleMainTabChange = (tabId: string) => {
         setActiveMainTab(tabId);
-        // 切换大类时，自动选中该大类下的第一个子类
         const firstSub = subCategoriesMap[tabId]?.[0];
         setActiveSubTab(firstSub ? firstSub.id : '');
     };
 
-    // 获取当前展示的商品
+    // 获取当前上半部分展示的商品
     const currentProducts = useMemo(() => {
         return productsMap[activeSubTab] || [];
     }, [activeSubTab]);
 
-    // 获取当前显示的二级菜单列表
+    // 获取当前显示的二级图标菜单列表
     const currentSubCategories = subCategoriesMap[activeMainTab] || [];
 
     return (
@@ -161,7 +242,8 @@ const NewProduct: React.FC = () => {
                 <Carousel data={carouselData} className='h-[400px]' />
             </div>
 
-            <div className="w-[1200px] mx-auto bg-white shadow-sm min-h-[600px]">
+            {/* Part 1: 您的组件 (Tab切换 + 图标导航 + 商品网格) */}
+            <div className="w-[1200px] mx-auto bg-white shadow-sm min-h-[600px] mb-10 rounded-sm">
                 
                 {/* 1. 标题区域 */}
                 <div className="text-center py-8">
@@ -194,11 +276,11 @@ const NewProduct: React.FC = () => {
                     </ul>
                 </div>
 
-                {/* 3. 二级导航 (图标栏) */}
-                {/* 核心修改：使用 justify-around 实现均匀分布，mx-8 增加两侧留白 */}
+                {/* 3. 二级导航 (图标栏) - 均匀分布 */}
+                {/* 修复：使用 w-full + flex justify-around 让图标在整个宽度上均匀分布 */}
                 {currentSubCategories.length > 0 && (
-                    <div className="py-10 border-b border-dashed border-[#eee] mx-8">
-                        <div className="flex justify-around items-center w-full px-10">
+                    <div className="py-10 border-b border-dashed border-[#eee]">
+                        <div className="flex w-full justify-around items-center px-20">
                             {currentSubCategories.map((sub) => {
                                 const isActive = activeSubTab === sub.id;
                                 return (
@@ -221,7 +303,7 @@ const NewProduct: React.FC = () => {
                     </div>
                 )}
 
-                {/* 4. 商品展示列表 */}
+                {/* 4. 商品展示列表 (您写的卡片风格) */}
                 <div className="p-8">
                     {currentProducts.length > 0 ? (
                         <ul className="grid grid-cols-3 gap-6">
@@ -256,7 +338,28 @@ const NewProduct: React.FC = () => {
                         </div>
                     )}
                 </div>
+            </div>
 
+            {/* Part 2: 同学的组件 (商品列表组 - 排版在下方) */}
+            <div className="w-[1200px] mx-auto py-[10px]">
+                {productGroups.map((group) => (
+                    <section key={group.title} className="mb-12">
+                        {/* 分组标题 */}
+                        <div className="flex items-center justify-center w-full h-[80px] select-none mb-4">
+                            <h1 className="text-[34px] font-bold text-[#4c4c4c] relative before:content-[''] before:block before:w-8 before:h-[2px] before:bg-[#e2231a] before:absolute before:bottom-[-10px] before:left-1/2 before:-translate-x-1/2">
+                                {group.title}
+                            </h1>
+                        </div>
+
+                        {/* 商品卡片网格 (复用 Search 模块的 ProductCard) */}
+                        {/* 修正：使用 gap-3 避免卡片过宽挤压 */}
+                        <ul className="grid grid-cols-4 gap-3">
+                            {group.list.map(product => (
+                                <ProductCard key={product.id} product={product} />
+                            ))}
+                        </ul>
+                    </section>
+                ))}
             </div>
         </div>
     );

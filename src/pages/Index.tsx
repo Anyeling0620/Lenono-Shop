@@ -2,7 +2,7 @@
  * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
  * @Date: 2025-11-18 20:09:36
  * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-26 22:26:11
+ * @LastEditTime: 2025-11-30 16:00:07
  * @FilePath: \lenovo-shop\src\pages\Index.tsx
  * @Description: 
  * 
@@ -48,7 +48,7 @@ const rollData: CarouselItemType[] = [
 const Index: React.FC = () => {
 
   return (
-    <div className='bg-[#efefef]'>
+    <div className='bg-[#f5f5f5]'>
       <Carousel
         className='h-[400px]'
         data={rollData}
