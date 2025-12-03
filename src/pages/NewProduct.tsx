@@ -283,6 +283,7 @@ const NewProduct: React.FC = () => {
                                         className="flex flex-col items-center cursor-pointer group min-w-[80px]"
                                     >
                                         <div className={`mb-3 transition-colors duration-300 ${isActive ? 'text-[#333]' : 'text-[#999] group-hover:text-[#666]'}`}>
+                                            {/* 图标 */}
                                             {sub.icon}
                                         </div>
                                         <span className={`text-[14px] ${isActive ? 'text-[#333] font-bold' : 'text-[#666]'}`}>
