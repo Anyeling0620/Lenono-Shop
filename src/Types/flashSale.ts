@@ -24,6 +24,9 @@ export interface Product { /** * 产品接口，定义了商品相关的属性 *
   originalPrice: number; //  原始价格
   discount: number; //  折扣
   link: string; //  产品链接
+
+  desc?: string;          // 商品描述
+  soldPercent?: number;   // 已抢进度 (0-100)
 }
 
 export interface flashSaleMenu {
@@ -31,6 +34,9 @@ export interface flashSaleMenu {
   time: string; //  会话时间
   duration: string; //  会话时长
   products: Product[]; //  产品列表
+
+  statusOverride?: TimeStatus; // 用于强制指定状态(测试用)
+  countdown?: string;          // 详情页倒计时文案
 }
 
 export interface TimeUnit {
