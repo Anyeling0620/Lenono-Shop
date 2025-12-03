@@ -15,3 +15,23 @@ export interface NewProductTab {
 export interface SubProductTab extends NewProductTab {
     iconClass: string; // 用于显示图标的 Tailwind CSS 类名（例如，'icon-laptop'）
 }
+
+export interface MainTab{
+    id: string;
+    name: string;
+}
+
+export interface SubCategory{
+    id:string;
+    name: string;
+    icon: React.ReactNode;
+}
+
+export interface ProductItem{
+    id: string;
+    name: string;
+    price: number;
+    imageUrl: string;
+    linkUrl: string;
+    description: string;
+}
