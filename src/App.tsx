@@ -8,6 +8,10 @@ import Index from "./pages/Index"
 import { Toaster } from "react-hot-toast"
 import Search from "./pages/Search"
 import FlashSalePage from "./pages/FlashSalePage"
+import ProductDetail from "./pages/ProductDetail"
+import ShoppingCart from "./pages/ShoppingCart"
+import Checkout from "./pages/Checkout"
+import { CartProvider } from "./context/CartContext"
 
 
 /**
@@ -21,18 +25,23 @@ function App() {
     toastOptions={{
       style:{}
     }}/>  
-      <Routes>
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<Index />} />
-          <Route path="index" element={<Index />} />
-          <Route path='login' element={<Login />} />
-          <Route path='register' element={<Register />} />
-          <Route path='new-product' element={<NewProduct />} />
-          <Route path="search" element={<Search />} />
-          <Route path="flash-sale" element={<FlashSalePage />} />
-        </Route>
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <CartProvider>
+        <Routes>
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<Index />} />
+            <Route path="index" element={<Index />} />
+            <Route path='login' element={<Login />} />
+            <Route path='register' element={<Register />} />
+            <Route path='new-product' element={<NewProduct />} />
+            <Route path="search" element={<Search />} />
+            <Route path="flash-sale" element={<FlashSalePage />} />
+            <Route path="product/:id" element={<ProductDetail />} />
+            <Route path="shopping-cart" element={<ShoppingCart />} />
+            <Route path="checkout" element={<Checkout />} />
+          </Route>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </CartProvider>
     </>
   )
 }
