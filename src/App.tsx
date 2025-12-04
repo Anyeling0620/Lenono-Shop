@@ -21,15 +21,16 @@ import UserLayout from "./component/Layout/UserLayout"
  * 包含了页面路由和Toaster提示组件的配置
  */
 function App() {
+
   return (
-    
-      <main>
-        <CartProvider> 
+
+    <main>
+      <CartProvider>
         <Toaster position="top-center" reverseOrder={false}
           toastOptions={{
             style: {}
           }} />
-        
+
         <Routes>
           <Route element={<MainLayout />}>
             <Route path="/" element={<Index />} />
@@ -39,21 +40,21 @@ function App() {
             <Route path='new-product' element={<NewProduct />} />
             <Route path="search" element={<Search />} />
             <Route path="flash-sale" element={<FlashSalePage />} />
-            
-              <Route path="product/:id" element={<ProductDetail />} />
-              <Route path="shopping-cart" element={<ShoppingCart />} />
-              <Route path="checkout" element={<Checkout />} />
+
+            <Route path="product/:id" element={<ProductDetail />} />
+            <Route path="shopping-cart" element={<ShoppingCart />} />
+            <Route path="checkout" element={<Checkout />} />
           </Route>
-          
+
           <Route element={<UserLayout />}>
             <Route path="user-center" element={<UserCenter />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
-        </CartProvider>
+      </CartProvider>
+    </ main>
 
-      </main>
-    
+
   )
 }
 

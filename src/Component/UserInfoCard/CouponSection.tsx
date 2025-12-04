@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 interface Props {
   count: number;
   detailLink: string;
+  state?: {
+    [index:string]:string | number | boolean | undefined // 索引签名
+  };
 }
 
 const CouponSection: React.FC<Props> = ({ count, detailLink }) => {
@@ -14,7 +17,7 @@ const CouponSection: React.FC<Props> = ({ count, detailLink }) => {
         <span>张</span>
       </div>
       <div className={`ml-auto border-[#e6e6e6] text-[#a9a9a9] font-light text-[13px]`}>
-        <Link to={detailLink} className={'hover:text-red-500'}>
+        <Link target="_user-center" to={`${detailLink}?selectedKey=${12}`} className={'hover:text-red-500'}>
           查看详情
         </Link>
       </div>

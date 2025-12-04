@@ -42,7 +42,7 @@ const AuthLinks: React.FC = () => {
 
     return (<>
         <div className="float-right relative">
-            <div className="leading-[60px] float-left relative text-[12.5px] flex items-center gap-2">
+            <div className=" relative text-[12.5px] flex items-center gap-2">
                 {false && <>
                     <AuthLink onClick={handleRegisterClick}>
                         注册
@@ -57,9 +57,9 @@ const AuthLinks: React.FC = () => {
                     <>
                         {/* open={false} */}
                         <Popover arrow={false} zIndex={1000} placement={"bottomRight"} content={<UserInfoCard />}>
-                            <></><User children="喵喵咪猫" />
+                            <></><User children="魔法少女小圆123456789" />
                         </Popover>
-                        <i className="border-l h-[11px] inline-block my-[-1px] mx-2 rounded-e-sm"></i>
+                        <i className="border-l h-[11px] inline-block mx-2 rounded-e-sm"></i>
                         <AuthLink onClick={handleLogout}>
                             登出
                         </AuthLink>
@@ -79,7 +79,7 @@ const AuthLinks: React.FC = () => {
 
 const User: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return (
-        <span className="text-red-500 cursor-pointer truncate max-w-[110px] overflow-hidden hover:underline decoration-4 underline-offset-[22px] transition-all duration-300">
+        <span className="text-red-500 leading-[60px]  block cursor-pointer truncate max-w-[90px] overflow-hidden hover:underline decoration-4 underline-offset-[22px] transition-all duration-300">
             {children}
         </span>
     );
@@ -89,7 +89,7 @@ const User: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 const AuthLink: React.FC<{ children: React.ReactNode; onClick: () => void }> = ({ children, onClick }) => {
     return (
         <span
-            className="text-[#b5b5b5] hover:text-red-500 cursor-pointer transition-colors duration-200"
+            className="text-[#b5b5b5] leading-[60px]  hover:text-red-500 cursor-pointer transition-colors duration-200"
             onClick={onClick}
         >
             {children}
