@@ -9,6 +9,7 @@ export interface CartItem {
   price: number;
   originalPrice: number;
   count: number;
+  coupon: number;
 }
 
 interface CartContextValue {
@@ -54,6 +55,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
           price,
           originalPrice: product.originalPrice,
           count,
+          coupon: product.coupon,
         },
       ];
     });
@@ -74,6 +76,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         price,
         originalPrice: product.originalPrice,
         count,
+        coupon: product.coupon,
       },
     ]);
   };
