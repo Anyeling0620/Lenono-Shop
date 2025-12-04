@@ -21,7 +21,7 @@ import UserLayout from "./component/Layout/UserLayout"
  * 包含了页面路由和Toaster提示组件的配置
  */
 function App() {
-  
+
   return (
 
     <main>
@@ -29,25 +29,34 @@ function App() {
         toastOptions={{
           style: {}
         }} />
-      <Routes>
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<Index />} />
-          <Route path="index" element={<Index />} />
-          <Route path='login' element={<Login />} />
-          <Route path='register' element={<Register />} />
-          <Route path='new-product' element={<NewProduct />} />
-          <Route path="search" element={<Search />} />
-          <Route path="flash-sale" element={<FlashSalePage />} />
-          <Route path="product/:id" element={<ProductDetail />} />
-          <Route path="shopping-cart" element={<ShoppingCart />} />
-          <Route path="checkout" element={<Checkout />} />
-        </Route>
-        <Route element={<UserLayout />}>
-          <Route path="user-center" element={<UserCenter />} />
-        </Route>
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </main>
+      <CartProvider>
+        <Routes>
+
+          <Route element={<MainLayout />}>
+
+            <Route path="/" element={<Index />} />
+            <Route path="index" element={<Index />} />
+            <Route path='login' element={<Login />} />
+            <Route path='register' element={<Register />} />
+            <Route path='new-product' element={<NewProduct />} />
+            <Route path="search" element={<Search />} />
+            <Route path="flash-sale" element={<FlashSalePage />} />
+
+
+            <Route path="product/:id" element={<ProductDetail />} />
+            <Route path="shopping-cart" element={<ShoppingCart />} />
+            <Route path="checkout" element={<Checkout />} />
+
+
+          </Route>
+
+          <Route element={<UserLayout />}>
+            <Route path="user-center" element={<UserCenter />} />
+          </Route>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </CartProvider>
+    </main >
   )
 }
 
