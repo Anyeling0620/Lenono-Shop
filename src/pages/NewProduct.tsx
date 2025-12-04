@@ -1,21 +1,21 @@
 // 文件路径: src/pages/NewProduct.tsx
 
 import React, { useState, useMemo } from 'react';
-import { 
-    LaptopOutlined, 
-    DesktopOutlined, 
-    FundProjectionScreenOutlined, 
-    MobileOutlined, 
-    TabletOutlined, 
-    AppstoreOutlined, 
-    CustomerServiceOutlined 
+import {
+    LaptopOutlined,
+    DesktopOutlined,
+    FundProjectionScreenOutlined,
+    MobileOutlined,
+    TabletOutlined,
+    AppstoreOutlined,
+    CustomerServiceOutlined
 } from '@ant-design/icons';
 import Carousel from '../component/Carousel/Carousel';
-import ProductCard from '../component/Search/ProductCard'; 
+import ProductCard from '../component/Search/ProductCard';
 import type { CarouselItemType } from '../types/carouselItem';
 import type { MainTab, SubCategory, ProductItem } from '../types/newProductTab';
 // 引入 Product 类型以确保数据格式正确
-import type { Product } from '../types/searchProduct'; 
+import type { Product } from '../types/searchProduct';
 
 // --- 1. 静态数据配置 ---
 
@@ -237,7 +237,7 @@ const NewProduct: React.FC = () => {
 
             {/* Part 1: Tab切换模块 */}
             <div className="w-[1200px] mx-auto bg-white shadow-sm min-h-[600px] mb-10 rounded-sm">
-                
+
                 {/* 1. 标题区域 */}
                 <div className="text-center py-8">
                     <h2 className="text-[28px] font-normal text-[#333] flex items-center justify-center gap-3">
@@ -252,13 +252,13 @@ const NewProduct: React.FC = () => {
                 <div className="bg-[#f9f9f9] border-b border-[#eee]">
                     <ul className="flex w-full m-0 p-0 list-none">
                         {mainTabs.map((tab) => (
-                            <li 
+                            <li
                                 key={tab.id}
                                 onClick={() => handleMainTabChange(tab.id)}
                                 className={`
                                     flex-1 h-[60px] leading-[60px] text-center text-[16px] cursor-pointer transition-colors duration-200
-                                    ${activeMainTab === tab.id 
-                                        ? 'bg-white text-[#333] font-bold border-t-[3px] border-t-red-600' 
+                                    ${activeMainTab === tab.id
+                                        ? 'bg-white text-[#333] font-bold border-t-[3px] border-t-red-600'
                                         : 'text-[#666] hover:bg-[#f0f0f0]'
                                     }
                                 `}
@@ -277,7 +277,7 @@ const NewProduct: React.FC = () => {
                             {currentSubCategories.map((sub) => {
                                 const isActive = activeSubTab === sub.id;
                                 return (
-                                    <div 
+                                    <div
                                         key={sub.id}
                                         onClick={() => setActiveSubTab(sub.id)}
                                         className="flex flex-col items-center cursor-pointer group min-w-[80px]"
@@ -303,8 +303,8 @@ const NewProduct: React.FC = () => {
                             {currentProducts.map((product) => (
                                 <li key={product.id} className="bg-white p-4 transition-shadow hover:shadow-xl group cursor-pointer border border-transparent hover:border-[#eee]">
                                     <div className="w-full h-[220px] flex items-center justify-center overflow-hidden mb-4">
-                                        <img 
-                                            src={product.imageUrl} 
+                                        <img
+                                            src={product.imageUrl}
                                             alt={product.name}
                                             className="max-w-full max-h-full object-contain transition-transform duration-300 group-hover:scale-105"
                                         />

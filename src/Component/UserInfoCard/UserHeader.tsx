@@ -33,7 +33,7 @@ interface UserHeaderProps {
           {memberLevel}
         </div>
       </div>
-      <Link to={centerLink} className={`text-[#a9a9a9] font-light mt-[6%] ml-auto text-[13px] hover:text-red-500`}>
+      <Link to={centerLink} target="_user-center" className={`text-[#a9a9a9] font-light mt-[6%] ml-auto text-[13px] hover:text-red-500`}>
         个人中心
       </Link>
     </div>

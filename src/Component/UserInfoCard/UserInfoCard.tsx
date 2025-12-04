@@ -56,7 +56,7 @@ const UserInfoCard: FC = () => {
           avatar={userInfo.avatar}
           userName={userInfo.userName}
           memberLevel={userInfo.memberLevel}
-          centerLink=''
+          centerLink='/user-center'
         />
         <CouponSection count={userInfo.couponCount} detailLink='' />
         <div className='mt-2 px-1 py-3 grid grid-cols-4'>

@@ -1,5 +1,6 @@
 
 import React, {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -8,7 +9,7 @@ import React, {
 import useWebSocket from "react-use-websocket";
 import { MessageRouter } from "./messageRouter";
 import type { WSMessage, ForceLogoutPayload } from "./types";
-import { axiosService } from "../AxiosService";
+import { axiosService, EVENT_NAMES } from "../axiosService";
 import { WSContext } from "./webSocketContext";
 
 
@@ -34,15 +35,15 @@ export const WebSocketProvider = ({
   // 从环境变量获取WebSocket基础URL，确保连接地址的正确配置
   const WS_BASE_URL = import.meta.env.VITE_WS_URL; // from .env
 
-  // 获取访问令牌，用于WebSocket认证
-  const token = axiosService.getAccessToken() ?? "";  
-
-  // 构建WebSocket URL，包含token参数，确保安全连接
-  const wsUrl = useMemo(() => {
-    if (!token) return null;
+  const getSocketUrl = useCallback(() => {
+    const token = axiosService.getAccessToken()
+    if (!token) {
+      console.warn("[WebSocketProvider] No access token available. WebSocket connection paused.");
+      return null;
+    }
     const params = new URLSearchParams({ token });
-    return `${WS_BASE_URL}?${params.toString()}`;
-  }, [WS_BASE_URL, token]);
+    return `${WS_BASE_URL}?${params.toString()}`
+  }, [WS_BASE_URL])
 
   // 创建广播频道引用，用于多标签页通信
   const bcRef = useRef<BroadcastChannel | null>(null);
@@ -50,11 +51,13 @@ export const WebSocketProvider = ({
   const [isLeader, setIsLeader] = useState(false);
   // 记录最后一次心跳的时间，用于判断领导者是否存活
   const lastLeaderHeartbeat = useRef(0);
+  // 消息队列，用于存储未发送的消息
+  const messageQueue = useRef<WSMessage[]>([]);
 
   // 使用WebSocket钩子，配置连接参数和重连策略
   const { sendJsonMessage, lastJsonMessage, readyState, getWebSocket } =
     useWebSocket(
-      wsUrl,
+      getSocketUrl(),
       {
         shouldReconnect: () => true, // 始终尝试重连，确保连接可靠性 //  配置重连策略
         reconnectAttempts: Infinity, //  无限次重连尝试
@@ -146,25 +149,49 @@ export const WebSocketProvider = ({
     const handler = () => { //  定义一个事件处理函数 handler，用于处理 token 刷新事件
       try {
         getWebSocket()?.close(); //  尝试获取 WebSocket 实例并关闭连接
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (_) { /* empty */ }
-    }; 
-    window.addEventListener("token-refreshed", handler); //  为window对象添加token-refreshed事件监听器，当token刷新时触发handler函数
-    return () => window.removeEventListener("token-refreshed", handler); //  返回一个清理函数，用于移除事件监听器   当组件卸载或依赖项改变时，会执行这个函数来清理事件监听
+      } catch (e) {
+        console.error("[WebSocketProvider] Error closing WebSocket:", e);
+      }
+    };
+    window.addEventListener(EVENT_NAMES.TOKEN_REFRESHED, handler); //  为window对象添加token-refreshed事件监听器，当token刷新时触发handler函数
+    return () => window.removeEventListener(EVENT_NAMES.TOKEN_REFRESHED, handler); //  返回一个清理函数，用于移除事件监听器   当组件卸载或依赖项改变时，会执行这个函数来清理事件监听
   }, [getWebSocket]); //  依赖项数组，包含getWebSocket函数
 
 
   /** Send message */
   const send = (msg: WSMessage) => { /**   * 发送消息的函数   * @param msg - 要发送的消息内容，类型为any   */
-    if (isLeader) sendJsonMessage(msg); //  如果是领导者角色，直接发送JSON消息
-    else //  否则，通过广播通道发送请求
-      bcRef.current?.postMessage({
-        t: "send-request", //  消息类型标识为发送请求
-        payload: msg, //  实际要发送的消息内容
-      });
+    if (readyState === WebSocket.OPEN) {
+      if (isLeader) sendJsonMessage(msg); //  如果是领导者角色，直接发送JSON消息
+      else  //  否则，通过广播通道发送请求
+        bcRef.current?.postMessage({
+          t: "send-request", //  消息类型标识为发送请求
+          payload: msg, //  实际要发送的消息内容
+        });
+    } else {
+      console.log("[WebSocketProvider] Connection not ready. Queuing message:", msg);
+      messageQueue.current.push(msg);
+    }
   };
 
-  const value  = { /**   * 提供给子组件使用的上下文值对象   * 包含发送消息、路由、连接状态、领导者标识和断开连接等功能   */
+  useEffect(() => {
+    if (readyState === WebSocket.OPEN) {
+      if (messageQueue.current.length > 0) {
+        console.log(`[WebSocketProvider] Connection opened. Processing ${messageQueue.current.length} queued messages.`);
+        messageQueue.current.forEach((msg) => {
+          if (isLeader) sendJsonMessage(msg);
+          else bcRef.current?.postMessage({
+            t: "send-request",
+            payload: msg,
+          });
+        })
+        messageQueue.current = [];
+        console.log("[WebSocketProvider] Message queue cleared.");
+
+      }
+    }
+  }, [readyState, isLeader, sendJsonMessage]);
+
+  const value = { /**   * 提供给子组件使用的上下文值对象   * 包含发送消息、路由、连接状态、领导者标识和断开连接等功能   */
     send, //  发送消息的方法
     router, //  路由相关功能
     readyState, //  WebSocket连接状态
@@ -174,4 +201,8 @@ export const WebSocketProvider = ({
 
   return <WSContext.Provider value={value}>{children}</WSContext.Provider>; //  使用WSContext.Provider将value传递给子组件
 };
+
+
+
+
 

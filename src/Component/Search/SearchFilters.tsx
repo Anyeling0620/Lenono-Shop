@@ -120,7 +120,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
     };
 
     return (
-        <div className='bg-[#ffffff] w-full h-[40px] py-2 border-t-[1px] border-[#e6e6e6]'>
+        <div className='bg-[#ffffff] w-full sticky shadow-sm top-[60px] z-50 h-[40px] py-2 border-t-[1px] border-[#e6e6e6]'>
             <div className='w-[1200px] mx-auto'>
                 <ul className='flex mt-1 select-none'>
                     {/* 排序选项 */}

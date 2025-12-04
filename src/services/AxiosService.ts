@@ -8,7 +8,9 @@ import type {
 } from "axios";
 import axios from "axios";
 import Cookie from 'js-cookie';
+import toast from "react-hot-toast";
 import { v4 as uuidv4 } from 'uuid';
+import { API_PATHS } from "./apiPaths";
 
 declare module 'axios' {
     interface AxiosRequestConfig {
@@ -18,19 +20,10 @@ declare module 'axios' {
 }
 
 export const EVENT_NAMES = {
-    MULTI_LOGIN_WARNING: 'multi-login-warning',
-    MULTI_LOGIN_CONFLICT: 'multi-login-conflict'
+    MULTI_LOGIN_WARNING: 'multi-login-warning',   // 多设备登陆警告
+    TOKEN_REFRESHED: 'token-refreshed'            // 令牌刷新事件名称
 } as const;
 
-export const API_PATHS = {
-    REFRESH_TOKEN: '/auth/refresh',
-    LOGIN_DEVICES: '/auth/devices',
-    LOGOUT_DEVICE: '/auth/logout-device',
-    LOGOUT_OTHER_DEVICES: '/auth/logout-other-devices',
-    LOGIN_PATH: '/auth/login',
-    REGISTER_PATH: '/auth/register',
-    LOGOUT_PATH: '/auth/logout' // optional endpoint to clear refresh cookie server-side
-} as const;
 
 export type DeviceType = 'web' | 'mobile_web';
 
@@ -43,17 +36,14 @@ export interface DeviceInfo {
 }
 
 export type MultiLoginError =
-    | 'TOKEN_INVALID_BY_MULTI_LOGIN'
     | 'REFRESH_TOKEN_EXPIRED'
     | 'DEVICE_NOT_AUTHORIZED';
 
-export interface ErrorResponse {
-    code: string;
+
+export interface ApiResponse<T> {
+    code: number;
     message: string;
-    data?: {
-        redirect?: string;
-        devices?: DeviceInfo[];
-    };
+    data: T;
 }
 
 interface AuthResponse {
@@ -136,7 +126,7 @@ class AxiosService {
                 if (config.deviceCheck) {  // 如果需要检查设备，则加入设备信息
                     config.headers['X-Device-Id'] = this.deviceId;
                     config.headers['X-Device-Type'] = this.deviceType;
-                    const uaPrefix = navigator.userAgent.slice(0,40);
+                    const uaPrefix = navigator.userAgent.slice(0, 40);
                     config.headers['X-Device-Name'] = `${uaPrefix} (${this.deviceType})`;
                 }
 
@@ -154,17 +144,9 @@ class AxiosService {
             (response: AxiosResponse) => response,
             async (error: AxiosError) => {
                 const originalRequest = (error.config || {}) as AxiosRequestConfig;
-                const errorResponse = (error.response?.data as ErrorResponse | undefined);
-
                 // 处理401且未重试
                 if (error.response?.status === 401 && !originalRequest._retry) {
-                    // 多端登录冲突
-                    if (errorResponse?.code === 'TOKEN_INVALID_BY_MULTI_LOGIN') {
-                        this.onMultiLoginConflict(errorResponse);
-                        const conflictError = new Error('账号已在其他设备登录');
-                        (conflictError as any).original = error;
-                        return Promise.reject(conflictError);
-                    }
+            
 
                     if (this.isRefreshing) {
                         return new Promise((resolve, reject) => {
@@ -190,14 +172,12 @@ class AxiosService {
                         return this.instance(originalRequest);
                     } catch (refreshError) {
                         // refresh 失败：根据后端返回判断原因
-                        const axiosError = refreshError as AxiosError<ErrorResponse>;
-                        const refreshErrData = axiosError?.response?.data as ErrorResponse | undefined;
+                        //const axiosError = refreshError as AxiosError<ApiResponse<null>>;
+                        //const refreshErrData = axiosError?.response?.data as ApiResponse<null> | undefined;
 
-                        if (refreshErrData?.code === 'REFRESH_TOKEN_EXPIRED') {
-                            this.onMultiLoginConflict(refreshErrData);
-                        } else {
+                        
                             this.onTokenRefreshFailed();
-                        }
+                        
 
                         const wrapError = refreshError instanceof Error
                             ? refreshError
@@ -218,13 +198,11 @@ class AxiosService {
      */
     private async refreshToken(): Promise<string> {
         // 向后端发起刷新请求 - 后端需从 HttpOnly cookie 中读取 refresh_token
-        const response = await this.instance.post<AuthResponse>(
+        const response = await this.instance.post(
             API_PATHS.REFRESH_TOKEN,
-            { }, 
-            { deviceCheck: false }
         );
 
-        const { access_token, multi_login_warning } = response.data;
+        const { access_token, multi_login_warning } = response.data.data;
 
         if (!access_token) {
             throw new Error('刷新接口未返回 access_token');
@@ -233,52 +211,23 @@ class AxiosService {
         // 将 access_token 仅保存到内存
         this.accessToken = access_token;
 
-        //window.dispatchEvent(new Event('token-refreshed'));
 
         if (multi_login_warning) {
-            window.dispatchEvent(new CustomEvent(EVENT_NAMES.MULTI_LOGIN_WARNING, {
-                detail: { deviceId: this.deviceId }
-            }));
+            toast('账号已在其他设备登录，请前往用户中心查看');
         }
 
         return access_token;
     }
 
-    private onMultiLoginConflict(errorData: ErrorResponse): void {
-        // 拒绝队列中的请求
-        this.failedQueue.forEach((promise) => {
-            const conflictError = new Error('账号已在其他设备登录');
-            (conflictError as any).data = errorData;
-            promise.reject(conflictError);
-        });
-        this.failedQueue = [];
-        this.isRefreshing = false;
 
-        // 清除内存 access token
-        this.accessToken = null;
-
-        // 清除 device_id cookie/localStorage（可选）
-        // this.removeSecureCookie('access_token'); // 虽然我们不写 access_token cookie，但保留调用以防遗留
-        // this.removeSecureCookie('refresh_token'); // 后端更推荐通过 logout endpoint 清 cookie
-        this.removeSecureCookie('device_id');
-
-        // 触发多设备登录冲突事件
-        window.dispatchEvent(new CustomEvent(EVENT_NAMES.MULTI_LOGIN_CONFLICT, {
-            detail: {  
-                message: errorData.message,
-                devices: errorData.data?.devices || [],
-                redirect: errorData.data?.redirect || '/login'
-            }
-        }));
-
-        // 重定向到登录页
-        window.location.href = errorData.data?.redirect || '/login';
-    }
 
     private onTokenRefreshed(token: string): void {
         this.failedQueue.forEach((promise) => promise.resolve(token));
         this.failedQueue = [];
         this.isRefreshing = false;
+
+        console.log("[AxiosService] Token refreshed, notifying listeners");
+        window.dispatchEvent(new CustomEvent(EVENT_NAMES.TOKEN_REFRESHED)); // 通知其他组件 token 已刷新
     }
 
     /**
@@ -304,7 +253,7 @@ class AxiosService {
         }
 
         // 重定向到登录
-        window.location.href = '/login';
+        //window.location.href = '/login';
     }
 
     // ========== Cookie Helpers ==========
@@ -338,46 +287,53 @@ class AxiosService {
 
     public async getLoginDevices(): Promise<DeviceInfo[]> {
         try {
-            const response = await this.instance.get<{ devices: DeviceInfo[] }>(API_PATHS.LOGIN_DEVICES,{});
-            return response.data.devices;
+            const response = await this.instance.get<ApiResponse<{ devices: DeviceInfo[] }>>(API_PATHS.LOGIN_DEVICES, {});
+            console.log(response.data);
+            const { devices } = response.data.data;
+            return devices;
         } catch (error) {
+            const errMsg = (error as AxiosError<ApiResponse<null>>)?.response?.data?.message || '获取登录设备列表失败，请检查网络状态';
             console.error('获取登录设备列表失败:', error);
-            throw error;
+            throw new Error(errMsg);
         }
     }
 
-    public async logoutDevice(deviceId: string): Promise<boolean> {
+
+    public async logoutDevice(deviceId: string): Promise<DeviceInfo> {
         try {
-            await this.instance.post(API_PATHS.LOGOUT_DEVICE, {
+            const response = await this.instance.post<ApiResponse<{ device: DeviceInfo }>>(API_PATHS.LOGOUT_DEVICE, {
                 device_id: deviceId,  // 目标设备ID
             });
             if (deviceId === this.deviceId) {
                 // 当前设备被登出：清理 front-end 状态
                 this.onTokenRefreshFailed();
             }
-            return true;
+            const { device } = response.data.data;
+            return device;
         } catch (error) {
-            console.error('登出指定设备失败:', error);
-            throw error;
+            const errMsg = (error as AxiosError<ApiResponse<null>>)?.response?.data?.message || '登出指定设备失败，请检查网络状态';
+            console.error('登出指定设备失败:', errMsg,error);
+            throw new Error(errMsg);
         }
     }
 
     public async logoutOtherDevices(): Promise<DeviceInfo[]> {
         try {
-            const response = await this.instance.post<{ devices: DeviceInfo[] }>(
+            const response = await this.instance.post<ApiResponse<{ devices: DeviceInfo[] }>>(
                 API_PATHS.LOGOUT_OTHER_DEVICES,
             );
-            // 请求后端刷新当前设备 token（后端应基于 refresh cookie 重新签发）
             try {
                 await this.refreshToken();
             } catch (e) {
                 // refresh 失败时按失败处理
                 console.warn('刷新 token 失败（登出其他设备后）:', e);
             }
-            return response.data.devices;
+            const { devices } = response.data.data;
+            return devices;
         } catch (error) {
-            console.error('登出其他设备失败:', error);
-            throw error;
+            const errMsg = (error as AxiosError<ApiResponse<null>>)?.response?.data?.message || '登出其他设备失败，请检查网络状态';
+            console.error('登出其他设备失败:',errMsg, error);
+            throw new Error(errMsg);
         }
     }
 
@@ -390,46 +346,40 @@ class AxiosService {
         mode: string;
         password?: string;
         verificationCode?: string;
-    }): Promise<boolean>{
+    }): Promise<boolean> {
         if (!loginInfo.email) throw new Error('邮箱不能为空');
         if (loginInfo.mode === 'quick' && !loginInfo.verificationCode) throw new Error('验证码不能为空');
         if (loginInfo.mode === 'password' && !loginInfo.password) throw new Error('密码不能为空');
 
         try {
-            const response = await this.instance.post<AuthResponse>(
+            const response = await this.instance.post<ApiResponse<AuthResponse>>(
                 API_PATHS.LOGIN_PATH,
                 {
                     email: loginInfo.email,
                     mode: loginInfo.mode,
                     password: loginInfo.password,
                     verification_code: loginInfo.verificationCode,
-                },{
-                    deviceCheck:true,
-                }
-                // withCredentials already enabled on instance
+                }, {
+                deviceCheck: true,
+            }
             );
-
-            const { access_token } = response.data;
-
+            console.log(response.data);
+            const { access_token } = response.data.data;
             if (!access_token) {
                 throw new Error('登录成功，但未收到 access_token');
             }
-
-            // 保存 access_token 到内存（不持久化）
             this.accessToken = access_token;
-
-            // 后端需要通过 Set-Cookie 设置 refresh_token 为 HttpOnly。前端不设置 refresh_token。
-
+            window.dispatchEvent(new CustomEvent(EVENT_NAMES.TOKEN_REFRESHED))
             return true;
         } catch (error) {
-            const errMsg = (error as AxiosError<ErrorResponse>)?.response?.data?.message || '登录失败，请检查账号信息或网络状态';
+            const errMsg = (error as AxiosError<ApiResponse<null>>)?.response?.data?.message || '登录失败，请检查账号信息或网络状态';
             console.error('登录失败:', errMsg, error);
             throw new Error(errMsg);
         }
     }
 
     /**
-     * 注册：后端同样应在 Set-Cookie 中设置 HttpOnly refresh_token（如果需要）
+     * 注册：后端同样应在 Set-Cookie 中设置 HttpOnly refresh_token
      */
     public async register(registerInfo: {
         email: string;
@@ -444,29 +394,31 @@ class AxiosService {
         if (registerInfo.registerPassword !== registerInfo.registerPasswordConfirm) throw new Error('两次输入的密码不一致，请重新输入');
 
         try {
-            const response = await this.instance.post<AuthResponse>(
+            const response = await this.instance.post<ApiResponse<AuthResponse>>(
                 API_PATHS.REGISTER_PATH,
                 {
                     email: registerInfo.email,
                     verify_code: registerInfo.verificationCode,
                     password: registerInfo.registerPassword,
                     password_confirm: registerInfo.registerPasswordConfirm,
-                },{
-                    deviceCheck:true,
+                },
+                {
+                    deviceCheck: true,
                 }
             );
-
-            const { access_token } = response.data;
+            console.log(response.data);
+            const { access_token } = response.data.data;
 
             if (!access_token) {
                 throw new Error('注册成功，但未返回 access_token');
             }
 
             this.accessToken = access_token;
-           
+            window.dispatchEvent(new CustomEvent(EVENT_NAMES.TOKEN_REFRESHED))
+
             return true
         } catch (error) {
-            const errMsg = (error as AxiosError<ErrorResponse>)?.response?.data?.message || '注册失败，请检查信息或稍后重试';
+            const errMsg = (error as AxiosError<ApiResponse<null>>)?.response?.data?.message || '注册失败，请检查信息或稍后重试';
             console.error('注册失败:', errMsg, error);
             throw new Error(errMsg);
         }
@@ -497,7 +449,7 @@ class AxiosService {
      */
     public async forceLogout(): Promise<void> {
         try {
-            await this.instance.post(API_PATHS.LOGOUT_PATH,{}, { deviceCheck: false });
+            await this.instance.post(API_PATHS.LOGOUT_PATH, {}, { deviceCheck: false });
         } catch (e) {
             // 忽略错误，仍继续前端清理
             console.warn('调用登出接口失败:', e);
@@ -505,8 +457,7 @@ class AxiosService {
             this.accessToken = null;
             // 清前端 device id cookie/localStorage
             this.removeSecureCookie('device_id');
-            // 鼓励后端通过响应头或 Set-Cookie 清除 refresh_token HttpOnly cookie
-            window.location.href = '/login';
+            //window.location.href = '/login';
         }
     }
 }

@@ -13,7 +13,7 @@ import LoginModeTabs from "./LoginModeTabs";
 import SubmitButton from "./SubmitButton";
 import VerificationCodeField from "./VerificationCodeField";
 import useVerificationCode from "../../hooks/useVerificationCode";
-import { axiosInstance, axiosService } from "../../services/AxiosService";
+import { axiosInstance, axiosService } from "../../services/axiosService";
 import toast from "react-hot-toast";
 import globalErrorHandler from "../../utils/globalAxiosErrorHandler";
 
