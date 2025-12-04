@@ -21,11 +21,11 @@ interface NavbarProps {
  */
 const Navbar: React.FC<NavbarProps> = ({ items }) => {
   // 获取当前路由路径
-  const location = useLocation();   
+  const location = useLocation();
   // 状态管理：当前激活的导航项路径
-  const [active, setActive] = useState(location.pathname); 
+  const [active, setActive] = useState(location.pathname);
   // 使用React 18的Transition API，优化状态更新时的渲染性能
-  const [, startTransition] = useTransition(); 
+  const [, startTransition] = useTransition();
 
   /**
    * 处理导航项点击事件
@@ -48,10 +48,11 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
             leading-[56px] transition-all duration-200 cursor-pointer
             border-b-4 border-transparent hover:border-red-500
           "
-          onClick={() =>{ handleClick(item.path)}}
+          onClick={() => { handleClick(item.path) }}
         >
           <Link
             to={item.path}
+            target="_parent"
             className={`
               text-[16px] font-normal no-underline transition-colors duration-200
               ${active === item.path ? "text-red-500" : "text-[#252525]"}

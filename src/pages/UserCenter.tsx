@@ -1,19 +1,19 @@
-import React, { useState, type FC } from 'react';
-import { AppstoreOutlined, MailOutlined, SettingOutlined } from '@ant-design/icons';
+import  { useState, type FC } from 'react';
+import { UserOutlined ,MessageOutlined, MoneyCollectOutlined, MailOutlined,ShoppingOutlined, TruckOutlined ,} from '@ant-design/icons';
 import { Menu } from 'antd';
 import type { MenuProps } from 'antd';
-import { useLocation } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import UserCenterPages from '../component/UserCenterPages/UserCenterPages';
 
 /* ------------------------- 菜单数据 ------------------------- */
 
-type MenuItem = Required<MenuProps>['items'][number];
+export type MenuItem = Required<MenuProps>['items'][number];
 
 const items: MenuItem[] = [
     {
         key: 'sub1',
         label: '账号中心',
-        icon: <MailOutlined />,
+        icon: <UserOutlined />,
         children: [
             { key: 'k1', label: '账号信息' },
             {
@@ -38,7 +38,7 @@ const items: MenuItem[] = [
     {
         key: 'sub2',
         label: '我的商城',
-        icon: <AppstoreOutlined />,
+        icon: <ShoppingOutlined />,
         children: [
             { key: '5', label: '我的订单' },
             { key: '6', label: '我的购物车' },
@@ -50,7 +50,7 @@ const items: MenuItem[] = [
     {
         key: 'sub3',
         label: '售后服务',
-        icon: <SettingOutlined />,
+        icon: <TruckOutlined />,
         children: [
             { key: '10', label: '我的售后' },
             { key: '11', label: '我的投诉' },
@@ -60,7 +60,7 @@ const items: MenuItem[] = [
     {
         key: 'sub4',
         label: '我的资产',
-        icon: <SettingOutlined />,
+        icon: <MoneyCollectOutlined />,
         children: [
             { key: '12', label: '我的优惠券' },
             { key: '13', label: '我的代金券' },
@@ -72,8 +72,8 @@ const items: MenuItem[] = [
         label: '消息中心',
         type: 'group',
         children: [
-            { key: '14', label: '系统通知' },
-            { key: '15', label: '我的咨询' },
+            { key: '14', icon:<MailOutlined />, label: '系统通知' },
+            { key: '15', icon:<MessageOutlined />,label: '我的咨询' },
         ],
     },
 ];
@@ -124,11 +124,14 @@ const getLevelKeys = (items: LevelKeysProps[]) => {
 const levelKeys = getLevelKeys(items as LevelKeysProps[]);
 
 
-/* =========================== UserCenter 页面 ============================ */
 
+
+/* =========================== UserCenter 页面 ============================ */
 const UserCenter: FC = () => {
-    const location = useLocation();
-    const fromStateKey = location.state?.selectedKey;
+    // const location = useLocation();
+    // const fromStateKey = location.state?.selectedKey;
+    const [searchParams] = useSearchParams();
+    const fromStateKey = searchParams.get('selectedKey');
 
     /* ----------- 初始化：根据 fromStateKey 或默认 k1 ----------- */
     const [selectedKeys, setSelectedKeys] = useState<string[]>(() => {
@@ -169,8 +172,6 @@ const UserCenter: FC = () => {
             setOpenKeys(newOpenKeys);
         }
     };
-
-    /* ----------------------- 页面布局 ------------------------ */
 
     return (
         <div className="bg-[#f5f5f5] w-full">

@@ -7,16 +7,15 @@ interface Props {
   icon: ReactNode;
   text: string;
   to: string;
-  state?: {
-    [index:string]:string | number | boolean  // 索引签名
-  };
+  selectedKey?:string;
   hasBadge?: boolean;
   badgeCount?: string | number;
+  target?: string;
 }
 
-const FunctionIconButton: FC<Props> = ({ icon, text, to, state = {}, hasBadge = false, badgeCount = '' }) => {
+const FunctionIconButton: FC<Props> = ({ icon, text, to, selectedKey = '', hasBadge = false, badgeCount = '' }) => {
   return (
-    <Link to={to} state={state} className='mx-4 flex flex-col items-center group'>
+    <Link to={`${to}?selectedKey=${selectedKey}`} target="_user-center"  className='mx-4 flex flex-col items-center group'>
       {hasBadge ? (
         <ConfigProvider theme={{ token: { colorErrorHover: 'red' } }}>
           <Badge count={badgeCount}>

@@ -50,7 +50,6 @@ const pages: Record<string, React.ReactNode> = {
 };
 
 
-/* =================== 主组件 =================== */
 
 interface Props {
     selectedKey: string;
@@ -63,5 +62,6 @@ const UserCenterPages: React.FC<Props> = ({ selectedKey }) => {
         </div>
     );
 };
+
 
 export default UserCenterPages;
