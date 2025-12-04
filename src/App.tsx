@@ -8,6 +8,10 @@ import Index from "./pages/Index"
 import { Toaster } from "react-hot-toast"
 import Search from "./pages/Search"
 import FlashSalePage from "./pages/FlashSalePage"
+import ProductDetail from "./pages/ProductDetail"
+import ShoppingCart from "./pages/ShoppingCart"
+import Checkout from "./pages/Checkout"
+import { CartProvider } from "./context/CartContext"
 import UserCenter from "./pages/UserCenter"
 import UserLayout from "./component/Layout/UserLayout"
 
@@ -18,6 +22,7 @@ import UserLayout from "./component/Layout/UserLayout"
  */
 function App() {
   return (
+
     <main>
       <Toaster position="top-center" reverseOrder={false}
         toastOptions={{
@@ -32,6 +37,9 @@ function App() {
           <Route path='new-product' element={<NewProduct />} />
           <Route path="search" element={<Search />} />
           <Route path="flash-sale" element={<FlashSalePage />} />
+          <Route path="product/:id" element={<ProductDetail />} />
+          <Route path="shopping-cart" element={<ShoppingCart />} />
+          <Route path="checkout" element={<Checkout />} />
         </Route>
         <Route element={<UserLayout />}>
           <Route path="user-center" element={<UserCenter />} />

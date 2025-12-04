@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import {
-  findProductById,
-  type DetailedProduct,
-} from "../assets/data/mockProducts";
+import { useParams, useNavigate } from "react-router-dom";
+import { findProductById } from "../assets/data/mockProducts";
+import type { MainProduct } from "../types/mainProduct";
+import { useCart } from "../context/CartContext";
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [product, setProduct] = useState<DetailedProduct | null>(null);
+  const [product, setProduct] = useState<MainProduct | null>(null);
+  const { addToCart, replaceWithSingle } = useCart();
+  const navigate = useNavigate();
 
   // 交互状态
   const [activeImage, setActiveImage] = useState<string>("");
@@ -21,11 +22,11 @@ const ProductDetail: React.FC = () => {
     if (id) {
       const found = findProductById(id);
       if (found) {
-        setProduct(found as DetailedProduct);
+        setProduct(found);
         setActiveImage(found.image); // 默认显示主图
         // 默认选中第一个规格
         const defaultSpecs: any = {};
-        found.specOptions?.forEach((spec) => {
+        found.specOptions?.forEach((spec: { label: string; values: string[] }) => {
           defaultSpecs[spec.label] = spec.values[0];
         });
         setSelectedSpecs(defaultSpecs);
@@ -42,12 +43,33 @@ const ProductDetail: React.FC = () => {
 
   const finalPrice = product.originalPrice - product.coupon;
 
+  const currentSpecText =
+    Object.keys(selectedSpecs).length > 0
+      ? Object.entries(selectedSpecs)
+          .map(([k, v]) => `${k}:${v}`)
+          .join(" / ")
+      : "默认配置";
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    addToCart(product, quantity, currentSpecText);
+    // 模拟联想商城：加入购物车后跳转购物车页
+    navigate("/shopping-cart");
+  };
+
+  const handleBuyNow = () => {
+    if (!product) return;
+    // 立即购买：只保留当前这一件商品，数量和规格以当前选择为准
+    replaceWithSingle(product, quantity, currentSpecText);
+    navigate("/shopping-cart");
+  };
+
   return (
     <div className="bg-white pb-20 font-sans text-[#333]">
       {/* 2. 主体内容区 */}
-      <div className="w-[1200px] mx-auto mt-8 flex">
+      <div className="w-[1200px] mx-auto mt-4 flex bg-white rounded-sm shadow-sm">
         {/* 左侧：图片画廊 */}
-        <div className="w-[450px] mr-[60px]">
+        <div className="w-[450px] mr-[60px] pt-6 pb-8 pl-6">
           {/* 主图展示 */}
           <div className="relative w-[450px] h-[450px] border border-gray-100 flex items-center justify-center mb-4">
             <img
@@ -71,7 +93,7 @@ const ProductDetail: React.FC = () => {
                 className="w-full h-full object-contain"
               />
             </div>
-            {product.gallery?.map((img, idx) => (
+            {product.gallery?.map((img: string, idx: number) => (
               <div
                 key={idx}
                 className={`w-[80px] h-[80px] border cursor-pointer p-1 ${
@@ -98,37 +120,108 @@ const ProductDetail: React.FC = () => {
         </div>
 
         {/* 右侧：商品信息 */}
-        <div className="flex-1">
+        <div className="flex-1 pr-8 pt-6 pb-8">
           <h1 className="text-[20px] font-bold text-[#333] leading-7 mb-2">
             {product.name}
           </h1>
-          <p className="text-sm text-[#e1140a] mb-4">
+          <p className="text-sm text-[#e1140a] mb-3">
             {product.subTitle || "爆款直降，限时抢购！"}
           </p>
 
+          {/* 商品标签 / 特性 */}
+          <div className="flex items-center flex-wrap gap-2 mb-4 text-xs">
+            {product.features && product.features.length > 0 && (
+              <>
+                {product.features.slice(0, 4).map((feat: string, idx: number) => (
+                  <span
+                    key={idx}
+                    className="px-2 py-0.5 bg-[#fff2ed] text-[#e1140a] rounded-sm border border-[#ffd4c2]"
+                  >
+                    {feat}
+                  </span>
+                ))}
+              </>
+            )}
+            {product.customerize && (
+              <span className="px-2 py-0.5 bg-[#f5f9ff] text-[#3677ff] rounded-sm border border-[#d0e0ff]">
+                支持定制
+              </span>
+            )}
+            {product.tradeIn && (
+              <span className="px-2 py-0.5 bg-[#f5fff4] text-[#18a600] rounded-sm border border-[#c8f0c2]">
+                以旧换新
+              </span>
+            )}
+          </div>
+
           {/* 价格面板 */}
-          <div className="bg-[#f3f5f7] p-4 rounded-sm mb-6 relative">
+          <div className="bg-[#f3f5f7] p-4 rounded-sm mb-4 relative">
             <div className="flex items-baseline">
-              <span className="text-xs text-gray-500 mr-2">商城价</span>
-              <span className="text-[#e1140a] text-[24px] font-bold mr-1">
+              <span className="text-xs text-gray-500 mr-2">联想商城价</span>
+              <span className="text-[#e1140a] text-[28px] font-bold mr-1">
                 ¥{finalPrice}
               </span>
               {product.coupon > 0 && (
-                <span className="text-xs bg-[#e1140a] text-white px-1 py-0.5 rounded-sm">
-                  优惠 {product.coupon} 元
+                <span className="text-xs bg-[#e1140a] text-white px-1.5 py-0.5 rounded-sm mr-2">
+                  立减 {product.coupon} 元
                 </span>
               )}
             </div>
-            <div className="flex items-center mt-2 text-xs">
-              <span className="text-gray-500 mr-2">原&emsp;价</span>
-              <span className="line-through text-gray-400">
+            <div className="flex items-center mt-2 text-xs text-gray-500">
+              <span className="mr-2">参考价</span>
+              <span className="line-through text-gray-400 mr-4">
                 ¥{product.originalPrice}
+              </span>
+              <span className="mr-2">分期</span>
+              <span className="text-[#e1140a]">
+                低至 ¥{Math.round(finalPrice / 12)} × 12期（含手续费）
+              </span>
+            </div>
+            <div className="flex items-center mt-3 text-xs text-gray-600">
+              <span className="mr-4">
+                累计评价
+                <span className="text-[#e1140a] ml-1">9999+</span>
+              </span>
+              <span className="mr-4">
+                好评率
+                <span className="text-[#e1140a] ml-1">99%</span>
+              </span>
+              <span>
+                累计销量
+                <span className="text-[#e1140a] ml-1">5万+</span>
               </span>
             </div>
           </div>
 
+          {/* 优惠信息 / 活动栏 */}
+          <div className="mb-4 text-xs">
+            <div className="flex items-start mb-2">
+              <span className="w-[60px] text-gray-500">优惠</span>
+              <div className="flex flex-wrap gap-2 flex-1">
+                <span className="px-2 py-0.5 bg-[#fff2ed] text-[#e1140a] rounded-sm border border-[#ffd4c2]">
+                  满减优惠
+                </span>
+                <span className="px-2 py-0.5 bg-[#fff7e6] text-[#ff8800] rounded-sm border border-[#ffe1b8]">
+                  下单立减 {product.coupon || 100} 元
+                </span>
+                <span className="px-2 py-0.5 bg-[#edf7ff] text-[#2b6bff] rounded-sm border border-[#c3ddff]">
+                  新人券可叠加使用
+                </span>
+              </div>
+            </div>
+            <div className="flex items-start">
+              <span className="w-[60px] text-gray-500">服务</span>
+              <div className="flex flex-wrap gap-3 flex-1 text-gray-700">
+                <span>全国联保</span>
+                <span>7天无理由退货</span>
+                <span>30天价保</span>
+                <span>保修升级 / 延保服务</span>
+              </div>
+            </div>
+          </div>
+
           {/* 配送信息 (静态模拟) */}
-          <div className="mb-6 text-sm flex items-center">
+          <div className="mb-4 text-sm flex items-center">
             <span className="text-gray-500 w-[60px]">配送至</span>
             <div className="border border-gray-300 px-2 py-1 cursor-pointer mr-2">
               北京 北京市 海淀区
@@ -140,13 +233,13 @@ const ProductDetail: React.FC = () => {
 
           {/* 规格选择区 */}
           <div className="space-y-4 mb-8">
-            {product.specOptions?.map((spec) => (
+            {product.specOptions?.map((spec: { label: string; values: string[] }) => (
               <div key={spec.label} className="flex">
                 <span className="text-sm text-gray-500 w-[60px] leading-[34px]">
                   {spec.label}
                 </span>
                 <div className="flex flex-wrap gap-3 flex-1">
-                  {spec.values.map((val) => (
+                  {spec.values.map((val: string) => (
                     <button
                       key={val}
                       onClick={() =>
@@ -203,17 +296,26 @@ const ProductDetail: React.FC = () => {
 
           {/* 按钮组 */}
           <div className="flex gap-4">
-            <button className="w-[160px] h-[50px] bg-[#e1140a] text-white text-[18px] font-bold rounded-sm hover:bg-[#c91008] transition-colors">
+            <button
+              className="w-[160px] h-[50px] bg-[#e1140a] text-white text-[18px] font-bold rounded-sm hover:bg-[#c91008] transition-colors"
+              onClick={handleBuyNow}
+            >
               立即购买
             </button>
-            <button className="w-[160px] h-[50px] bg-[#ffeded] border border-[#e1140a] text-[#e1140a] text-[18px] font-bold rounded-sm hover:bg-[#ffdcdc] transition-colors">
+            <button
+              className="w-[160px] h-[50px] bg-[#ffeded] border border-[#e1140a] text-[#e1140a] text-[18px] font-bold rounded-sm hover:bg-[#ffdcdc] transition-colors"
+              onClick={handleAddToCart}
+            >
               加入购物车
+            </button>
+            <button className="px-4 h-[50px] border border-gray-300 text-sm text-gray-700 rounded-sm hover:border-[#e1140a] hover:text-[#e1140a] transition-colors">
+              收藏
             </button>
           </div>
 
           {/* 服务保障 */}
           <div className="mt-6 flex text-sm text-gray-500 gap-6">
-            {product.serviceTags?.map((tag, idx) => (
+            {product.serviceTags?.map((tag: string, idx: number) => (
               <span key={idx} className="flex items-center">
                 <span className="w-4 h-4 rounded-full border border-[#e1140a] text-[#e1140a] flex items-center justify-center text-xs mr-1">
                   √
@@ -226,7 +328,7 @@ const ProductDetail: React.FC = () => {
       </div>
 
       {/* 3. 底部详情Tab页 */}
-      <div className="mt-16">
+      <div className="mt-8">
         {/* Tab Header (修改点：背景铺满全屏) */}
         {/* 1. 外层 div: 负责吸顶 (sticky)、全屏宽度 (w-full)、背景色 (bg-[#f3f3f3]) */}
         <div className="sticky top-[60px] z-40 w-full bg-[#f3f3f3] shadow-">
@@ -264,8 +366,8 @@ const ProductDetail: React.FC = () => {
           {activeTab === "detail" && (
             <div className="text-center">
               {/* 模拟长图文 */}
-              {product.detailImages?.length > 0 ? (
-                product.detailImages.map((img, idx) => (
+              {product.detailImages && product.detailImages.length > 0 ? (
+                product.detailImages.map((img: string, idx: number) => (
                   <img
                     key={idx}
                     src={img}
