@@ -361,7 +361,6 @@ const Search: React.FC = () => {
 
   return (
     <div className='bg-[#efefef] '>
-      <div className='h-[2px]'></div>
 
       {/* 搜索筛选栏 */}
       <SearchFilters

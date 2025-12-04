@@ -18,7 +18,7 @@ interface Props {
 
 const FlashSessionBar: React.FC<Props> = ({ sessions, activeSession, onTabChange }) => {
   return (
-    <div className="w-[1200px] mx-auto sticky top-0 z-[50] shadow-md bg-white flex justify-start -mt-[45px]">
+    <div className="w-[1200px] mx-auto sticky top-[60px]  z-[50] shadow-md bg-white flex justify-start -mt-[40px]">
       {sessions.map((session, index) => {
         // 判断当前 Item 是否被选中
         const isActive = session.id === activeSession.id;

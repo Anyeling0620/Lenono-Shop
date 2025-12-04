@@ -33,7 +33,7 @@ const UserNavItem: React.FC<UserNavItemProps> = ({
       <Link 
         to={href} 
         className='w-[70px] h-[65px] block rounded-t-lg bg-white text-[#413f3f] hover:text-[#fff] transition-all duration-200 hover:bg-red-500 text-center'
-        target="_blank"
+        target="_blank"  // 此参数用于指定在新窗口中打开链接
         rel="noopener noreferrer"
         onMouseLeave={()=>setIsHovered(false)}
         onMouseEnter={()=>setIsHovered(true)}

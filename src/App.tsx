@@ -8,6 +8,8 @@ import Index from "./pages/Index"
 import { Toaster } from "react-hot-toast"
 import Search from "./pages/Search"
 import FlashSalePage from "./pages/FlashSalePage"
+import UserCenter from "./pages/UserCenter"
+import UserLayout from "./component/Layout/UserLayout"
 
 
 /**
@@ -16,11 +18,11 @@ import FlashSalePage from "./pages/FlashSalePage"
  */
 function App() {
   return (
-    <>
-    <Toaster position="top-center" reverseOrder={false} 
-    toastOptions={{
-      style:{}
-    }}/>  
+    <main>
+      <Toaster position="top-center" reverseOrder={false}
+        toastOptions={{
+          style: {}
+        }} />
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<Index />} />
@@ -31,9 +33,12 @@ function App() {
           <Route path="search" element={<Search />} />
           <Route path="flash-sale" element={<FlashSalePage />} />
         </Route>
+        <Route element={<UserLayout />}>
+          <Route path="user-center" element={<UserCenter />} />
+        </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </>
+    </main>
   )
 }
 
