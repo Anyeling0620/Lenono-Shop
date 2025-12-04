@@ -11,10 +11,10 @@ import FlashSalePage from "./pages/FlashSalePage"
 import ProductDetail from "./pages/ProductDetail"
 import ShoppingCart from "./pages/ShoppingCart"
 import Checkout from "./pages/Checkout"
+// 1. 确保引入了 CartProvider
 import { CartProvider } from "./context/CartContext"
 import UserCenter from "./pages/UserCenter"
 import UserLayout from "./component/Layout/UserLayout"
-
 
 /**
  * App组件：应用程序的主要组件，负责路由配置和布局
@@ -25,15 +25,14 @@ function App() {
   return (
 
     <main>
-      <Toaster position="top-center" reverseOrder={false}
-        toastOptions={{
-          style: {}
-        }} />
       <CartProvider>
+        <Toaster position="top-center" reverseOrder={false}
+          toastOptions={{
+            style: {}
+          }} />
+
         <Routes>
-
           <Route element={<MainLayout />}>
-
             <Route path="/" element={<Index />} />
             <Route path="index" element={<Index />} />
             <Route path='login' element={<Login />} />
@@ -42,12 +41,9 @@ function App() {
             <Route path="search" element={<Search />} />
             <Route path="flash-sale" element={<FlashSalePage />} />
 
-
             <Route path="product/:id" element={<ProductDetail />} />
             <Route path="shopping-cart" element={<ShoppingCart />} />
             <Route path="checkout" element={<Checkout />} />
-
-
           </Route>
 
           <Route element={<UserLayout />}>
@@ -56,7 +52,9 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </CartProvider>
-    </main >
+    </ main>
+
+
   )
 }
 
