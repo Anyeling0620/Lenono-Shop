@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import type { MainProduct } from "../../types/mainProduct";
 import { findProductById } from "../../assets/data/mockProducts";
@@ -12,9 +12,8 @@ const RecentProducts: React.FC<RecentProductsProps> = ({
   currentProductId,
   maxItems = 5
 }) => {
-  const [recentProducts, setRecentProducts] = useState<MainProduct[]>([]);
-
-  useEffect(() => {
+  // 使用useMemo计算最近浏览的商品，避免在useEffect中调用setState
+  const recentProducts = React.useMemo(() => {
     // 从localStorage获取最近浏览的商品ID列表
     const recentIds = JSON.parse(localStorage.getItem('recentProducts') || '[]');
 
@@ -28,7 +27,7 @@ const RecentProducts: React.FC<RecentProductsProps> = ({
       .map((id: string) => findProductById(id))
       .filter((product: MainProduct | null): product is MainProduct => product !== null);
 
-    setRecentProducts(products);
+    return products;
   }, [currentProductId, maxItems]);
 
   // 添加到最近浏览
@@ -53,7 +52,7 @@ const RecentProducts: React.FC<RecentProductsProps> = ({
     <div className="mt-8 bg-white rounded-sm shadow-sm p-6">
       <h3 className="text-lg font-bold mb-6 text-[#333]">最近浏览</h3>
       <div className="space-y-4">
-        {recentProducts.map((product) => (
+        {recentProducts.map((product: MainProduct) => (
           <Link
             key={product.id}
             to={`/product/${product.id}`}
