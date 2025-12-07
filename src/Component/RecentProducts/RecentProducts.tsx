@@ -26,7 +26,7 @@ const RecentProducts: React.FC<RecentProductsProps> = ({
     // 获取商品详情
     const products = filteredIds
       .map((id: string) => findProductById(id))
-      .filter((product): product is MainProduct => product !== null);
+      .filter((product: MainProduct | null): product is MainProduct => product !== null);
 
     setRecentProducts(products);
   }, [currentProductId, maxItems]);

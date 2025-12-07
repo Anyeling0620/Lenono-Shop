@@ -9,6 +9,7 @@ import RelatedProducts from "../component/RelatedProducts/RelatedProducts";
 import ShareButtons from "../component/ShareButtons/ShareButtons";
 import RecentProducts from "../component/RecentProducts/RecentProducts";
 import ImageModal from "../component/ImageModal/ImageModal";
+import DeliverySelector from "../component/DeliverySelector/DeliverySelector";
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -79,7 +80,7 @@ const ProductDetail: React.FC = () => {
       {/* 2. 主体内容区 */}
       <div className="w-[1200px] mx-auto mt-4 flex bg-white rounded-sm shadow-sm">
         {/* 左侧：图片画廊 */}
-        <div className="w-[450px] mr-[60px] pt-6 pb-8 pl-6 flex-shrink-0">
+        <div className="w-[450px] mr-[80px] pt-6 pb-8 pl-6 flex-shrink-0">
           {/* 主图展示 */}
           <div className="relative w-[450px] h-[450px] border border-gray-100 flex items-center justify-center mb-4 bg-black cursor-pointer group">
             {activeMedia === "video" && product.videoUrl ? (
@@ -102,9 +103,9 @@ const ProductDetail: React.FC = () => {
                     setIsModalOpen(true);
                   }}
                 />
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <span className="text-white text-2xl">🔍</span>
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-5 transition-all duration-300 flex items-center justify-center">
+                  <div className="opacity-0 group-hover:opacity-40 transition-opacity duration-300">
+                    <span className="text-white text-3xl drop-shadow-lg">🔍</span>
                   </div>
                 </div>
               </>
@@ -187,7 +188,7 @@ const ProductDetail: React.FC = () => {
         </div>
 
         {/* 右侧：商品信息 */}
-        <div className="flex-1 pr-8 pt-6 pb-8">
+        <div className="flex-1 pr-8 pt-6 pb-8 pl-12">
           <h1 className="text-[20px] font-bold text-[#333] leading-7 mb-2">
             {product.name}
           </h1>
@@ -302,15 +303,20 @@ const ProductDetail: React.FC = () => {
             </div>
           </div>
 
-          {/* 配送信息 (静态模拟) */}
-          <div className="mb-4 text-sm flex items-center">
-            <span className="text-gray-500 w-[60px]">配送至</span>
-            <div className="border border-gray-300 px-2 py-1 cursor-pointer mr-2">
-              北京 北京市 海淀区
+          {/* 配送信息 */}
+          <div className="mb-4 text-sm">
+            <div className="flex items-center mb-2">
+              <span className="text-gray-500 w-[60px]">配送至</span>
+              <DeliverySelector />
+              <span className={`font-bold ml-3 ${product.stock && product.stock > 0 ? "text-green-600" : "text-red-600"}`}>
+                {product.stock && product.stock > 0 ? `有货 (${product.stock}件)` : "缺货"}
+              </span>
             </div>
-            <span className={`font-bold ${product.stock && product.stock > 0 ? "text-green-600" : "text-red-600"}`}>
-              {product.stock && product.stock > 0 ? `有货 (${product.stock}件)` : "缺货"}
-            </span>
+            <div className="flex items-center text-xs text-gray-600 ml-[60px]">
+              <span className="mr-4">运费：包邮</span>
+              <span className="mr-4">预计送达：1-3个工作日</span>
+              <span>由联想物流发货</span>
+            </div>
           </div>
 
           <div className="w-full h-[1px] bg-gray-200 my-4"></div>
@@ -465,54 +471,242 @@ const ProductDetail: React.FC = () => {
         {/* Tab Content (内容区域保持 1200px 居中) */}
         <div className="w-[1200px] mx-auto mt-8 border-none">
           {activeTab === "detail" && (
-            <div className="text-center">
-              {/* 模拟长图文 */}
-              {product.detailImages && product.detailImages.length > 0 ? (
-                product.detailImages.map((img: string, idx: number) => (
-                  <img
-                    key={idx}
-                    src={img}
-                    alt="详情"
-                    className="mx-auto block w-full max-w-[1200px]"
-                  />
-                ))
-              ) : (
-                <div className="p-20 text-gray-400 bg-gray-50">
-                  <p className="mb-4">此处展示商品详情长图</p>
-                  <img
-                    src={product.image}
-                    alt="示例"
-                    className="mx-auto w-[500px]"
-                  />
+            <div className="bg-white">
+              {/* 详细参数说明 */}
+              <div className="p-8 border-b border-gray-200">
+                <h3 className="text-xl font-bold mb-6 text-[#333]">详细参数</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div>
+                    <h4 className="font-bold mb-4 text-[#333]">基本信息</h4>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">商品名称：</span>
+                        <span className="text-[#333]">{product.name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">商品编号：</span>
+                        <span className="text-[#333]">{product.id.padStart(8, "0")}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">品牌：</span>
+                        <span className="text-[#e1140a]">联想（Lenovo）</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">系列：</span>
+                        <span className="text-[#333]">小新系列</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-bold mb-4 text-[#333]">技术规格</h4>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">处理器：</span>
+                        <span className="text-[#333]">Intel 酷睿 i5</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">内存：</span>
+                        <span className="text-[#333]">16GB DDR4</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">存储：</span>
+                        <span className="text-[#333]">512GB SSD</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">屏幕：</span>
+                        <span className="text-[#333]">14英寸 2.8K OLED</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              )}
+              </div>
+
+              {/* 产品图片展示 */}
+              <div className="p-8">
+                <h3 className="text-xl font-bold mb-6 text-[#333]">产品展示</h3>
+                {product.detailImages && product.detailImages.length > 0 ? (
+                  <div className="space-y-8">
+                    {product.detailImages.map((img: string, idx: number) => (
+                      <img
+                        key={idx}
+                        src={img}
+                        alt={`产品详情图${idx + 1}`}
+                        className="mx-auto block w-full max-w-[1000px] shadow-lg rounded-lg"
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center p-20 bg-gray-50 rounded-lg">
+                    <img
+                      src={product.image}
+                      alt="产品展示"
+                      className="mx-auto w-[600px] shadow-lg rounded-lg mb-4"
+                    />
+                    <p className="text-gray-500">更多产品细节图即将上线</p>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
           {activeTab === "specs" && (
-            <div className="p-10">
-              <h3 className="font-bold mb-4 text-lg">规格参数</h3>
-              <table className="w-full text-sm border-collapse">
-                <tbody>
-                  <tr className="border-b">
-                    <td className="py-2 text-gray-500 w-[200px]">商品名称</td>
-                    <td className="py-2">{product.name}</td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="py-2 text-gray-500">商品编号</td>
-                    <td className="py-2">{product.id}</td>
-                  </tr>
-                  <tr className="border-b">
-                    <td className="py-2 text-gray-500">店铺</td>
-                    <td className="py-2 text-[#e1140a]">联想官方旗舰店</td>
-                  </tr>
-                  {/* 更多模拟参数 */}
-                  <tr className="border-b">
-                    <td className="py-2 text-gray-500">操作系统</td>
-                    <td className="py-2">Windows 11 家庭中文版</td>
-                  </tr>
-                </tbody>
-              </table>
+            <div className="bg-white">
+              {/* 页面标题 */}
+              <div className="p-6 border-b border-gray-200">
+                <h3 className="text-xl font-bold text-[#333]">配置参数</h3>
+                <p className="text-sm text-gray-600 mt-1">以下是该商品的详细技术规格参数</p>
+              </div>
+
+              {/* 规格参数表格 */}
+              <div className="p-6">
+                <table className="w-full text-sm border-collapse border border-gray-200">
+                  <tbody>
+                    {/* 基本信息 */}
+                    <tr className="bg-gray-50">
+                      <td colSpan={2} className="py-3 px-4 font-bold text-[#333] border-b border-gray-200">
+                        基本信息
+                      </td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 w-[200px] bg-gray-50 font-medium">商品名称</td>
+                      <td className="py-3 px-4 text-[#333]">{product.name}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">商品编号</td>
+                      <td className="py-3 px-4 text-[#333]">{product.id.padStart(8, "0")}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">品牌</td>
+                      <td className="py-3 px-4 text-[#e1140a] font-medium">联想（Lenovo）</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">系列</td>
+                      <td className="py-3 px-4 text-[#333]">小新系列</td>
+                    </tr>
+
+                    {/* 处理器信息 */}
+                    <tr className="bg-gray-50">
+                      <td colSpan={2} className="py-3 px-4 font-bold text-[#333] border-b border-gray-200">
+                        处理器
+                      </td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">处理器型号</td>
+                      <td className="py-3 px-4 text-[#333]">Intel 酷睿 i5-12450H</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">处理器主频</td>
+                      <td className="py-3 px-4 text-[#333]">2.0GHz（睿频至4.4GHz）</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">核心/线程</td>
+                      <td className="py-3 px-4 text-[#333]">8核心/12线程</td>
+                    </tr>
+
+                    {/* 内存信息 */}
+                    <tr className="bg-gray-50">
+                      <td colSpan={2} className="py-3 px-4 font-bold text-[#333] border-b border-gray-200">
+                        内存
+                      </td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">内存容量</td>
+                      <td className="py-3 px-4 text-[#333]">16GB DDR4 3200MHz</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">内存类型</td>
+                      <td className="py-3 px-4 text-[#333]">双通道 DDR4</td>
+                    </tr>
+
+                    {/* 存储信息 */}
+                    <tr className="bg-gray-50">
+                      <td colSpan={2} className="py-3 px-4 font-bold text-[#333] border-b border-gray-200">
+                        存储
+                      </td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">硬盘容量</td>
+                      <td className="py-3 px-4 text-[#333]">512GB PCIe 4.0 SSD</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">硬盘类型</td>
+                      <td className="py-3 px-4 text-[#333]">NVMe PCIe 4.0 固态硬盘</td>
+                    </tr>
+
+                    {/* 显示信息 */}
+                    <tr className="bg-gray-50">
+                      <td colSpan={2} className="py-3 px-4 font-bold text-[#333] border-b border-gray-200">
+                        显示
+                      </td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">屏幕尺寸</td>
+                      <td className="py-3 px-4 text-[#333]">14英寸</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">屏幕分辨率</td>
+                      <td className="py-3 px-4 text-[#333]">2880×1800（2.8K）</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">屏幕类型</td>
+                      <td className="py-3 px-4 text-[#333]">OLED 屏</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">刷新率</td>
+                      <td className="py-3 px-4 text-[#333]">90Hz</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">色域</td>
+                      <td className="py-3 px-4 text-[#333]">100% DCI-P3 广色域</td>
+                    </tr>
+
+                    {/* 其他规格 */}
+                    <tr className="bg-gray-50">
+                      <td colSpan={2} className="py-3 px-4 font-bold text-[#333] border-b border-gray-200">
+                        其他规格
+                      </td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">操作系统</td>
+                      <td className="py-3 px-4 text-[#333]">Windows 11 家庭中文版</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">重量</td>
+                      <td className="py-3 px-4 text-[#333]">约 1.35kg</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">电池容量</td>
+                      <td className="py-3 px-4 text-[#333]">56Wh</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">续航时间</td>
+                      <td className="py-3 px-4 text-[#333]">约 8-10 小时</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">接口</td>
+                      <td className="py-3 px-4 text-[#333]">2×USB-C, 1×USB-A, 1×HDMI, 1×耳机孔</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">网络</td>
+                      <td className="py-3 px-4 text-[#333]">Wi-Fi 6E + 蓝牙 5.2</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">保修</td>
+                      <td className="py-3 px-4 text-[#333]">三年整机保修</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* 参数说明 */}
+              <div className="p-6 bg-gray-50 border-t border-gray-200">
+                <h4 className="font-bold mb-3 text-[#333]">参数说明</h4>
+                <div className="text-sm text-gray-600 space-y-2">
+                  <p>• 以上参数信息仅供参考，实际配置以商品到货为准。</p>
+                  <p>• 产品外观及规格参数可能因批次不同略有差异，请以实物为准。</p>
+                  <p>• 如有疑问，请联系联想客服咨询：400-990-8888</p>
+                </div>
+              </div>
             </div>
           )}
 
