@@ -1,9 +1,10 @@
-import  { useState, type FC } from 'react';
-import { UserOutlined ,MessageOutlined, MoneyCollectOutlined, MailOutlined,ShoppingOutlined, TruckOutlined ,} from '@ant-design/icons';
+import { useState, type FC } from 'react';
+import { UserOutlined, MessageOutlined, MoneyCollectOutlined, MailOutlined, ShoppingOutlined, TruckOutlined, } from '@ant-design/icons';
 import { Menu } from 'antd';
 import type { MenuProps } from 'antd';
 import { useSearchParams } from 'react-router-dom';
 import UserCenterPages from '../component/UserCenterPages/UserCenterPages';
+import { useRequest } from 'ahooks';
 
 /* ------------------------- 菜单数据 ------------------------- */
 
@@ -31,6 +32,10 @@ const items: MenuItem[] = [
                     { key: '3', label: '通过原密码更改' },
                     { key: '4', label: '通过验证码更改' },
                 ],
+            },
+            {
+                key: 'k4',
+                label: '设备管理',
             },
         ],
     },
@@ -72,8 +77,8 @@ const items: MenuItem[] = [
         label: '消息中心',
         type: 'group',
         children: [
-            { key: '14', icon:<MailOutlined />, label: '系统通知' },
-            { key: '15', icon:<MessageOutlined />,label: '我的咨询' },
+            { key: '14', icon: <MailOutlined />, label: '系统通知' },
+            { key: '15', icon: <MessageOutlined />, label: '我的咨询' },
         ],
     },
 ];
@@ -133,6 +138,9 @@ const UserCenter: FC = () => {
     const [searchParams] = useSearchParams();
     const fromStateKey = searchParams.get('selectedKey');
 
+    const [refreshTrigger, setRefreshTrigger] = useState<number>(0);  // 刷新触发器
+
+
     /* ----------- 初始化：根据 fromStateKey 或默认 k1 ----------- */
     const [selectedKeys, setSelectedKeys] = useState<string[]>(() => {
         return fromStateKey ? [fromStateKey] : ['k1'];
@@ -149,9 +157,26 @@ const UserCenter: FC = () => {
         return ['sub1'];
     });
 
+    const { run: setRefresh } = useRequest(
+            async (value: number) => {
+            return new Promise<void>((resolve) => {
+                setRefreshTrigger(value);
+                resolve();
+            });
+        }, {
+            manual: true,
+            debounceLeading: true,
+            debounceWait: 100
+        });
     /* ----------- 点击菜单项：切换选中 ----------- */
     const onClick: MenuProps['onClick'] = ({ key }) => {
-        setSelectedKeys([key]);
+        if (selectedKeys[0] === key) {
+            // 点击相同菜单项时触发刷新
+
+            setRefresh(refreshTrigger + 1);
+        } else {
+            setSelectedKeys([key]);
+        }
     };
 
     /* ----------- 官方同款：同层级只展开一个 SubMenu ----------- */
@@ -188,7 +213,7 @@ const UserCenter: FC = () => {
                     />
                 </div>
 
-                <UserCenterPages selectedKey={selectedKeys[0]} />
+                <UserCenterPages key={refreshTrigger} selectedKey={selectedKeys[0]} />
             </div>
         </div>
     );

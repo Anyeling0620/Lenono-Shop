@@ -62,6 +62,8 @@ const lenovoLaptops: MainProduct[] = [
     customerize: true,
     tradeIn: true,
     link: "/product/1",
+    videoUrl: "https://example.com/video/product1.mp4", // 示例视频URL
+    stock: 50, // 库存数量
   },
   {
     id: "2",

@@ -1,8 +1,11 @@
 import React from 'react';
+import DeviceManager from './DeviceManager';
+import AccountInfo from './AccountInfo';
+import { Result } from 'antd';
+import Voucher from './Voucher';
+import Coupon from './Coupon';
 
-/* ------ 各个页面组件（你可以替换成自己的） ------ */
 
-const AccountInfo = () => <div>账号信息页面</div>;
 const ChangeEmailByPassword = () => <div>通过原密码更换邮箱</div>;
 const ChangeEmailByCode = () => <div>通过验证码更换邮箱</div>;
 const ChangePwdByPassword = () => <div>通过原密码更改</div>;
@@ -17,11 +20,11 @@ const Address = () => <div>收货地址</div>;
 const AfterSale = () => <div>我的售后</div>;
 const Complaint = () => <div>我的投诉</div>;
 
-const Coupon = () => <div>我的优惠券</div>;
-const Voucher = () => <div>我的代金券</div>;
+
 
 const SysNotice = () => <div>系统通知</div>;
 const MyConsult = () => <div>我的咨询</div>;
+
 
 
 /* ------------ 用 Record 构建 key → 组件 的映射表 ------------ */
@@ -32,6 +35,7 @@ const pages: Record<string, React.ReactNode> = {
     2: <ChangeEmailByCode />,
     3: <ChangePwdByPassword />,
     4: <ChangePwdByCode />,
+    k4: <DeviceManager />,
 
     5: <Orders />,
     6: <Cart />,
@@ -50,7 +54,6 @@ const pages: Record<string, React.ReactNode> = {
 };
 
 
-
 interface Props {
     selectedKey: string;
 }
@@ -58,10 +61,14 @@ interface Props {
 const UserCenterPages: React.FC<Props> = ({ selectedKey }) => {
     return (
         <div className="bg-white ml-4 rounded-md  p-5 min-h-[90vh] w-full">
-            {pages[selectedKey] || <div>页面不存在</div>}
+            {pages[selectedKey] ||
+             <Result
+                status="404"
+                title="404"
+                subTitle=""
+            />}
         </div>
     );
 };
-
 
 export default UserCenterPages;

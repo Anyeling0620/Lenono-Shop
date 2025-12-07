@@ -16,6 +16,8 @@ import UserInfoCard from "../UserInfoCard/UserInfoCard";
 import { axiosService } from "../../services/axiosService";
 import { globalErrorHandler } from "../../utils/globalAxiosErrorHandler";
 import toast from "react-hot-toast";
+import useAuthStore from "../../store/authStore";
+import useUserInfoStore from "../../store/userInfostore";
 
 /**
  * AuthLinks 组件：用于显示注册和登录链接
@@ -28,43 +30,45 @@ const AuthLinks: React.FC = () => {
     const [showAgreement, setShowAgreement] = useState(false);
     const handleRegisterClick = () => setShowAgreement(true);
     const handleClose = () => setShowAgreement(false);
+    const isLogin = useAuthStore(state => state.isAuthenticated);
+    const nickName = useUserInfoStore(state => state.nikeName);
     const handleConfirm = () => {
         setShowAgreement(false);
         navigate("/register");
     };
     const handleLodin = () => {
-        navigate("/login");
+        navigate("/login",{
+            replace: true // 设置 replace 为 true，这样在点击登录链接后，浏览器历史记录中不会留下当前页面的记录
+        });
     }
     const handleLogout = async () => {
-        try { await axiosService.logoutDevice(axiosService.getCurrentDeviceInfo().deviceId)}
+        try { await axiosService.forceLogout() }
         catch (error) { globalErrorHandler.handle(error, toast.error) }
     }
 
     return (<>
         <div className="float-right relative">
             <div className=" relative text-[12.5px] flex items-center gap-2">
-                {false && <>
-                    <AuthLink onClick={handleRegisterClick}>
-                        注册
-                    </AuthLink>
-                    <i className="border-l h-[11px] inline-block my-[-1px] mx-2"></i>
-                    <AuthLink onClick={handleLodin}>
-                        登陆
-                    </AuthLink>
-                </>}
-                {
-                    true &&
+                {isLogin ? (
                     <>
-                        {/* open={false} */}
                         <Popover arrow={false} zIndex={1000} placement={"bottomRight"} content={<UserInfoCard />}>
-                            <></><User children="魔法少女小圆123456789" />
+                            <></><User children={nickName} />
                         </Popover>
                         <i className="border-l h-[11px] inline-block mx-2 rounded-e-sm"></i>
                         <AuthLink onClick={handleLogout}>
                             登出
                         </AuthLink>
                     </>
-                }
+                ) : (
+                    <>
+                        <AuthLink onClick={handleRegisterClick}>
+                            注册
+                        </AuthLink>
+                        <i className="border-l h-[11px] inline-block my-[-1px] mx-2"></i>
+                        <AuthLink onClick={handleLodin}>
+                            登陆
+                        </AuthLink>
+                    </>)}
             </div>
         </div>
         <AgreementModal
@@ -79,7 +83,7 @@ const AuthLinks: React.FC = () => {
 
 const User: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return (
-        <span className="text-red-500 leading-[60px]  block cursor-pointer truncate max-w-[90px] overflow-hidden hover:underline decoration-4 underline-offset-[22px] transition-all duration-300">
+        <span className="text-red-500 leading-[60px] min-w-[20px]  block cursor-pointer truncate max-w-[90px] overflow-hidden hover:underline decoration-4 underline-offset-[22px] transition-all duration-300">
             {children}
         </span>
     );
