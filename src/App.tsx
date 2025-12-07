@@ -15,12 +15,16 @@ import Checkout from "./pages/Checkout"
 import { CartProvider } from "./context/CartContext"
 import UserCenter from "./pages/UserCenter"
 import UserLayout from "./component/Layout/UserLayout"
+import ProtectedRoute from "./component/ProtectedRoute"
+import useAuthLifecycle from "./hooks/useAuthLifecycle"
 
 /**
  * App组件：应用程序的主要组件，负责路由配置和布局
  * 包含了页面路由和Toaster提示组件的配置
  */
 function App() {
+
+  useAuthLifecycle()  // 登陆状态生命周期
 
   return (
 
@@ -40,14 +44,13 @@ function App() {
             <Route path='new-product' element={<NewProduct />} />
             <Route path="search" element={<Search />} />
             <Route path="flash-sale" element={<FlashSalePage />} />
-
             <Route path="product/:id" element={<ProductDetail />} />
             <Route path="shopping-cart" element={<ShoppingCart />} />
             <Route path="checkout" element={<Checkout />} />
           </Route>
 
           <Route element={<UserLayout />}>
-            <Route path="user-center" element={<UserCenter />} />
+            <Route path="user-center" element={<ProtectedRoute redirectTo={"/login"}><UserCenter /></ProtectedRoute>} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

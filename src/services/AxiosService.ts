@@ -21,7 +21,8 @@ declare module 'axios' {
 
 export const EVENT_NAMES = {
     MULTI_LOGIN_WARNING: 'multi-login-warning',   // 多设备登陆警告
-    TOKEN_REFRESHED: 'token-refreshed'            // 令牌刷新事件名称
+    TOKEN_REFRESHED: 'token-refreshed',           // 令牌刷新事件名称
+    AUTH_EXPIRED: 'auth-expired'                    // 令牌过期事件名称
 } as const;
 
 
@@ -146,7 +147,7 @@ class AxiosService {
                 const originalRequest = (error.config || {}) as AxiosRequestConfig;
                 // 处理401且未重试
                 if (error.response?.status === 401 && !originalRequest._retry) {
-            
+
 
                     if (this.isRefreshing) {
                         return new Promise((resolve, reject) => {
@@ -175,9 +176,9 @@ class AxiosService {
                         //const axiosError = refreshError as AxiosError<ApiResponse<null>>;
                         //const refreshErrData = axiosError?.response?.data as ApiResponse<null> | undefined;
 
-                        
-                            this.onTokenRefreshFailed();
-                        
+
+                        this.onTokenRefreshFailed();
+
 
                         const wrapError = refreshError instanceof Error
                             ? refreshError
@@ -242,6 +243,7 @@ class AxiosService {
 
         // 清除内存token
         this.accessToken = null;
+        window.dispatchEvent(new CustomEvent(EVENT_NAMES.AUTH_EXPIRED))
 
         // 推荐让后端清理 HttpOnly refresh_token cookie（调用 /auth/logout）
         try {
@@ -307,12 +309,13 @@ class AxiosService {
             if (deviceId === this.deviceId) {
                 // 当前设备被登出：清理 front-end 状态
                 this.onTokenRefreshFailed();
+                window.dispatchEvent(new CustomEvent(EVENT_NAMES.AUTH_EXPIRED));
             }
             const { device } = response.data.data;
             return device;
         } catch (error) {
             const errMsg = (error as AxiosError<ApiResponse<null>>)?.response?.data?.message || '登出指定设备失败，请检查网络状态';
-            console.error('登出指定设备失败:', errMsg,error);
+            console.error('登出指定设备失败:', errMsg, error);
             throw new Error(errMsg);
         }
     }
@@ -332,7 +335,7 @@ class AxiosService {
             return devices;
         } catch (error) {
             const errMsg = (error as AxiosError<ApiResponse<null>>)?.response?.data?.message || '登出其他设备失败，请检查网络状态';
-            console.error('登出其他设备失败:',errMsg, error);
+            console.error('登出其他设备失败:', errMsg, error);
             throw new Error(errMsg);
         }
     }
@@ -450,13 +453,18 @@ class AxiosService {
     public async forceLogout(): Promise<void> {
         try {
             await this.instance.post(API_PATHS.LOGOUT_PATH, {}, { deviceCheck: false });
+            window.dispatchEvent(new CustomEvent(EVENT_NAMES.AUTH_EXPIRED));
         } catch (e) {
             // 忽略错误，仍继续前端清理
             console.warn('调用登出接口失败:', e);
+            const errMsg = (e as AxiosError<ApiResponse<null>>)?.response?.data?.message;
+            if (errMsg) {
+                throw new Error(errMsg);
+            } else throw e;
         } finally {
             this.accessToken = null;
-            // 清前端 device id cookie/localStorage
-            this.removeSecureCookie('device_id');
+            this.removeSecureCookie('device_id')
+            window.dispatchEvent(new CustomEvent(EVENT_NAMES.AUTH_EXPIRED));
             //window.location.href = '/login';
         }
     }

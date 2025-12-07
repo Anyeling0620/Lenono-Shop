@@ -278,6 +278,7 @@ const Search: React.FC = () => {
    * @type {string | null}
    */
   const keyword = searchParams.get('q');
+  const time = searchParams.get('t');
   
   /**
    * 搜索筛选条件状态
@@ -325,6 +326,11 @@ const Search: React.FC = () => {
     }
   );
   
+
+   const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   /**
    * 初始搜索和关键词变化时的副作用
    */
@@ -332,8 +338,9 @@ const Search: React.FC = () => {
     if (keyword) {
       const newFilters = { ...filters, keyword:keyword };
       performSearch(newFilters);
+      scrollToTop();
     }
-  }, [filters, keyword, performSearch]);
+  }, [filters, keyword, performSearch,time]);
 
   /**
    * 筛选条件变化时的副作用
@@ -349,14 +356,17 @@ const Search: React.FC = () => {
   const handleFiltersChange = (newFilters: SearchFiltersType) => {
     setFilters(newFilters);
     setCurrentPage(1);
+    scrollToTop();
   };
 
+ 
   /**
    * 处理分页变化的函数
    * @param {number} page - 新的页码
    */
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    scrollToTop();
   };
 
   return (
