@@ -1,21 +1,21 @@
 import { Badge, ConfigProvider } from "antd";
 import type { FC, ReactNode } from "react";
 import { Link } from "react-router-dom";
+import useUserInfoStore from "../../store/userInfostore";
 
 
 interface Props {
   icon: ReactNode;
   text: string;
   to: string;
-  selectedKey?:string;
+  selectedKey?: string;
   hasBadge?: boolean;
-  badgeCount?: string | number;
-  target?: string;
 }
 
-const FunctionIconButton: FC<Props> = ({ icon, text, to, selectedKey = '', hasBadge = false, badgeCount = '' }) => {
+const FunctionIconButton: FC<Props> = ({ icon, text, to, selectedKey = '', hasBadge = false }) => {
+  const badgeCount = useUserInfoStore(state => state.messageCount)
   return (
-    <Link to={`${to}?selectedKey=${selectedKey}`} target="_user-center"  className='mx-4 flex flex-col items-center group'>
+    <Link to={`${to}${selectedKey ? '?selectedKey=' : ''}${selectedKey}`} target="_user-center" className='mx-4 flex flex-col items-center group'>
       {hasBadge ? (
         <ConfigProvider theme={{ token: { colorErrorHover: 'red' } }}>
           <Badge count={badgeCount}>

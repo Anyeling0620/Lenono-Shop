@@ -9,7 +9,7 @@
  * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
  */
 
-import React, {  useRef, useState, type KeyboardEvent } from "react";
+import React, { useRef, useState, type KeyboardEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useRequest } from "ahooks";
 
@@ -47,7 +47,7 @@ const SearchBar: React.FC = () => {
    * 触发输入警告效果
    * @description 在输入为空时显示短暂的警告动画效果
    */
-  const isWarnInput = () =>{
+  const isWarnInput = () => {
     if (warnInput) return;
     setWarnInput(true);
     setTimeout(() => {
@@ -64,17 +64,17 @@ const SearchBar: React.FC = () => {
    * @property {boolean} manual 是否需要手动触发请求
    */
   const { run: debouncedSearch } = useRequest(
-     (searchKeyword: string) => {  
+    (searchKeyword: string) => {
       if (!searchKeyword.trim()) {
         inputRef.current?.focus();
         isWarnInput();
         return Promise.reject("搜索关键词不能为空");
       }
-      navigate(`/search?q=${encodeURIComponent(searchKeyword.trim())}`)
-      return Promise.resolve("搜索成功"); 
+      navigate(`/search?q=${encodeURIComponent(searchKeyword.trim())}&t=${Date.now()}`);
+      return Promise.resolve("搜索成功");
     },
     {
-      debounceWait:300,
+      debounceWait: 300,
       debounceLeading: true,
       manual: true
     }
@@ -86,7 +86,7 @@ const SearchBar: React.FC = () => {
    * @description 当按下Enter键时触发搜索
    */
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") 
+    if (e.key === "Enter")
       debouncedSearch(keyword);
   }
 

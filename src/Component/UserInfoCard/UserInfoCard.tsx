@@ -2,22 +2,18 @@
 import { CgShoppingCart } from "react-icons/cg"; import { MdOutlineEditLocation } from "react-icons/md";
 import { RiMessageLine } from "react-icons/ri"; import { RiFileList2Line } from "react-icons/ri";
 import type { FC } from "react";
-import UserHeader, { DEFAULT_AVATAR } from "./UserHeader";
+import UserHeader from "./UserHeader";
 import CouponSection from "./CouponSection";
 import FunctionIconButton from "./FunctionIconButton";
+import useUserInfoStore from "../../store/userInfostore";
 
 
 interface fbItem {
   icon: React.ReactNode;
   text: string;
   to: string;
-  // state: {
-  //   [index: string]: string | boolean | number | undefined;
-  // };
   selectedKey?:string;
-  hasBadge: boolean;
-  badgeCount?: number;
-  target?: string;
+  hasBadge: boolean;  //是否显示角标
 }
 
 const functionButtons: fbItem[] = [
@@ -30,7 +26,7 @@ const functionButtons: fbItem[] = [
   {
     icon: <CgShoppingCart size={40} />,
     text: '购物车',
-    to: '',
+    to: '/shopping-cart',
     hasBadge: false,
   },
   {
@@ -45,29 +41,25 @@ const functionButtons: fbItem[] = [
     to: '/user-center',
     selectedKey: '14',
     hasBadge: true,
-    badgeCount: 14,
   },
 ];
 
 const UserInfoCard: FC = () => {
-  // 业务数据（可抽离到状态管理/接口请求）
-  const userInfo = {
-    userName: '魔法少女小圆123456789',
-    memberLevel: '普通会员',
-    avatar: DEFAULT_AVATAR,
-    couponCount: 32,
-  };
+  const userName = useUserInfoStore((state) => state.nikeName);
+  const avatar = useUserInfoStore((state) => state.avatar);
+  const memberType = useUserInfoStore((state) => state.memberType);
+  const couponCount = useUserInfoStore((state) => state.couponsCount);
 
   return (
     <div className='w-[360px] h-[200px] p-2 m-auto'>
       <div className='w-[340px]'>
         <UserHeader
-          avatar={userInfo.avatar}
-          userName={userInfo.userName}
-          memberLevel={userInfo.memberLevel}
+          avatar={avatar}
+          userName={userName}
+          memberType={memberType}
           centerLink='/user-center'
         />
-        <CouponSection count={userInfo.couponCount} detailLink='/user-center'/>
+        <CouponSection count={couponCount} detailLink='/user-center'/>
         <div className='mt-2 px-1 py-3 grid grid-cols-4'>
           {functionButtons.map((btn) => (
             <FunctionIconButton
@@ -77,7 +69,6 @@ const UserInfoCard: FC = () => {
               to={btn.to}
               selectedKey={btn.selectedKey}
               hasBadge={btn.hasBadge}
-              badgeCount={btn.badgeCount}
             />
           ))}
         </div>
