@@ -10,8 +10,8 @@ interface DeviceCardProps {
 const  DeviceCard:React.FC<DeviceCardProps> = ({ d, isCurrent, isProcessing, onLogout }) => {
     return (
         <div
-            className={`p-4 h-[125px] rounded-md shadow bg-white border transition-shadow duration-300 text-sm relative ${
-                isCurrent ? "border-blue-400 shadow-md" : "hover:shadow-md"
+            className={`p-4 h-[125px] rounded-sm shadow-md bg-white hover:shadow-xl transition-shadow duration-300 text-sm relative ${
+                isCurrent ? " text-red-500 " : ""
             }`}
         >
             <div className="flex items-start justify-between gap-4">

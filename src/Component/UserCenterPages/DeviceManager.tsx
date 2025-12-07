@@ -13,6 +13,7 @@ export default function DeviceManager() {
     const [devices, setDevices] = useState<DeviceInfo[]>([]);
     const [loading, setLoading] = useState(true);
     const [processingId, setProcessingId] = useState<string | null>(null);
+    const [logoutAll, setLogoutAll] = useState(false);
 
     // 分页
     const pageSize = 8;
@@ -24,7 +25,7 @@ export default function DeviceManager() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // const data: DeviceInfo[] = Array.from({ length: 24 }).map((_, i) => ({
+                // const data: DeviceInfo[] = Array.from({ length: 1 }).map((_, i) => ({
                 //     device_id: String(i + 1),
                 //     device_type: i % 2 === 0 ? "web" : "mobile_web",
                 //     device_name: i % 2 === 0 ? `Chrome Device ${i + 1} 1233333` : `Safari iPhone ${i + 1}`,
@@ -34,7 +35,7 @@ export default function DeviceManager() {
 
                 // await new Promise((r) => setTimeout(r, 400));
 
-                const devices = await axiosService.getLoginDevices();
+                 const devices = await axiosService.getLoginDevices();
                 setDevices(devices);
             } catch (err) {
                 globalErrorHandler.handle(err, toast.error);
@@ -42,20 +43,16 @@ export default function DeviceManager() {
                 setLoading(false);
             }
         };
-        fetchData();
+        setTimeout(fetchData, 500);
     }, []);
 
     // API 请求封装
     const { run: logoutRequest } = useRequest(axiosService.logoutDevice, {
-        manual: true, 
+        manual: true,
         debounceTrailing: true,
         debounceWait: 1000,
         onSuccess: (_, params) => {
             const deviceId = params[0];
-          //   const currentId = axiosService.getCurrentDeviceInfo().deviceId;
-
-          //  toast.success(deviceId === currentId ? "已退出登录" : "已解绑设备");
-
             setDevices((prev) => prev.filter((x) => x.device_id !== deviceId));
             setProcessingId(null);
         },
@@ -64,6 +61,20 @@ export default function DeviceManager() {
             setProcessingId(null);
         },
     });
+
+
+    async function handleOutAllDevices() {
+        if (devices.length === 1 && devices[0].device_id === axiosService.getCurrentDeviceInfo().deviceId) return;
+        setLogoutAll(true);
+        try {
+            await axiosService.logoutOtherDevices();
+        } catch (error) {
+            globalErrorHandler.handle(error, toast.error);
+        } finally {
+            setLogoutAll(false);
+        }
+    }
+
     if (loading) return (
         <div className="py-40 w-full flex items-center justify-center">
             <Spin />
@@ -78,15 +89,47 @@ export default function DeviceManager() {
             />)
     }
 
+
+
     return (
         <div className="py-6 w-full px-6 mx-auto space-y-6">
-            <h1 className="text-2xl font-bold text-[#4b4b4b] text-center mb-4">登录设备管理</h1>
+            <div className="flex justify-between items-center mb-6 py-4 pl-4 bg-white rounded-sm border-b-2 border-gray-100">
+                <div className="flex flex-col">
+                    <h1 className="text-[22px] font-semibold text-gray-800 leading-tight">
+                        登录设备管理
+                    </h1>
+                    <span className="text-gray-500 text-sm mt-1">
+                        当前共绑定 <span className="font-medium text-gray-700">{devices.length}</span> 台设备
+                    </span>
+                </div>
+
+                <div className="flex items-eng ">
+                    <button
+                        onClick={() => {
+                            handleOutAllDevices();
+                        }}
+                        disabled={logoutAll}
+                        className={`
+                px-5 py-2 rounded-sm text-white font-medium shadow w-[120px]
+                transition-all duration-200
+                ${logoutAll
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-gray-400 hover:bg-gray-500'}
+            `}
+                    >
+                        {logoutAll ? '解绑中...' : '一键解绑'}
+                    </button>
+                </div>
+            </div>
 
             <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 auto-rows-max min-h-[540px]">
+                <div className={`grid gap-2 auto-rows-max min-h-[540px] ${paginated.length <= 4
+                    ? 'grid-cols-1'
+                    : 'grid-cols-1 sm:grid-cols-2'
+                    }`}>
                     {paginated.map((d) => {
                         const isCurrent = axiosService.getCurrentDeviceInfo().deviceId === d.device_id;
-                        const isProcessing = processingId === d.device_id;
+                        const isProcessing = logoutAll ? true : processingId === d.device_id;
 
                         return (
                             <DeviceCard
