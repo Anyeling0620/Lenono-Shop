@@ -3,6 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { findProductById } from "../assets/data/mockProducts";
 import type { MainProduct } from "../types/mainProduct";
 import { useCart } from "../context/CartContext";
+import ProductComments from "../component/ProductComments/ProductComments";
+import { getCommentStats } from "../assets/data/mockComments";
+import RelatedProducts from "../component/RelatedProducts/RelatedProducts";
+import ShareButtons from "../component/ShareButtons/ShareButtons";
+import RecentProducts from "../component/RecentProducts/RecentProducts";
+import ImageModal from "../component/ImageModal/ImageModal";
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,7 +18,10 @@ const ProductDetail: React.FC = () => {
 
   // 交互状态
   const [activeImage, setActiveImage] = useState<string>("");
+  const [activeMedia, setActiveMedia] = useState<"image" | "video">("image");
   const [quantity, setQuantity] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalImage, setModalImage] = useState<string>("");
   const [selectedSpecs, setSelectedSpecs] = useState<{ [key: string]: string }>(
     {}
   );
@@ -42,6 +51,7 @@ const ProductDetail: React.FC = () => {
     );
 
   const finalPrice = product.originalPrice - product.coupon;
+  const commentStats = getCommentStats(product.id);
 
   const currentSpecText =
     Object.keys(selectedSpecs).length > 0
@@ -69,24 +79,74 @@ const ProductDetail: React.FC = () => {
       {/* 2. 主体内容区 */}
       <div className="w-[1200px] mx-auto mt-4 flex bg-white rounded-sm shadow-sm">
         {/* 左侧：图片画廊 */}
-        <div className="w-[450px] mr-[60px] pt-6 pb-8 pl-6">
+        <div className="w-[450px] mr-[60px] pt-6 pb-8 pl-6 flex-shrink-0">
           {/* 主图展示 */}
-          <div className="relative w-[450px] h-[450px] border border-gray-100 flex items-center justify-center mb-4">
-            <img
-              src={activeImage}
-              alt={product.name}
-              className="max-w-full max-h-full"
-            />
+          <div className="relative w-[450px] h-[450px] border border-gray-100 flex items-center justify-center mb-4 bg-black cursor-pointer group">
+            {activeMedia === "video" && product.videoUrl ? (
+              <video
+                src={product.videoUrl}
+                controls
+                className="max-w-full max-h-full"
+                poster={product.image}
+              >
+                您的浏览器不支持视频播放。
+              </video>
+            ) : (
+              <>
+                <img
+                  src={activeImage}
+                  alt={product.name}
+                  className="max-w-full max-h-full"
+                  onClick={() => {
+                    setModalImage(activeImage);
+                    setIsModalOpen(true);
+                  }}
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <span className="text-white text-2xl">🔍</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
           {/* 缩略图列表 */}
           <div className="flex gap-4 overflow-x-auto">
+            {/* 视频缩略图 */}
+            {product.videoUrl && (
+              <div
+                className={`w-[80px] h-[80px] border cursor-pointer p-1 relative ${
+                  activeMedia === "video"
+                    ? "border-red-600"
+                    : "border-transparent hover:border-gray-300"
+                }`}
+                onClick={() => {
+                  setActiveMedia("video");
+                  setActiveImage(product.image); // 设置poster
+                }}
+              >
+                <img
+                  src={product.image}
+                  className="w-full h-full object-contain"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-6 h-6 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs">▶</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* 图片缩略图 */}
             <div
               className={`w-[80px] h-[80px] border cursor-pointer p-1 ${
-                activeImage === product.image
+                activeMedia === "image" && activeImage === product.image
                   ? "border-red-600"
                   : "border-transparent hover:border-gray-300"
               }`}
-              onMouseEnter={() => setActiveImage(product.image)}
+              onClick={() => {
+                setActiveMedia("image");
+                setActiveImage(product.image);
+              }}
             >
               <img
                 src={product.image}
@@ -97,11 +157,14 @@ const ProductDetail: React.FC = () => {
               <div
                 key={idx}
                 className={`w-[80px] h-[80px] border cursor-pointer p-1 ${
-                  activeImage === img
+                  activeMedia === "image" && activeImage === img
                     ? "border-red-600"
                     : "border-transparent hover:border-gray-300"
                 }`}
-                onMouseEnter={() => setActiveImage(img)}
+                onClick={() => {
+                  setActiveMedia("image");
+                  setActiveImage(img);
+                }}
               >
                 <img src={img} className="w-full h-full object-contain" />
               </div>
@@ -115,7 +178,11 @@ const ProductDetail: React.FC = () => {
             <span className="cursor-pointer hover:text-red-600 flex items-center mr-4">
               <i className="mr-1">♥</i> 收藏
             </span>
-            <span className="cursor-pointer hover:text-red-600">分享</span>
+            <ShareButtons
+              productName={product.name}
+              productUrl={`/product/${product.id}`}
+              productImage={product.image}
+            />
           </div>
         </div>
 
@@ -180,16 +247,31 @@ const ProductDetail: React.FC = () => {
             <div className="flex items-center mt-3 text-xs text-gray-600">
               <span className="mr-4">
                 累计评价
-                <span className="text-[#e1140a] ml-1">9999+</span>
+                <span className="text-[#e1140a] ml-1">{commentStats.totalCount || 9999}+</span>
               </span>
               <span className="mr-4">
                 好评率
-                <span className="text-[#e1140a] ml-1">99%</span>
+                <span className="text-[#e1140a] ml-1">
+                  {commentStats.totalCount > 0
+                    ? Math.round((commentStats.ratingDistribution[4] + commentStats.ratingDistribution[5]) / commentStats.totalCount * 100)
+                    : 99}%
+                </span>
+              </span>
+              <span className="mr-4">
+                评分
+                <span className="text-[#e1140a] ml-1">
+                  {commentStats.averageRating || 4.8}分
+                </span>
               </span>
               <span>
                 累计销量
                 <span className="text-[#e1140a] ml-1">5万+</span>
               </span>
+            </div>
+    
+            {/* 右侧侧边栏：最近浏览 */}
+            <div className="w-[280px] ml-8 flex-shrink-0">
+              <RecentProducts currentProductId={product.id} />
             </div>
           </div>
 
@@ -226,7 +308,9 @@ const ProductDetail: React.FC = () => {
             <div className="border border-gray-300 px-2 py-1 cursor-pointer mr-2">
               北京 北京市 海淀区
             </div>
-            <span className="font-bold">有货</span>
+            <span className={`font-bold ${product.stock && product.stock > 0 ? "text-green-600" : "text-red-600"}`}>
+              {product.stock && product.stock > 0 ? `有货 (${product.stock}件)` : "缺货"}
+            </span>
           </div>
 
           <div className="w-full h-[1px] bg-gray-200 my-4"></div>
@@ -274,7 +358,8 @@ const ProductDetail: React.FC = () => {
             <span className="text-sm text-gray-500 w-[60px]">购买数量</span>
             <div className="flex border border-gray-300">
               <button
-                className="w-[30px] h-[30px] bg-[#f8f8f8] text-gray-500"
+                className="w-[30px] h-[30px] bg-[#f8f8f8] text-gray-500 disabled:opacity-50"
+                disabled={quantity <= 1}
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
               >
                 -
@@ -286,24 +371,40 @@ const ProductDetail: React.FC = () => {
                 className="w-[46px] h-[30px] text-center border-l border-r border-gray-300 text-sm"
               />
               <button
-                className="w-[30px] h-[30px] bg-[#f8f8f8] text-gray-500"
+                className="w-[30px] h-[30px] bg-[#f8f8f8] text-gray-500 disabled:opacity-50"
+                disabled={product.stock ? quantity >= product.stock : false}
                 onClick={() => setQuantity(quantity + 1)}
               >
                 +
               </button>
             </div>
+            {product.stock && (
+              <span className="text-xs text-gray-500 ml-2">
+                库存：{product.stock}件
+              </span>
+            )}
           </div>
 
           {/* 按钮组 */}
           <div className="flex gap-4">
             <button
-              className="w-[160px] h-[50px] bg-[#e1140a] text-white text-[18px] font-bold rounded-sm hover:bg-[#c91008] transition-colors"
+              className={`w-[160px] h-[50px] text-white text-[18px] font-bold rounded-sm transition-colors ${
+                product.stock && product.stock > 0
+                  ? "bg-[#e1140a] hover:bg-[#c91008]"
+                  : "bg-gray-400 cursor-not-allowed"
+              }`}
+              disabled={!(product.stock && product.stock > 0)}
               onClick={handleBuyNow}
             >
-              立即购买
+              {product.stock && product.stock > 0 ? "立即购买" : "缺货"}
             </button>
             <button
-              className="w-[160px] h-[50px] bg-[#ffeded] border border-[#e1140a] text-[#e1140a] text-[18px] font-bold rounded-sm hover:bg-[#ffdcdc] transition-colors"
+              className={`w-[160px] h-[50px] text-[18px] font-bold rounded-sm transition-colors ${
+                product.stock && product.stock > 0
+                  ? "bg-[#ffeded] border border-[#e1140a] text-[#e1140a] hover:bg-[#ffdcdc]"
+                  : "bg-gray-100 border border-gray-300 text-gray-400 cursor-not-allowed"
+              }`}
+              disabled={!(product.stock && product.stock > 0)}
               onClick={handleAddToCart}
             >
               加入购物车
@@ -416,12 +517,21 @@ const ProductDetail: React.FC = () => {
           )}
 
           {activeTab === "comments" && (
-            <div className="p-20 text-center text-gray-500 bg-gray-50">
-              暂无评价数据
-            </div>
+            <ProductComments productId={product.id} />
           )}
         </div>
       </div>
+
+      {/* 相关商品推荐 */}
+      <RelatedProducts currentProductId={product.id} />
+
+      {/* 图片放大模态框 */}
+      <ImageModal
+        isOpen={isModalOpen}
+        imageSrc={modalImage}
+        altText={product.name}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };
