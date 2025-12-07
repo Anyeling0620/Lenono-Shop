@@ -20,6 +20,8 @@ export interface MainProduct {
   }[];
   serviceTags?: string[];
   detailImages?: string[];
+  videoUrl?: string; // 商品视频URL
+  stock?: number; // 库存数量
 }
 
 export interface MainProductCategory {
