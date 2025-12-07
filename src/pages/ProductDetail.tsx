@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { findProductById } from "../assets/data/mockProducts";
 import type { MainProduct } from "../types/mainProduct";
@@ -13,36 +13,40 @@ import DeliverySelector from "../component/DeliverySelector/DeliverySelector";
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [product, setProduct] = useState<MainProduct | null>(null);
   const { addToCart, replaceWithSingle } = useCart();
   const navigate = useNavigate();
 
+  // 使用useMemo计算商品数据和相关状态，避免在useEffect中调用setState
+  const productData = React.useMemo(() => {
+    if (!id) return null;
+    const found = findProductById(id);
+    if (!found) return null;
+
+    // 计算默认规格
+    const defaultSpecs: { [key: string]: string } = {};
+    found.specOptions?.forEach((spec) => {
+      defaultSpecs[spec.label] = spec.values[0];
+    });
+
+    return {
+      product: found,
+      defaultImage: found.image,
+      defaultSpecs
+    };
+  }, [id]);
+
+  // 使用计算结果作为state的初始值
+  const [product] = useState<MainProduct | null>(() => productData?.product || null);
+  const [activeImage, setActiveImage] = useState<string>(() => productData?.defaultImage || "");
+  const [selectedSpecs, setSelectedSpecs] = useState<{ [key: string]: string }>(() => productData?.defaultSpecs || {});
+
   // 交互状态
-  const [activeImage, setActiveImage] = useState<string>("");
   const [activeMedia, setActiveMedia] = useState<"image" | "video">("image");
   const [quantity, setQuantity] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImage, setModalImage] = useState<string>("");
-  const [selectedSpecs, setSelectedSpecs] = useState<{ [key: string]: string }>(
-    {}
-  );
   const [activeTab, setActiveTab] = useState("detail");
 
-  useEffect(() => {
-    if (id) {
-      const found = findProductById(id);
-      if (found) {
-        setProduct(found);
-        setActiveImage(found.image); // 默认显示主图
-        // 默认选中第一个规格
-        const defaultSpecs: any = {};
-        found.specOptions?.forEach((spec: { label: string; values: string[] }) => {
-          defaultSpecs[spec.label] = spec.values[0];
-        });
-        setSelectedSpecs(defaultSpecs);
-      }
-    }
-  }, [id]);
 
   if (!product)
     return (
