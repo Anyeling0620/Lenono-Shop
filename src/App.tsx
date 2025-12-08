@@ -17,6 +17,7 @@ import UserCenter from "./pages/UserCenter"
 import UserLayout from "./component/Layout/UserLayout"
 import ProtectedRoute from "./component/ProtectedRoute"
 import useAuthLifecycle from "./hooks/useAuthLifecycle"
+import MyOrder from "./pages/MyOrder";
 
 /**
  * App组件：应用程序的主要组件，负责路由配置和布局
@@ -47,6 +48,7 @@ function App() {
             <Route path="product/:id" element={<ProductDetail />} />
             <Route path="shopping-cart" element={<ShoppingCart />} />
             <Route path="checkout" element={<Checkout />} />
+            <Route path="my-order" element={<ProtectedRoute redirectTo={"/login"}><MyOrder /></ProtectedRoute>} />
           </Route>
 
           <Route element={<UserLayout />}>

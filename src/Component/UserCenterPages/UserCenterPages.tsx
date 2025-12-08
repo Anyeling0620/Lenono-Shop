@@ -1,10 +1,10 @@
 import React from 'react';
+import toast from 'react-hot-toast';
 import DeviceManager from './DeviceManager';
 import AccountInfo from './AccountInfo';
-import { Result } from 'antd';
-import Voucher from './Voucher';
-import Coupon from './Coupon';
 
+
+/* ------ 各个页面组件（你可以替换成自己的） ------ */
 
 const ChangeEmailByPassword = () => <div>通过原密码更换邮箱</div>;
 const ChangeEmailByCode = () => <div>通过验证码更换邮箱</div>;
@@ -20,7 +20,8 @@ const Address = () => <div>收货地址</div>;
 const AfterSale = () => <div>我的售后</div>;
 const Complaint = () => <div>我的投诉</div>;
 
-
+const Coupon = () => <div>我的优惠券</div>;
+const Voucher = () => <div>我的代金券</div>;
 
 const SysNotice = () => <div>系统通知</div>;
 const MyConsult = () => <div>我的咨询</div>;
@@ -54,21 +55,19 @@ const pages: Record<string, React.ReactNode> = {
 };
 
 
+
 interface Props {
     selectedKey: string;
 }
 
 const UserCenterPages: React.FC<Props> = ({ selectedKey }) => {
+    toast(selectedKey)
     return (
         <div className="bg-white ml-4 rounded-md  p-5 min-h-[90vh] w-full">
-            {pages[selectedKey] ||
-             <Result
-                status="404"
-                title="404"
-                subTitle=""
-            />}
+            {pages[selectedKey] || <div>页面不存在</div>}
         </div>
     );
 };
+
 
 export default UserCenterPages;
