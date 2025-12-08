@@ -4,12 +4,10 @@ import AccountInfo from './AccountInfo';
 import { Result } from 'antd';
 import Voucher from './Voucher';
 import Coupon from './Coupon';
-
-
-const ChangeEmailByPassword = () => <div>通过原密码更换邮箱</div>;
-const ChangeEmailByCode = () => <div>通过验证码更换邮箱</div>;
-const ChangePwdByPassword = () => <div>通过原密码更改</div>;
-const ChangePwdByCode = () => <div>通过验证码更改</div>;
+import ChangeEmailByCode from './ChangeEmailByCode';
+import ChangeEmailByPassword from './ChangeEmailByPassword';
+import ChangePwdByCode from './ChangePwdByCode';
+import ChangePwdByPassword from './ChangePwdByPassword';
 
 const Orders = () => <div>我的订单</div>;
 const Cart = () => <div>我的购物车</div>;
