@@ -1,176 +1,197 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useCart } from "../context/CartContext";
+// 文件路径: src/pages/Checkout.tsx
+
+import React, { useState, useMemo } from 'react';
+import { 
+  PlusOutlined, 
+  CheckCircleFilled, 
+  InfoCircleOutlined,
+  QuestionCircleOutlined,
+  DownOutlined
+} from '@ant-design/icons';
+import { Modal, Form, Input, Checkbox, Select, message, Cascader } from 'antd';
+import { Link, useNavigate } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
+import { chinaRegions } from '../assets/data/chinaRegions';
+
+const { Option } = Select;
 
 const Checkout: React.FC = () => {
-  const { items, totalCount, totalPrice, clearCart } = useCart();
   const navigate = useNavigate();
+  const { items, totalCount, totalPrice, clearCart } = useCart();
+
+  const [payMethod, setPayMethod] = useState('online'); 
+  const [couponTab, setCouponTab] = useState<'coupon' | 'code' | 'bean'>('coupon'); 
+  const [remark, setRemark] = useState(''); 
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+  const [invoiceType, setInvoiceType] = useState('electronic'); 
+  const [invoiceHeader, setInvoiceHeader] = useState('personal'); 
+  
+  // 控制下拉面板的状态
+  const [openPanelId, setOpenPanelId] = useState<string | null>(null);
+  const [openPanelType, setOpenPanelType] = useState<"service" | "gift" | "coupon" | null>(null);
+
+  const [addressForm] = Form.useForm();
+  const [invoiceForm] = Form.useForm();
+
+  const shippingFee = 0; 
+  const discount = 0;    
+  const finalPrice = totalPrice + shippingFee - discount;
+
+  // 地址级联数据
+  const addressOptions = useMemo(() => {
+    return chinaRegions.map((region) => ({
+      value: region.province,
+      label: region.province,
+      children: region.cities.map((city) => ({
+        value: city.city,
+        label: city.city,
+        children: city.districts.map((district) => ({
+          value: district,
+          label: district,
+        })),
+      })),
+    }));
+  }, []);
+
+  const handleTogglePanel = (id: string, type: "service" | "gift" | "coupon") => {
+    if (openPanelId === id && openPanelType === type) {
+      setOpenPanelId(null);
+      setOpenPanelType(null);
+    } else {
+      setOpenPanelId(id);
+      setOpenPanelType(type);
+    }
+  };
 
   const handleSubmitOrder = () => {
-    if (items.length === 0) return;
-    // 简单模拟提交订单：清空购物车并跳转到首页
-    clearCart();
-    navigate("/");
+    if (items.length === 0) {
+      message.error('购物车为空');
+      return;
+    }
+    const hide = message.loading('提交中...', 0);
+    setTimeout(() => {
+      hide();
+      message.success('订单提交成功！');
+      clearCart();
+      navigate("/");
+    }, 1000);
   };
 
   return (
-    <div className="bg-[#f5f5f5] min-h-screen font-sans text-[#333]">
-      <div className="w-[1200px] mx-auto pt-6 pb-12">
+    <div className="bg-[#f5f5f5] min-h-screen pb-20 pt-5 font-sans text-[#333]" onClick={() => { setOpenPanelId(null); setOpenPanelType(null); }}>
+      <div className="w-[1200px] mx-auto space-y-4">
         {/* 面包屑 */}
-        <div className="text-xs text-gray-500 flex items-center gap-1 mb-4">
-          <Link to="/" className="hover:text-[#e1140a]">
-            首页
-          </Link>
-          <span>{">"}</span>
-          <Link to="/shopping-cart" className="hover:text-[#e1140a]">
-            购物车
-          </Link>
-          <span>{">"}</span>
-          <span className="text-gray-700">填写订单</span>
+        <div className="text-xs text-gray-500 flex items-center gap-1 mb-2">
+          <Link to="/">首页</Link> &gt; <Link to="/shopping-cart">购物车</Link> &gt; <span>填写订单</span>
         </div>
-
-        <div className="flex gap-6">
-          {/* 左侧：收货信息 + 商品清单 */}
-          <div className="flex-1 space-y-4">
-            {/* 收货信息（静态表单区域） */}
-            <div className="bg-white rounded-sm shadow-sm p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-lg font-semibold">收货信息</h2>
-                <span className="text-xs text-[#e1140a] cursor-pointer">
-                  管理收货地址
-                </span>
-              </div>
-              <div className="space-y-2 text-sm text-gray-600">
-                <div>
-                  <span className="mr-2 font-medium">收货人：</span>
-                  张三
-                </div>
-                <div>
-                  <span className="mr-2 font-medium">联系方式：</span>
-                  138****8888
-                </div>
-                <div>
-                  <span className="mr-2 font-medium">收货地址：</span>
-                  北京市 海淀区 上地信息产业基地 XX号 XX楼
-                </div>
-              </div>
+        
+        {/* 收货地址 */}
+        <section className="bg-white p-6 shadow-sm">
+          <h2 className="text-[18px] text-[#333] mb-5">收货地址</h2>
+          <div className="flex flex-wrap gap-4">
+            <div onClick={() => setIsAddressModalOpen(true)} className="w-[298px] h-[148px] border border-[#e0e0e0] bg-[#f9f9f9] flex flex-col items-center justify-center cursor-pointer hover:border-[#ccc]">
+              <div className="w-8 h-8 rounded-full bg-[#e0e0e0] text-white flex items-center justify-center mb-2"><PlusOutlined /></div>
+              <span className="text-[#999] text-sm">添加新地址</span>
             </div>
+          </div>
+        </section>
 
-            {/* 支付方式（静态） */}
-            <div className="bg-white rounded-sm shadow-sm p-4">
-              <h2 className="text-lg font-semibold mb-3">支付方式</h2>
-              <div className="flex gap-3 text-sm">
-                <button className="px-3 py-1.5 border border-[#e1140a] text-[#e1140a] rounded-sm">
-                  在线支付
-                </button>
-                <button className="px-3 py-1.5 border border-gray-300 text-gray-600 rounded-sm">
-                  花呗分期
-                </button>
-                <button className="px-3 py-1.5 border border-gray-300 text-gray-600 rounded-sm">
-                  银行卡快捷
-                </button>
-              </div>
-            </div>
+        {/* 支付方式 */}
+        <section className="bg-white p-6 shadow-sm">
+          <h2 className="text-[18px] text-[#333] mb-5">支付方式</h2>
+          <div className="flex gap-4">
+            <button onClick={() => setPayMethod('online')} className={`px-8 py-2 border text-sm relative ${payMethod === 'online' ? 'border-[#e1140a]' : 'border-[#e0e0e0]'}`}>
+              在线支付
+              {payMethod === 'online' && <CheckCircleFilled className="absolute bottom-0 right-0 text-[#e1140a]" />}
+            </button>
+          </div>
+        </section>
 
-            {/* 商品清单 */}
-            <div className="bg-white rounded-sm shadow-sm">
-              <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center">
-                <h2 className="text-lg font-semibold">商品清单</h2>
-                <span className="text-xs text-gray-500">
-                  共 {totalCount} 件商品
-                </span>
-              </div>
-              {items.length === 0 ? (
-                <div className="px-4 py-10 text-center text-sm text-gray-500">
-                  当前没有待结算的商品，
-                  <Link to="/" className="text-[#e1140a] mx-1">
-                    去首页看看
-                  </Link>
-                </div>
-              ) : (
-                <div className="px-4 py-3">
-                  {items.map((item) => (
-                    <div
-                      key={item.id + item.specText}
-                      className="flex items-center py-3 border-b border-gray-100 last:border-b-0 text-sm"
-                    >
-                      <div className="w-[80px] h-[80px] border border-gray-100 flex items-center justify-center mr-3">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="max-w-full max-h-full object-contain"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-[13px] text-[#333] mb-1">
-                          {item.name}
-                        </div>
-                        <div className="text-xs text-gray-500 mb-1">
-                          规格：{item.specText}
-                        </div>
-                        <div className="text-xs text-gray-400">
-                          配送：预计 1-3 个工作日送达
-                        </div>
-                      </div>
-                      <div className="w-[100px] text-right text-sm text-[#e1140a]">
-                        ¥{item.price}
-                      </div>
-                      <div className="w-[60px] text-center text-xs text-gray-600">
-                        x{item.count}
-                      </div>
-                      <div className="w-[100px] text-right text-sm text-[#e1140a] font-semibold">
-                        ¥{item.price * item.count}
-                      </div>
+        {/* 送货清单 */}
+        <section className="bg-white p-6 shadow-sm">
+          <div className="flex justify-between mb-5">
+            <h2 className="text-[18px]">送货清单</h2>
+            <Link to="/shopping-cart" className="text-xs text-blue-500">返回购物车 &gt;</Link>
+          </div>
+          <div className="bg-[#fbfcff] border border-[#f0f0f0]">
+            <div className="p-5 border-b border-[#f0f0f0] font-bold text-sm">配送方式 <span className="ml-4 font-normal text-[#e1140a] border border-[#e1140a] px-2 text-xs">快递配送</span></div>
+            
+            {items.length > 0 ? items.map((item) => (
+              <div key={item.id} className="relative p-5 border-b border-[#f0f0f0] flex">
+                <img src={item.image} alt={item.name} className="w-[100px] h-[100px] object-contain border border-[#eee] bg-white mr-4" />
+                <div className="flex-1 pr-10">
+                  <h4 className="text-sm mb-2">{item.name}</h4>
+                  <p className="text-xs text-gray-500">规格：{item.specText}</p>
+                  
+                  {/* 操作按钮 */}
+                  <div className="mt-2 flex gap-2 text-xs">
+                    <button onClick={(e) => { e.stopPropagation(); handleTogglePanel(item.id, 'service'); }} className="border border-[#e1140a] text-[#e1140a] px-2">选择服务</button>
+                    <button onClick={(e) => { e.stopPropagation(); handleTogglePanel(item.id, 'gift'); }} className="border border-[#e1140a] text-[#e1140a] px-2">选择赠品</button>
+                  </div>
+
+                  {/* 悬浮面板 (简单示例) */}
+                  {openPanelId === item.id && (
+                    <div className="absolute left-[130px] top-[100px] z-10 bg-white border border-[#ffd0bf] p-3 shadow-lg w-[300px]" onClick={e => e.stopPropagation()}>
+                       <div className="text-[#e1140a] mb-2 font-bold">
+                         {openPanelType === 'service' ? '可选服务' : openPanelType === 'gift' ? '可选赠品' : '优惠券'}
+                       </div>
+                       <div className="text-xs text-gray-600">暂无更多可选项</div>
                     </div>
-                  ))}
+                  )}
                 </div>
-              )}
-            </div>
+                <div className="w-[150px] text-right">
+                  <div className="text-[#e1140a] font-bold">¥{item.price}</div>
+                  <div className="text-gray-500">x{item.count}</div>
+                </div>
+              </div>
+            )) : <div className="p-10 text-center text-gray-400">购物车为空</div>}
           </div>
+        </section>
 
-          {/* 右侧：结算信息汇总 */}
-          <div className="w-[280px]">
-            <div className="bg-white rounded-sm shadow-sm p-4 text-sm space-y-2">
-              <div className="flex justify-between text-xs text-gray-600">
-                <span>商品金额：</span>
-                <span>¥{totalPrice}</span>
-              </div>
-              <div className="flex justify-between text-xs text-gray-600">
-                <span>运费：</span>
-                <span className="text-[#18a600]">¥0.00</span>
-              </div>
-              <div className="flex justify-between text-xs text-gray-600">
-                <span>优惠：</span>
-                <span className="text-[#e1140a]">- ¥0.00</span>
-              </div>
-              <div className="border-t border-dashed border-gray-200 pt-3 mt-1 flex justify-between items-center">
-                <span className="text-xs text-gray-600">应付总额：</span>
-                <span className="text-[#e1140a] text-xl font-bold">
-                  ¥{totalPrice}
-                </span>
-              </div>
-              <div className="text-xs text-gray-500">
-                寄送至：北京市 海淀区 上地信息产业基地
-              </div>
-              <button
-                className={`w-full h-[40px] mt-3 text-base font-bold rounded-sm ${
-                  items.length === 0
-                    ? "bg-gray-300 text-white cursor-not-allowed"
-                    : "bg-[#e1140a] text-white hover:bg-[#c91008] transition-colors"
-                }`}
-                disabled={items.length === 0}
-                onClick={handleSubmitOrder}
-              >
-                提交订单
-              </button>
-            </div>
+        {/* 底部结算 */}
+        <section className="bg-white p-8 shadow-sm flex flex-col items-end">
+          <div className="text-right space-y-2 text-sm text-gray-600 mb-4">
+             <div><span className="text-[#e1140a] mr-1">{totalCount}</span>件商品，总金额：¥{totalPrice}</div>
+             <div>运费：¥{shippingFee}</div>
           </div>
-        </div>
+          <div className="flex items-center gap-4 text-xl">
+             <span>实付款：</span>
+             <span className="text-[#e1140a] font-bold text-3xl">¥{finalPrice}</span>
+          </div>
+          <button onClick={handleSubmitOrder} className="mt-4 w-[160px] h-[46px] bg-[#e1140a] text-white text-lg font-bold hover:bg-[#c91008]">提交订单</button>
+        </section>
       </div>
+
+      {/* 地址弹窗 */}
+      <Modal title="添加新地址" open={isAddressModalOpen} onCancel={() => setIsAddressModalOpen(false)} footer={null} width={600} centered>
+        <Form form={addressForm} layout="vertical" onFinish={() => { message.success('地址保存成功'); setIsAddressModalOpen(false); }}>
+           <div className="flex gap-4">
+             <Form.Item name="name" className="flex-1" rules={[{ required: true }]}><Input placeholder="姓名" /></Form.Item>
+             <Form.Item name="phone" className="flex-1" rules={[{ required: true }]}><Input placeholder="手机号" /></Form.Item>
+           </div>
+           <Form.Item name="region" rules={[{ required: true }]}><Cascader options={addressOptions} placeholder="选择省/市/区" /></Form.Item>
+           <Form.Item name="detail" rules={[{ required: true }]}><Input.TextArea placeholder="详细地址" /></Form.Item>
+           <div className="text-center"><button className="bg-[#e1140a] text-white px-8 py-2">保存</button></div>
+        </Form>
+      </Modal>
+
+      {/* 发票弹窗 */}
+      <Modal title="发票信息" open={isInvoiceModalOpen} onCancel={() => setIsInvoiceModalOpen(false)} footer={null} width={600} centered>
+         <div className="p-4 text-center">
+            <div className="flex justify-center gap-4 mb-4">
+               <button onClick={() => setInvoiceType('electronic')} className={`border px-4 py-2 ${invoiceType === 'electronic' ? 'border-red-500 text-red-500' : ''}`}>电子普通发票</button>
+               <button onClick={() => setInvoiceType('special')} className={`border px-4 py-2 ${invoiceType === 'special' ? 'border-red-500 text-red-500' : ''}`}>专用发票</button>
+            </div>
+            <div className="flex justify-center gap-4 mb-4">
+               <button onClick={() => setInvoiceHeader('personal')} className={`border px-4 py-2 ${invoiceHeader === 'personal' ? 'border-red-500 text-red-500' : ''}`}>个人</button>
+               <button onClick={() => setInvoiceHeader('unit')} className={`border px-4 py-2 ${invoiceHeader === 'unit' ? 'border-red-500 text-red-500' : ''}`}>单位</button>
+            </div>
+            <button onClick={() => { message.success('发票保存成功'); setIsInvoiceModalOpen(false); }} className="bg-[#e1140a] text-white px-8 py-2">确定</button>
+         </div>
+      </Modal>
     </div>
   );
 };
 
 export default Checkout;
-
-
