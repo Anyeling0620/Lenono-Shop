@@ -44,6 +44,7 @@ const ShoppingCart: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   useEffect(() => {
+     
     setSelectedIds((prev) => {
       const currentIds = items.map((it) => it.id);
       const kept = prev.filter((id) => currentIds.includes(id));
@@ -95,6 +96,7 @@ const ShoppingCart: React.FC = () => {
   >({});
 
   // 赠品价格映射
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const giftPrices = {
     gift1: 100,  // 联想原装笔记本电脑包
     gift2: 30,   // 无线鼠标套装
@@ -123,7 +125,7 @@ const ShoppingCart: React.FC = () => {
         }, 0);
         return sum + giftSum * it.count;
       }, 0),
-    [selectedItems, itemOptions]
+    [selectedItems, itemOptions, giftPrices]
   );
 
   // 节省金额：计算优惠券带来的节省

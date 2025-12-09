@@ -11,7 +11,6 @@ import FlashSalePage from "./pages/FlashSalePage"
 import ProductDetail from "./pages/ProductDetail"
 import ShoppingCart from "./pages/ShoppingCart"
 import Checkout from "./pages/Checkout"
-// 1. 确保引入了 CartProvider
 import { CartProvider } from "./context/CartContext"
 import UserCenter from "./pages/UserCenter"
 import UserLayout from "./component/Layout/UserLayout"
@@ -24,6 +23,7 @@ import Notebook from "./pages/Notebook"
 import Tablet from "./pages/Tablet"
 import DesktopComputer from "./pages/DesktopComputer"
 import Phone from "./pages/Phone"
+import MyOrder from "./pages/MyOrder";
 
 /**
  * App组件：应用程序的主要组件，负责路由配置和布局
@@ -37,7 +37,7 @@ function App() {
     <main>
       <WebSocketProvider> {/* websocket全局工具上下文 */}
         <CartProvider>
-          <Toaster position="top-center" reverseOrder={false}   
+          <Toaster position="top-center" reverseOrder={false}
             toastOptions={{
               style: {}
             }} />{/* 全局消息 */}
@@ -49,7 +49,7 @@ function App() {
               <Route path='login' element={<Login />} />
               <Route path='register' element={<Register />} />
               <Route path='new-product' element={<NewProduct />} />
-               <Route path="notebook-computer" element={<Notebook />} />
+              <Route path="notebook-computer" element={<Notebook />} />
               <Route path='tablet-phone' element={<Tablet />} />
               <Route path='desktop-computer' element={<DesktopComputer />} />
               <Route path='phone' element={<Phone />} />
@@ -59,6 +59,7 @@ function App() {
               <Route path="shopping-cart" element={<ShoppingCart />} />
               <Route path="checkout" element={<Checkout />} />
               <Route path="my-consult/:customerId" element={<MyConsult />} />
+              <Route path="my-order" element={<ProtectedRoute redirectTo={"/login"}><MyOrder /></ProtectedRoute>} />
             </Route>
 
             <Route element={<UserLayout />}>

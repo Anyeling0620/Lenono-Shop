@@ -19,7 +19,7 @@ const functionButtons: fbItem[] = [
   {
     icon: <RiFileList2Line size={40} />,
     text: '我的订单',
-    to: '',
+    to: '/my-order',
     hasBadge: false,
   },
   {
