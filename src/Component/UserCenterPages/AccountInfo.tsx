@@ -12,6 +12,7 @@ import globalErrorHandler from "../../utils/globalAxiosErrorHandler";
 import { useRequest } from "ahooks";
 import { getAccountInfo, updateAccountInfo, uploadAvatar } from "../../services/accountInfo";
 import { getUserAvatarUrl } from "../../utils/imageConfig";
+import useUserInfoStore from "../../store/userInfostore";
 
 /** * 账户信息验证模式 * 使用zod库定义账户信息的验证规则 */
 const accountInfoSchema = z.object({
@@ -43,6 +44,7 @@ const AccountInfo: React.FC = () => {
     const [account, setAccount] = useState<string>("");
     const [memberType, setMemberType] = useState<string>("");
     const [email, setEmail] = useState<string>("");
+    const setEmailToUserInfo = useUserInfoStore((state) => state.setEmail);  // 邮箱
 
     const {
         control,
@@ -73,6 +75,7 @@ const AccountInfo: React.FC = () => {
                 setMemberType(info.memberType || "普通会员");
                 setEmail(info.email);
                 setServerAvatarUrl(info?.avatarUrl || null);
+                setEmailToUserInfo(info.email);
 
                 // 将 API 的字段映射到表单：birthday -> Dayjs -> Date for zod
                 const birthdayDate = info.birthday ? new Date(info.birthday) : new Date();

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import ProductListToPages from '../component/ProductListToPages'
 
 const Notebook = () => {
-   const images = [
+    const images = [
         'https://picsum.photos/800/400?random=1',
         'https://picsum.photos/800/400?random=2',
         'https://picsum.photos/800/400?random=3',
@@ -14,7 +14,8 @@ const Notebook = () => {
     return (
         <div className='bg-[#f5f5f5]'>
             <Carousel
-                autoplay
+                autoplay={{ dotDuration: true }}
+
                 autoplaySpeed={2000}
                 draggable
                 arrows
@@ -33,7 +34,7 @@ const Notebook = () => {
                     </div>
                 ))}
             </Carousel>
-            <ProductListToPages type={'notebook'}/>
+            <ProductListToPages type={'notebook'} />
         </div>
     )
 }
