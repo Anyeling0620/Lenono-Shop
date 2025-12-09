@@ -35,7 +35,7 @@ export default function DeviceManager() {
 
                 // await new Promise((r) => setTimeout(r, 400));
 
-                 const devices = await axiosService.getLoginDevices();
+                const devices = await axiosService.getLoginDevices();
                 setDevices(devices);
             } catch (err) {
                 globalErrorHandler.handle(err, toast.error);
@@ -68,6 +68,7 @@ export default function DeviceManager() {
         setLogoutAll(true);
         try {
             await axiosService.logoutOtherDevices();
+            setDevices(prev => prev.filter((value) => value.device_id === axiosService.getCurrentDeviceInfo().deviceId))
         } catch (error) {
             globalErrorHandler.handle(error, toast.error);
         } finally {
@@ -88,8 +89,6 @@ export default function DeviceManager() {
                 subTitle="Sorry, you are not authorized to access this page."
             />)
     }
-
-
 
     return (
         <div className="py-6 w-full px-6 mx-auto space-y-6">

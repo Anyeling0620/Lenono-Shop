@@ -4,6 +4,8 @@ import AccountInfo from './AccountInfo';
 import { Result } from 'antd';
 import Voucher from './Voucher';
 import Coupon from './Coupon';
+import SysNotice from './SysNotice';
+import ConsultList from './ConsultList';
 
 
 const ChangeEmailByPassword = () => <div>通过原密码更换邮箱</div>;
@@ -21,9 +23,6 @@ const AfterSale = () => <div>我的售后</div>;
 const Complaint = () => <div>我的投诉</div>;
 
 
-
-const SysNotice = () => <div>系统通知</div>;
-const MyConsult = () => <div>我的咨询</div>;
 
 
 
@@ -50,7 +49,7 @@ const pages: Record<string, React.ReactNode> = {
     13: <Voucher />,
 
     14: <SysNotice />,
-    15: <MyConsult />,
+    15: <ConsultList />,
 };
 
 

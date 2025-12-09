@@ -12,13 +12,7 @@ const carouselData: CarouselItemType[] = [
     { imageName: "1.jpg", linkUrl: "/new", alt: "暖冬福利季" },
     { imageName: "2.png", linkUrl: "/new", alt: "新品发布" },
     { imageName: "3.png", linkUrl: "/new", alt: "新年好礼" },
-    { imageName: "4.jpg", linkUrl: "/new", alt: "新年好礼" },
-    { imageName: "5.jpg", linkUrl: "/new", alt: "新年好礼" },
 ];
-
-
-// 同学的商品组数据 (下半部分)
-// 修复：将 ID 改为字符串，并修正数据结构
 
 // --- 2. 页面组件 ---
 

@@ -1,4 +1,3 @@
-
 import { CgShoppingCart } from "react-icons/cg"; import { MdOutlineEditLocation } from "react-icons/md";
 import { RiMessageLine } from "react-icons/ri"; import { RiFileList2Line } from "react-icons/ri";
 import type { FC } from "react";

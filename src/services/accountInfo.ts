@@ -65,6 +65,7 @@ export async function uploadAvatar(file: File): Promise<string> {
 
 
 interface UserInfo {
+    userId: string;
     avatar: string;
     nikeName: string;
     memberType: string;
