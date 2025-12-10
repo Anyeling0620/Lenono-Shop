@@ -9,8 +9,7 @@ import {
   CheckOutlined
 } from '@ant-design/icons';
 import { Modal, Form, Input, Checkbox, Select, message, Cascader } from 'antd';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { CascaderProps } from 'antd';
+
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { chinaRegions } from '../assets/data/chinaRegions';
