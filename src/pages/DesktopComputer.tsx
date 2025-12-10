@@ -14,7 +14,7 @@ const DesktopComputer = () => {
     return (
         <div className='bg-[#f5f5f5]'>
             <Carousel
-                autoplay
+                autoplay={{ dotDuration: true }}
                 autoplaySpeed={2000}
                 draggable
                 arrows

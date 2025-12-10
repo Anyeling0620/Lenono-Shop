@@ -328,6 +328,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
               label={buttonText}
               loading={isSubmitting}
               disabled={!agreed}
+              className="w-[370px] mt-1"
             />
 
             {/* 切换登录/注册链接 */}

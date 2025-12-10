@@ -8,6 +8,7 @@ interface UserInfoStore {
     readonly couponsCount: number;
     readonly messageCount: number;
     readonly notificationCount: number;
+    readonly email:string,
 
     uploadAvatar: (avatar: string) => void;
     updateNikeName: (nikeName: string) => void;
@@ -24,6 +25,7 @@ interface UserInfoStore {
         memberType: string;
     }) => void;
 
+    setEmail: (email: string) => void;
     setCouponsCount: (couponsCount: number) => void;
     setMessageCount: (messageCount: number) => void;
     setNotificationCount: (notificationCount: number) => void;
@@ -39,6 +41,7 @@ const useUserInfoStore = create<UserInfoStore>()((set) => ({
     couponsCount: 0,
     messageCount: 0,
     notificationCount: 0,
+    email:'',
 
     uploadAvatar: (avatar: string) => set({ avatar }),
     updateNikeName: (nikeName: string) => set({ nikeName }),
@@ -71,6 +74,7 @@ const useUserInfoStore = create<UserInfoStore>()((set) => ({
     setUserInfo: ({userId, avatar, nikeName, memberType }) =>
         set({ userId, avatar, nikeName, memberType }),
 
+    setEmail: (email: string) => set({ email }),
     setCouponsCount: (couponsCount: number) => set({ couponsCount }),
     setMessageCount: (messageCount: number) => set({ messageCount }),
     setNotificationCount: (notificationCount: number) => set({ notificationCount }),
@@ -84,6 +88,7 @@ const useUserInfoStore = create<UserInfoStore>()((set) => ({
             couponsCount: 0,
             messageCount: 0,
             notificationCount: 0,
+            email:''
         }),
 }));
 

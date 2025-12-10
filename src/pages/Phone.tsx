@@ -14,7 +14,8 @@ const Phone = () => {
     return (
         <div className='bg-[#f5f5f5]'>
             <Carousel
-                autoplay
+                autoplay={{ dotDuration: true }}
+
                 autoplaySpeed={2000}
                 draggable
                 arrows
@@ -33,7 +34,7 @@ const Phone = () => {
                     </div>
                 ))}
             </Carousel>
-            <ProductListToPages type={'phone'}/>
+            <ProductListToPages type={'phone'} />
         </div>
     )
 }
