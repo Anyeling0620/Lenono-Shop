@@ -149,7 +149,7 @@ const UserCenter: FC = () => {
         }, {
         manual: true,
         debounceLeading: true,
-        debounceWait: 100
+        debounceWait: 1000
     });
     /* ----------- 点击菜单项：切换选中 ----------- */
     const onClick: MenuProps['onClick'] = ({ key }) => {

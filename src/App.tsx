@@ -63,7 +63,7 @@ function App() {
             </Route>
 
             <Route element={<UserLayout />}>
-              <Route path="user-center" element={<ProtectedRoute redirectTo={"/login"} ><UserCenter /></ProtectedRoute>} />
+              <Route path="user-center" element={<ProtectedRoute redirectTo={"/index"} ><UserCenter /></ProtectedRoute>} />
               <Route path="consult" element={<ConsultList />} />
             </Route>
 

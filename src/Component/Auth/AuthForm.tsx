@@ -16,6 +16,7 @@ import useVerificationCode from "../../hooks/useVerificationCode";
 import { axiosInstance, axiosService } from "../../services/axiosService";
 import toast from "react-hot-toast";
 import globalErrorHandler from "../../utils/globalAxiosErrorHandler";
+import { API_PATHS } from "../../services/apiPaths";
 
 // 组件属性类型
 interface AuthFormProps {
@@ -183,8 +184,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
     }
 
     try {
-      await axiosInstance.put('/send-verification-code', { email:email });
-      await axiosInstance.post('/send-verification-code', { email:email });
+      await axiosInstance.post(API_PATHS.SEND_VERIFICATION_CODE, { email:email });
       startCountdown();
     } catch (error) {
       globalErrorHandler.handle(error, toast.error);

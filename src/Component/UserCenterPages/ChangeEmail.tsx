@@ -8,6 +8,11 @@ import VerificationCodeField from '../Auth/VerificationCodeField';
 import SubmitButton from '../Auth/SubmitButton';
 import useVerificationCode from '../../hooks/useVerificationCode';
 import useUserInfoStore from '../../store/userInfostore';
+import { useRequest } from 'ahooks';
+import axiosService, { type ApiResponse, axiosInstance } from '../../services/axiosService';
+import { API_PATHS } from '../../services/apiPaths';
+import globalErrorHandler from '../../utils/globalAxiosErrorHandler';
+import toast from 'react-hot-toast';
 
 const { TabPane } = Tabs;
 
@@ -50,7 +55,7 @@ const ChangeEmail: React.FC<ChangeEmailProps> = ({ onSubmitByCode, onSubmitByPas
 
     const codeMethods = useForm<CodeFormValues>({
         resolver: zodResolver(codeSchema),
-        defaultValues: { oldEmail: '', oldCode: '', newEmail: '', newCode: '' },
+        defaultValues: { oldEmail: currentEmail || '', oldCode: '', newEmail: '', newCode: '' },
         mode: 'onChange',
     });
 
@@ -66,27 +71,45 @@ const ChangeEmail: React.FC<ChangeEmailProps> = ({ onSubmitByCode, onSubmitByPas
     const { isSending: sendingOld, countdown: countdownOld, startCountdown: startOldCountdown } = useVerificationCode();
     const { isSending: sendingNew, countdown: countdownNew, startCountdown: startNewCountdown } = useVerificationCode();
 
+
+    const { run: sendCode } = useRequest(
+        (email) => axiosInstance.post(API_PATHS.SEND_VERIFICATION_CODE, {
+            email,
+        }),
+        {
+            manual: true,
+            debounceWait: 300,
+            onError: (err) => {
+                globalErrorHandler.handle(err, toast.error)
+            }
+        }
+    )
+
     const sendOldCode = async () => {
         const email = watchCode('oldEmail');
-        if (!email) return message.error('请输入旧邮箱');
+        if (!email) return message.error('邮箱为空，请刷新');
         if (email !== currentEmail) return message.error('请输入正确的旧邮箱');
+        sendCode(email)
         startOldCountdown();
-        message.success('旧邮箱验证码已发送');
+        // message.success('旧邮箱验证码已发送');
     };
 
     const sendNewCodeByCode = async () => {
         const email = watchCode('newEmail');
         if (!email) return message.error('请输入新邮箱');
         if (email === currentEmail) return message.error('新邮箱不能与旧邮箱相同');
+
+        sendCode(email)
         startNewCountdown();
-        message.success('新邮箱验证码已发送');
+        // message.success('新邮箱验证码已发送');
     };
 
     const sendNewCodeByPassword = async () => {
         const email = watchPassword('newEmail');
         if (!email) return message.error('请输入新邮箱');
+        sendCode(email)
         startNewCountdown();
-        message.success('新邮箱验证码已发送');
+        //message.success('新邮箱验证码已发送');
     };
 
     // 点击“下一步”时验证当前步骤
@@ -110,8 +133,10 @@ const ChangeEmail: React.FC<ChangeEmailProps> = ({ onSubmitByCode, onSubmitByPas
         if (valid) setCurrentStepPassword((prev) => prev + 1);
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const renderFormErrors = (errorsObj: any) => {
-        const messages = Object.values(errorsObj).map((err: any, idx) => err?.message).filter(Boolean);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const messages = Object.values(errorsObj).map((err: any) => err?.message).filter(Boolean);
         if (!messages.length) return null;
         return (
             <div className="bg-[#ffe8e8] text-[#e1140a] p-2 rounded mb-2">
@@ -119,6 +144,51 @@ const ChangeEmail: React.FC<ChangeEmailProps> = ({ onSubmitByCode, onSubmitByPas
             </div>
         );
     };
+
+    interface ChangeEmailPayload {
+        type: 'code' | 'password';
+        old_email?: string;
+        old_code?: string;
+        new_email: string;
+        new_code: string;
+        password?: string;
+    }
+
+    const { run: changeEmail } = useRequest(
+        (payload: ChangeEmailPayload) => axiosInstance.post<ApiResponse<null>>(API_PATHS.USER_CHANGE_EMAIL, payload),
+        {
+            manual: true,
+            onSuccess: () => {
+                axiosService.forceLogout();
+            },
+            onError: (err) => {
+                globalErrorHandler.handle(err, toast.error);
+            }
+        }
+    );
+
+    // 使用示例
+    const handleChangeEmail = async () => {
+        if (activeTab === 'code') {
+            const values = codeMethods.getValues();
+            await changeEmail({
+                type: 'code',
+                old_email: values.oldEmail,
+                old_code: values.oldCode,
+                new_email: values.newEmail,
+                new_code: values.newCode,
+            });
+        } else {
+            const values = passwordMethods.getValues();
+            await changeEmail({
+                type: 'password',
+                new_email: values.newEmail,
+                new_code: values.newCode,
+                password: values.password,
+            });
+        }
+    };
+
 
     return (
         <div className="p-6 w-full mx-auto">
@@ -146,7 +216,7 @@ const ChangeEmail: React.FC<ChangeEmailProps> = ({ onSubmitByCode, onSubmitByPas
                             <form onSubmit={handleSubmitCode(onSubmitByCode || (() => { }))} className="flex flex-col gap-4">
                                 {currentStepCode === 0 && (
                                     <>
-                                        <FormField type="email" placeholder="请输入旧邮箱" error={errorsCode.oldEmail?.message} {...codeMethods.register('oldEmail')} />
+                                        <FormField type="email" disabled placeholder="请输入旧邮箱" error={errorsCode.oldEmail?.message} {...codeMethods.register('oldEmail')} />
                                         <VerificationCodeField placeholder="请输入旧邮箱验证码" error={errorsCode.oldCode?.message} verificationSent={sendingOld} countdown={countdownOld} onSendCode={sendOldCode} {...codeMethods.register('oldCode')} />
                                         <SubmitButton label="下一步" onClick={nextStepCode} type="button" className='w-auto mt-5' />
                                     </>
@@ -165,8 +235,8 @@ const ChangeEmail: React.FC<ChangeEmailProps> = ({ onSubmitByCode, onSubmitByPas
                                     <>
                                         {renderFormErrors(errorsCode)}
                                         <div className="flex justify-between gap-2 mt-5">
-                                            <SubmitButton label="提交" loading={codeMethods.formState.isSubmitting} className='w-1/2' />
                                             <SubmitButton label="上一步" onClick={() => setCurrentStepCode(1)} type="button" className='w-1/2 ' />
+                                            <SubmitButton label="提交" onClick={handleChangeEmail} loading={codeMethods.formState.isSubmitting} className='w-1/2' />
 
                                         </div>
                                     </>
@@ -208,8 +278,8 @@ const ChangeEmail: React.FC<ChangeEmailProps> = ({ onSubmitByCode, onSubmitByPas
                                     <>
                                         {renderFormErrors(errorsPassword)}
                                         <div className="flex justify-between gap-2 mt-5">
-                                            <SubmitButton label="提交" loading={passwordMethods.formState.isSubmitting} className='w-1/2' />
                                             <SubmitButton label="上一步" onClick={() => setCurrentStepPassword(1)} type="button" className='w-1/2' />
+                                            <SubmitButton label="提交" onClick={handleChangeEmail} loading={passwordMethods.formState.isSubmitting} className='w-1/2' />
                                         </div>
                                     </>
                                 )}

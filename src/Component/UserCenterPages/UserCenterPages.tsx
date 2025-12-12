@@ -7,11 +7,11 @@ import SysNotice from './SysNotice';
 import ConsultList from './ConsultList';
 import ChangeEmail from './ChangeEmail';
 import ChangePassword from './ChangePassword';
+import Comments from './Comments';
 
 
 const Orders = () => <div>我的订单</div>;
 const Cart = () => <div>我的购物车</div>;
-const Comments = () => <div>我的评价</div>;
 const Roast = () => <div>我的吐槽</div>;
 const Address = () => <div>收货地址</div>;
 

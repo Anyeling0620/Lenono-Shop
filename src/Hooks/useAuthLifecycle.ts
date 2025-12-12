@@ -5,6 +5,7 @@ import { EVENT_NAMES } from "../services/axiosService";
 import globalErrorHandler from "../utils/globalAxiosErrorHandler";
 import toast from "react-hot-toast";
 import { getUserInfo } from "../services/accountInfo";
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -19,16 +20,19 @@ const handleLoginUserInfo = async () => {
 }
 
 const useAuthLifecycle = () => {
+    const nav = useNavigate();
     useEffect(() => {
 
         const handleToken = () => {
             useAuthStore.getState().login();
             handleLoginUserInfo();
+            nav('/')
         }
 
         const handleExpired = () => {
             useAuthStore.getState().logout();
             useUserInfoStore.getState().clearUserInfo(); // 清空用户信息
+            nav('/')
         }
         window.addEventListener(EVENT_NAMES.AUTH_EXPIRED, handleExpired);
         window.addEventListener(EVENT_NAMES.TOKEN_REFRESHED, handleToken);

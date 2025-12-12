@@ -47,7 +47,7 @@ export default function DeviceManager() {
     }, []);
 
     // API 请求封装
-    const { run: logoutRequest } = useRequest(axiosService.logoutDevice, {
+    const { run: logoutRequest } = useRequest((deviceId: string) => axiosService.logoutDevice(deviceId), {
         manual: true,
         debounceTrailing: true,
         debounceWait: 1000,
@@ -62,10 +62,17 @@ export default function DeviceManager() {
         },
     });
 
+     console.log(axiosService.getCurrentDeviceInfo().deviceId);
+     console.log(devices[0]);
+
+
+
 
     async function handleOutAllDevices() {
-        if (devices.length === 1 && devices[0].device_id === axiosService.getCurrentDeviceInfo().deviceId) return;
-        setLogoutAll(true);
+        if (devices.length === 1 && devices[0].device_id === axiosService.getCurrentDeviceInfo().deviceId) {
+            setLogoutAll(false);
+            return;
+        }
         try {
             await axiosService.logoutOtherDevices();
             setDevices(prev => prev.filter((value) => value.device_id === axiosService.getCurrentDeviceInfo().deviceId))
@@ -105,7 +112,8 @@ export default function DeviceManager() {
                 <div className="flex items-eng ">
                     <button
                         onClick={() => {
-                            handleOutAllDevices();
+                            setLogoutAll(true);
+                            setTimeout(handleOutAllDevices, 500)
                         }}
                         disabled={logoutAll}
                         className={`

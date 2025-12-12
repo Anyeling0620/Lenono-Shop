@@ -1,6 +1,7 @@
 
+import toast from "react-hot-toast";
 import { API_PATHS } from "./apiPaths";
-import { axiosInstance, type ApiResponse } from "./axiosService";
+import axiosService, { axiosInstance, type ApiResponse } from "./axiosService";
 
 /**
  * 账户信息接口
@@ -43,6 +44,7 @@ export async function updateAccountInfo(payload: {
         sex: payload.sex,
         birthday: payload.birthday,
     });
+    toast.success(res.data.message)
     return res.data;
 }
 
@@ -76,8 +78,11 @@ interface UserInfo {
  */
 export async function getUserInfo(): Promise<UserInfo> {
     // 发送GET请求获取登录用户信息
+    console.log('Current access token:', axiosService.getAccessToken());
     const response = await axiosInstance.get<ApiResponse<{ userInfo: UserInfo }>>(API_PATHS.USER_LOGIN_INFO)
     // 从响应数据中提取并返回用户信息
+    console.log(response.data);
+    
     return response.data.data.userInfo;
 }
 
