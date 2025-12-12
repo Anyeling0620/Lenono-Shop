@@ -133,17 +133,6 @@ const ChangeEmail: React.FC<ChangeEmailProps> = ({ onSubmitByCode, onSubmitByPas
         if (valid) setCurrentStepPassword((prev) => prev + 1);
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const renderFormErrors = (errorsObj: any) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const messages = Object.values(errorsObj).map((err: any) => err?.message).filter(Boolean);
-        if (!messages.length) return null;
-        return (
-            <div className="bg-[#ffe8e8] text-[#e1140a] p-2 rounded mb-2">
-                {messages.map((msg, idx) => <div key={idx}>{msg}</div>)}
-            </div>
-        );
-    };
 
     interface ChangeEmailPayload {
         type: 'code' | 'password';
@@ -153,7 +142,6 @@ const ChangeEmail: React.FC<ChangeEmailProps> = ({ onSubmitByCode, onSubmitByPas
         new_code: string;
         password?: string;
     }
-
     const { run: changeEmail } = useRequest(
         (payload: ChangeEmailPayload) => axiosInstance.post<ApiResponse<null>>(API_PATHS.USER_CHANGE_EMAIL, payload),
         {
@@ -167,7 +155,6 @@ const ChangeEmail: React.FC<ChangeEmailProps> = ({ onSubmitByCode, onSubmitByPas
         }
     );
 
-    // 使用示例
     const handleChangeEmail = async () => {
         if (activeTab === 'code') {
             const values = codeMethods.getValues();
@@ -233,11 +220,9 @@ const ChangeEmail: React.FC<ChangeEmailProps> = ({ onSubmitByCode, onSubmitByPas
                                 )}
                                 {currentStepCode === 2 && (
                                     <>
-                                        {renderFormErrors(errorsCode)}
                                         <div className="flex justify-between gap-2 mt-5">
                                             <SubmitButton label="上一步" onClick={() => setCurrentStepCode(1)} type="button" className='w-1/2 ' />
                                             <SubmitButton label="提交" onClick={handleChangeEmail} loading={codeMethods.formState.isSubmitting} className='w-1/2' />
-
                                         </div>
                                     </>
                                 )}
@@ -276,7 +261,6 @@ const ChangeEmail: React.FC<ChangeEmailProps> = ({ onSubmitByCode, onSubmitByPas
                                 )}
                                 {currentStepPassword === 2 && (
                                     <>
-                                        {renderFormErrors(errorsPassword)}
                                         <div className="flex justify-between gap-2 mt-5">
                                             <SubmitButton label="上一步" onClick={() => setCurrentStepPassword(1)} type="button" className='w-1/2' />
                                             <SubmitButton label="提交" onClick={handleChangeEmail} loading={passwordMethods.formState.isSubmitting} className='w-1/2' />

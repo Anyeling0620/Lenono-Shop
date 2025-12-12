@@ -26,7 +26,8 @@ export interface Product { /** * 产品接口，定义了商品相关的属性 *
   link: string; //  产品链接
 
   desc?: string;          // 商品描述
-  soldPercent?: number;   // 已抢进度 (0-100)
+  soldCount?: number;   // 已抢数量
+  totalCount?: number;  // 参加秒杀的总库存量
 }
 
 export interface flashSaleMenu {

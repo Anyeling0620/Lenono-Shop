@@ -12,6 +12,7 @@ export const API_PATHS = {
     USER_UPDATE_INFO: '/user/update-info',
     USER_UPLOAD_AVATAR: '/user/upload-avatar',
     USER_LOGIN_INFO: '/user/login-user-info',
-    USER_CHANGE_EMAIL: '/user/change-email'
+    USER_CHANGE_EMAIL: '/user/change-email',
+    USER_CHANGE_PASSWORD: '/user/change-password'
 } as const;
 
