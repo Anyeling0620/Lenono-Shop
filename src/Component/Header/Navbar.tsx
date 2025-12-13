@@ -33,7 +33,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
 
   return (
     <ul className="float-left h-[60px] ml-[62px] m-0 list-none">
-      {items.map((item) => (
+      {items.map((item,index,array) => (
         <li
           key={item.path}
           className="
@@ -44,11 +44,12 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
           onClick={() => { handleClick(item.path) }}
         >
           <Link
-            to={item.path}
+            to={`${item.name==='新品'? '' : '/products/'}${item.path}`}
             target="_parent"
             className={`
               text-[16px] font-normal no-underline transition-colors duration-200
-              ${active === item.path ? "text-red-500" : "text-[#252525]"}
+              ${active === `/products/${item.path}` ? "text-red-500" : "text-[#252525]"}
+              ${item.path === active ? "text-red-500" : "text-[#252525]"}
             `}
           >
             {item.name}

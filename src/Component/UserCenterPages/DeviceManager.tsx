@@ -25,16 +25,6 @@ export default function DeviceManager() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // const data: DeviceInfo[] = Array.from({ length: 1 }).map((_, i) => ({
-                //     device_id: String(i + 1),
-                //     device_type: i % 2 === 0 ? "web" : "mobile_web",
-                //     device_name: i % 2 === 0 ? `Chrome Device ${i + 1} 1233333` : `Safari iPhone ${i + 1}`,
-                //     login_time: "2025-01-12 14:23:11",
-                //     ip_address: `192.168.0.${i}`,
-                // }));
-
-                // await new Promise((r) => setTimeout(r, 400));
-
                 const devices = await axiosService.getLoginDevices();
                 setDevices(devices);
             } catch (err) {

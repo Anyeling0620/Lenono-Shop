@@ -19,11 +19,8 @@ import useAuthLifecycle from "./hooks/useAuthLifecycle"
 import { WebSocketProvider } from "./services/ws/WebSocketProvider"
 import ConsultList from "./component/UserCenterPages/ConsultList"
 import MyConsult from "./component/UserCenterPages/MyConsult"
-import Notebook from "./pages/Notebook"
-import Tablet from "./pages/Tablet"
-import DesktopComputer from "./pages/DesktopComputer"
-import Phone from "./pages/Phone"
 import MyOrder from "./pages/MyOrder";
+import Product from "./pages/Product"
 
 /**
  * App组件：应用程序的主要组件，负责路由配置和布局
@@ -48,11 +45,8 @@ function App() {
               <Route path="index" element={<Index />} />
               <Route path='login' element={<Login />} />
               <Route path='register' element={<Register />} />
-              <Route path='new-product' element={<NewProduct />} />
-              <Route path="notebook-computer" element={<Notebook />} />
-              <Route path='tablet-phone' element={<Tablet />} />
-              <Route path='desktop-computer' element={<DesktopComputer />} />
-              <Route path='phone' element={<Phone />} />
+              <Route path='products/:type' element={<Product />} />
+              <Route path="new-product" element={<NewProduct />} />
               <Route path="search" element={<Search />} />
               <Route path="flash-sale" element={<FlashSalePage />} />
               <Route path="product/:id" element={<ProductDetail />} />

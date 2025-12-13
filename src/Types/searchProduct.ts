@@ -1,27 +1,41 @@
-/*
- * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @Date: 2025-11-27 20:26:40
- * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-27 23:14:31
- * @FilePath: \lenovo-shop\src\types\searchProduct.ts
- * @Description: 
- * 
- * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
- */
-export interface Product { /** * 产品接口定义 * 描述了一个产品的基本信息和属性 */
-    id: string; //  产品唯一标识符
-    name: string; //  产品名称
-    description: string; //  产品描述
-    image: string; //  产品图片链接
-    currentPrice: number; //  当前价格
-    isDiscount: boolean; //  是否处于折扣状态
-    originalPrice: number; //  原始价格
-    tags: { //  产品标签信息
-        self?: boolean; //  自营标签
-        coupon?: { money: number }; //  优惠券标签，包含优惠金额
-        custom?: boolean; //  自定义标签
-        tradeIn?: boolean; //  以旧换新标签
-        installment?: { month: number }; //  分期付款标签，包含分期月数
-    };
-    link: string;
+
+
+
+// 优惠券信息类型
+export interface ProductCoupon {
+  type: 'CASH' | 'DISCOUNT'; // 优惠类型：现金减免/折扣
+  value: number;         // 优惠值：现金金额/折扣比例(如0.85表示85折)
 }
+
+// 产品列表项类型
+export interface ProductItem {
+  productId: string; // 产品id
+  productName: string; // 产品名
+  description: string | null; // 产品描述
+  mainImage: string | null; // 主图
+  isCarousel: boolean; // 是否轮播
+  carouselImage: string | null; // 轮播图
+  minPrice: number; // 最低配置当前价格
+  originalPrice: number | null; // 原价
+  configId: string; // 最低价格对应的配置id
+  isSelfOperated: boolean; // 是否自营
+  hasCoupon: boolean; // 是否有优惠券
+  couponInfo: ProductCoupon | null; // 优惠券信息(有则返回)
+  isCustomizable: boolean; // 是否可定制
+  supportInstallment: boolean; // 是否支持分期付款
+  installmentNum: number | null; // 分期数
+    //新增：是否支持以旧换新
+  supportTradeIn: boolean;
+  // 新增：是否有库存（所有配置都无库存则为false）
+  hasStock: boolean;
+}
+
+// 接口返回值类型
+export interface ProductsResponse {
+  title: string; // 产品品类
+  productList: ProductItem[]; // 产品列表
+}
+
+export
+  type ProductType =
+  '笔记本' | '台式机' | '显示器' | '平板' | '手机' | '配件'
