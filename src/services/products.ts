@@ -8,6 +8,12 @@ export async function getProductList(type: ProductType) {
 }
 
 export async function getNewProductList() {
-     const res = await axiosInstance.get<ApiResponse<ProductsResponse[]>>(`${API_PATHS.GET_NEW_PRODUCT}`)
+    const res = await axiosInstance.get<ApiResponse<ProductsResponse[]>>(`${API_PATHS.GET_NEW_PRODUCT}`)
     return res.data.data
 }
+
+export async function getIndexProductList() {
+    const res = await axiosInstance.get<ApiResponse<ProductsResponse[]>>(`${API_PATHS.GET_INDEX_PRODUCT}`)
+    return res.data.data
+}
+

@@ -17,6 +17,7 @@ export const API_PATHS = {
 
     GET_PRODUCT: '/products',
     GET_NEW_PRODUCT:'/products/new/index',
+    GET_INDEX_PRODUCT:'/products/index/groups',
 
     
 
