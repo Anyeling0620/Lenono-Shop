@@ -1,4 +1,4 @@
-import type { MainProduct } from "../../types/mainProduct";
+import type { ProductItem } from "../../types/product";
 import Card from "./MainProductCard";
 import type { CarouselItemType } from "../../types/carouselItem";
 import Indicators from "../Carousel/Indicators";
@@ -6,16 +6,20 @@ import { useEffect, useState } from "react";
 import { useCallback, useRef } from "react";
 
 interface CategoryProps {
-  name: string;
-  image: CarouselItemType[];
-  products: MainProduct[];
+  group: {
+    title: string;
+    productList: ProductItem[];
+  };
 }
 
-const Category = ({ name, image, products }: CategoryProps) => {
+const Category = ({ group }: CategoryProps) => {
+  const name = group.title;
+  const products = group.productList;
+  const image: CarouselItemType[] = [{imageName: "https://p4.lefile.cn/fes/cms/2025/12/12/paw2mkso142v1kafd6y4jawfkrdqra866049.jpg", linkUrl: "https://p4.lefile.cn/fes/cms/2025/12/12/paw2mkso142v1kafd6y4jawfkrdqra866049.jpg", alt: "Image 1"},{imageName: "https://p1.lefile.cn/fes/cms/2025/11/26/migz3rsh5epkt5928ti5kvp2khyq7k298631.jpg", linkUrl: "https://p1.lefile.cn/fes/cms/2025/11/26/migz3rsh5epkt5928ti5kvp2khyq7k298631.jpg", alt: "Image 2"}]; 
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const timerRef = useRef<number | null>(null);
 
-  // 自动轮播切换
   const handleNavigate = useCallback(
     (direction: "next" | "prev") => {
       setTimeout(() => {
@@ -25,12 +29,11 @@ const Category = ({ name, image, products }: CategoryProps) => {
           }
           return (prev - 1 + image.length) % image.length;
         });
-      }, 300); // 与 transition 时间匹配
+      }, 300);
     },
     [image.length]
   );
 
-  // 开始自动播放
   const startAutoPlay = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     if (image.length <= 1) return;
@@ -40,7 +43,6 @@ const Category = ({ name, image, products }: CategoryProps) => {
     }, 7000);
   }, [image.length, handleNavigate]);
 
-  // 停止自动播放
   const stopAutoPlay = () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -48,73 +50,67 @@ const Category = ({ name, image, products }: CategoryProps) => {
     }
   };
 
-  // 初始化自动轮播
   useEffect(() => {
     startAutoPlay();
     return stopAutoPlay;
   }, [startAutoPlay]);
 
-  // 点击指示器处理
   const handleIndicatorClick = (index: number) => {
     stopAutoPlay();
     setCurrentImageIndex(index);
     setTimeout(() => startAutoPlay(), 2000);
   };
 
+  const hasImage = image.length > 0;
+
   return (
     <div className="pt-[20px] pb-[20px] w-[1200px]">
-      {/* 头部部分 */}
       <div className="head mb-[16px]">
         <span className="text-shadow text-[24px] font-bold">{name}</span>
-        {/* 右侧还需要添加小组件 */}
       </div>
-      {/* 卡片部分 */}
       <div className="grid grid-cols-5 gap-3">
-        {/* 左侧轮播图片区域 */}
-        <div className="col-span-1 relative overflow-hidden">
-          <div
-            className={`flex transition-transform duration-500 ease-in-out h-full`}
-            style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
-          >
-            {image.map((img, index) => (
-              <a
-                key={index}
-                href={img.linkUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full h-full flex-shrink-0"
-              >
-                <img
-                  src={img.imageName}
-                  alt={img.alt || name}
-                  className="w-full h-full object-cover"
-                />
-              </a>
-            ))}
+        {hasImage ? (
+          <div className="col-span-1 relative overflow-hidden">
+            <div
+              className={`flex transition-transform duration-500 ease-in-out h-full`}
+              style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
+            >
+              {image.map((img, index) => (
+                <a
+                  key={index}
+                  href={img.linkUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full h-full flex-shrink-0"
+                >
+                  <img
+                    src={img.imageName}
+                    alt={img.alt || name}
+                    className="w-full h-full object-cover"
+                  />
+                </a>
+              ))}
+            </div>
+            {image.length > 1 && (
+              <Indicators
+                count={image.length}
+                currentIndex={currentImageIndex}
+                onIndicatorClick={handleIndicatorClick}
+              />
+            )}
           </div>
-
-          {/* 指示器 */}
-          {image.length > 1 && (
-            <Indicators
-              count={image.length}
-              currentIndex={currentImageIndex}
-              onIndicatorClick={handleIndicatorClick}
-            />
-          )}
-        </div>
-
-        {/* 右侧卡片区域 */}
+        ) : (
+          <div className="col-span-1" />
+        )}
         <div className="col-span-4 grid grid-rows-2 gap-3">
-          {/* 上半部分4个卡片 */}
-          <div className="grid grid-cols-4 gap-3 ">
+          <div className="grid grid-cols-4 gap-3">
             {products.slice(0, 4).map((product) => (
-              <Card key={product.id} product={product} />
+              <Card key={product.productId} product={product} />
             ))}
           </div>
-          {/* 下半部分4个卡片 */}
           <div className="grid grid-cols-4 gap-3">
             {products.slice(4, 8).map((product) => (
-              <Card key={product.id} product={product} />
+              <Card key={product.productId} product={product} />
             ))}
           </div>
         </div>
