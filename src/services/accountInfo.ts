@@ -1,6 +1,7 @@
 
+import toast from "react-hot-toast";
 import { API_PATHS } from "./apiPaths";
-import { axiosInstance, type ApiResponse } from "./axiosService";
+import axiosService, { axiosInstance, type ApiResponse } from "./axiosService";
 
 /**
  * 账户信息接口
@@ -43,6 +44,7 @@ export async function updateAccountInfo(payload: {
         sex: payload.sex,
         birthday: payload.birthday,
     });
+    toast.success(res.data.message)
     return res.data;
 }
 
@@ -65,6 +67,7 @@ export async function uploadAvatar(file: File): Promise<string> {
 
 
 interface UserInfo {
+    userId: string;
     avatar: string;
     nikeName: string;
     memberType: string;
@@ -75,7 +78,92 @@ interface UserInfo {
  */
 export async function getUserInfo(): Promise<UserInfo> {
     // 发送GET请求获取登录用户信息
+    console.log('Current access token:', axiosService.getAccessToken());
     const response = await axiosInstance.get<ApiResponse<{ userInfo: UserInfo }>>(API_PATHS.USER_LOGIN_INFO)
     // 从响应数据中提取并返回用户信息
+    console.log(response.data);
+    
     return response.data.data.userInfo;
 }
+
+
+
+
+
+
+export interface ResetPassword {
+    email?: string;
+    code?: string;
+    oldPassword?: string;
+    newPassword?: string;
+    type: "password" | "code"
+}
+
+
+/**
+ * 通过验证码重置密码
+ */
+export async function resetPasswordByCode(params: ResetPassword) {
+    if (params.type === "code") {
+        if (!params.email || !params.code) {
+            throw new Error("缺少参数")
+        }
+        await axiosInstance.post<ApiResponse<null>>('/user/resetPasswordByCode', {
+            email: params.email,
+            code: params.code,
+            type: "code"
+        })
+    }
+    else if (params.type === "password") {
+        if (!params.oldPassword || !params.newPassword) {
+            throw new Error("缺少参数")
+        }
+        await axiosInstance.post<ApiResponse<null>>('/user/resetPasswordByCode', {
+            oldPassword: params.oldPassword,
+            newPassword: params.newPassword,
+            type: "password"
+        });
+    }
+    return true;
+}
+
+
+
+
+export interface ChangeEmailParams {
+    oldEmail?: string;
+    oldCode?: string;
+    newEmail?: string;
+    newCode?: string;
+    password?: string;
+    type: "code" | "password"
+}
+
+
+export async function changeEmailByCode(params: ChangeEmailParams) {
+    if (params.type === "code") {
+        if (!params.oldEmail || !params.oldCode || !params.newEmail || !params.newCode) {
+            throw new Error("缺少参数")
+        }
+        await axiosInstance.post<ApiResponse<null>>('/user/changeEmailByCode', {
+            oldEmail: params.oldEmail,
+            oldCode: params.oldCode,
+            newEmail: params.newEmail,
+            newCode: params.newCode,
+            type: "code"
+        });
+    }
+    else if (params.type === "password") {
+        if (!params.oldEmail || !params.password || !params.newEmail) {
+            throw new Error("缺少参数")
+        }
+        await axiosInstance.post<ApiResponse<null>>('/user/changeEmailByCode', {
+            oldEmail: params.oldEmail,
+            password: params.password,
+            newEmail: params.newEmail,
+            type: "password"
+        });
+    }
+    return true;
+}
+

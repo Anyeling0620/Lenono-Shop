@@ -1,14 +1,3 @@
-/*
- * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @Date: 2025-11-22 13:39:26
- * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-28 23:57:03
- * @FilePath: \lenovo-shop\src\component\Header\Header.tsx
- * @Description: 
- * 
- * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
- */
-
 import React from 'react'
 import Logo from './Logo'
 import Navbar from './Navbar'
@@ -21,10 +10,12 @@ import type { HiddenPaths } from '../../types/hiddenPaths'
 
 const navItems: NavItem[] = [
     { name: "新品", path: "/new-product" },
-    { name: "笔记本", path: "/lenovo-computer" },
-    { name: "平板", path: "/thinkpad-computer" },
-    { name: "台式机", path: "/tablet" },
-    { name: "手机", path: "/phone" },
+    { name: "笔记本", path: "notebooks" },
+    { name: "平板", path: "tablets" },
+    { name: "台式机", path: "desktops" },
+    { name: "显示器", path: "monitor" },
+    { name: "手机", path: "phones" },
+    { name: "配件", path:"fittings"},
 ]
 
 const Header: React.FC = () => {

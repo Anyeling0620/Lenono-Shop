@@ -24,7 +24,9 @@ const MOCK_PRODUCTS: Product[] = [
     discount: 4.8,
     link: 'https://item.lenovo.com.cn/product/1025414.html?pagenum=1',
     desc: '无线连接，人体工学设计，握感舒适，先进光学追踪技术',
-    soldPercent: 56
+    // ★ 修改：模拟 已抢 56% (56/100)
+    soldCount: 56,
+    totalCount: 100
   },
   {
     id: '2',
@@ -35,7 +37,8 @@ const MOCK_PRODUCTS: Product[] = [
     discount: 9.9,
     link: '#',
     desc: 'AMD Ryzen 9 8945HX/Windows 11 家庭中文版/16英寸/32GB(16+16)/1T SSD/ RTX™ 5060 8GB独显/冰魄白',
-    soldPercent: 0
+    soldCount: 0,
+    totalCount: 10
   },
   {
     id: '3',
@@ -46,7 +49,8 @@ const MOCK_PRODUCTS: Product[] = [
     discount: 7.5,
     link: '#',
     desc: '第13代智能英特尔酷睿i5-13500H/Windows 11 家庭中文版/16GB LPDDR5/512GB/核心显卡（Intel Iris Xe）/14英寸2.2K 100% sRGB高色域显示屏/夜澜黑',
-    soldPercent: 0
+    soldCount: 0,
+    totalCount: 10
   },
   {
     id: '4',
@@ -57,7 +61,8 @@ const MOCK_PRODUCTS: Product[] = [
     discount: 9.4,
     link: '#',
     desc: '全尺寸布局,巧克力键帽,三档 DPI 可调,一年质保',
-    soldPercent: 28
+    soldCount: 0,
+    totalCount: 10
   },
   {
     id: '5',
@@ -68,7 +73,9 @@ const MOCK_PRODUCTS: Product[] = [
     discount: 8.6,
     link: '#',
     desc: '17.3英寸，防水面料，透气背板，背负减压，拉杆箱固定带，出行更从容。赠：1次价值98元电脑远程软件服务',
-    soldPercent: 42
+    // 模拟 已抢光 (10/10)
+    soldCount: 10,
+    totalCount: 10
   },
   {
     id: '6',
@@ -79,7 +86,8 @@ const MOCK_PRODUCTS: Product[] = [
     discount: 5,
     link: '#',
     desc: '适用机型：小新笔记本系列，本服务提供在购机后7-49个月内，满足保值换新标准，再次购买联想笔记本时，可享受原设备售价相应比例的换新服务，抵扣金额以新机代金券形式发放。第7-25个月，可享受原设备售价6折回收；第26-49个月，可享受原设备售价5折回收。',
-    soldPercent: 0
+    soldCount: 0,
+    totalCount: 10
   },
   {
     id: '7',
@@ -90,7 +98,8 @@ const MOCK_PRODUCTS: Product[] = [
     discount: 3.4,
     link: '#',
     desc: '适用机型：Moto Razr 60 Ultra ，本服务提供在购机后7-25个月内，满足保值换新标准，再次购买联想手机时，可享受原设备售价相应比例的换新服务，抵扣金额以新机代金券形式发放。第7-13个月，可享受原设备售价6折回收；第14-25个月，可享受原设备售价5折回收。',
-    soldPercent: 0
+    soldCount: 0,
+    totalCount: 10
   },
   {
     id: '8',
@@ -101,7 +110,8 @@ const MOCK_PRODUCTS: Product[] = [
     discount: 9.5,
     link: '#',
     desc: '提供由内到外的台式机拆机清洁保养服务，包括涂抹CPU散热硅脂，清洁风扇，清洁显卡，清洁内存，表面外观清洁，购买后请联系客服预约服务时间。注：清洁设备如果包含灯效或水冷功能，需要额外支付灯效和水冷80元清洁费用',
-    soldPercent: 0
+    soldCount: 0,
+    totalCount: 10
   },
   {
     id: '9',
@@ -112,7 +122,8 @@ const MOCK_PRODUCTS: Product[] = [
     discount: 8,
     link: '#',
     desc: '无线连接，安静按键，长久续航，简约便携，舒适握感，一键呼叫工程师',
-    soldPercent: 63
+    soldCount: 0,
+    totalCount: 10
   },
   {
     id: '10',
@@ -123,7 +134,8 @@ const MOCK_PRODUCTS: Product[] = [
     discount: 9.1,
     link: '#',
     desc: '第14代智能英特尔®酷睿™ i7-14650HX/Windows 11 家庭中文版/16英寸/16GB/1T SSD/RTX™ 5060 8G独显/碳晶黑',
-    soldPercent: 0
+    soldCount: 0,
+    totalCount: 10
   },
   {
     id: '11',
@@ -134,7 +146,8 @@ const MOCK_PRODUCTS: Product[] = [
     discount: 5.4,
     link: '#',
     desc: '英特尔酷睿 Ultra 7/Windows 11 家庭中文版/13.3英寸x2/32GB/1T SSD/集成显卡/雾海蓝',
-    soldPercent: 33
+    soldCount: 0,
+    totalCount: 10
   },
   {
     id: '12',
@@ -145,7 +158,8 @@ const MOCK_PRODUCTS: Product[] = [
     discount: 8.7,
     link: '#',
     desc: '第13代智能英特尔 ® 酷睿™ i5-13420H/Windows 11 家庭中文版/16英寸/16G/512G SSD/集成显卡/霜雪银',
-    soldPercent: 0
+    soldCount: 0,
+    totalCount: 10
   },
   {
     id: '13',
@@ -156,7 +170,8 @@ const MOCK_PRODUCTS: Product[] = [
     discount: 5.7,
     link: '#',
     desc: '暴力涡轮风扇JX-C01丨13万转/分钟丨风速52米/秒丨无刷电机丨降噪设计',
-    soldPercent: 33
+    soldCount: 0,
+    totalCount: 10
   },
   {
     id: '14',
@@ -167,7 +182,8 @@ const MOCK_PRODUCTS: Product[] = [
     discount: 6.8,
     link: '#',
     desc: '电脑升降支架X15丨人体工学设计丨贴合视线需求丨办公从此更高效丨镂空设计 高效散热',
-    soldPercent: 11
+    soldCount: 0,
+    totalCount: 10
   },
   {
     id: '15',
@@ -178,7 +194,8 @@ const MOCK_PRODUCTS: Product[] = [
     discount: 8.2,
     link: '#',
     desc: '磁吸快充数据线CB6MCC丨快充快传丨1m线长丨轻巧便携',
-    soldPercent: 33
+    soldCount: 0,
+    totalCount: 10
   },
   {
     id: '16',
@@ -189,7 +206,8 @@ const MOCK_PRODUCTS: Product[] = [
     discount: 8.1,
     link: '#',
     desc: '磁吸自带线充电宝组合PBF2丨双线快充丨双机CP共享丨自带充电仓',
-    soldPercent: 13
+    soldCount: 0,
+    totalCount: 10
   },
   {
     id: '17',
@@ -200,7 +218,8 @@ const MOCK_PRODUCTS: Product[] = [
     discount: 6.7,
     link: '#',
     desc: '25W氮化镓便携快充充电器CH25丨广泛兼容丨插脚可折叠丨低温快充更安全',
-    soldPercent: 100
+    soldCount: 0,
+    totalCount: 10
   },
   {
     id: '18',
@@ -211,7 +230,8 @@ const MOCK_PRODUCTS: Product[] = [
     discount: 8.7,
     link: '#',
     desc: '无线鼠标WM201丨无线2.4G丨贴合手掌丨即插即用丨轻巧便携',
-    soldPercent: 33
+    soldCount: 0,
+    totalCount: 10
   }
 ];
 

@@ -25,17 +25,7 @@ export default function DeviceManager() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // const data: DeviceInfo[] = Array.from({ length: 1 }).map((_, i) => ({
-                //     device_id: String(i + 1),
-                //     device_type: i % 2 === 0 ? "web" : "mobile_web",
-                //     device_name: i % 2 === 0 ? `Chrome Device ${i + 1} 1233333` : `Safari iPhone ${i + 1}`,
-                //     login_time: "2025-01-12 14:23:11",
-                //     ip_address: `192.168.0.${i}`,
-                // }));
-
-                // await new Promise((r) => setTimeout(r, 400));
-
-                 const devices = await axiosService.getLoginDevices();
+                const devices = await axiosService.getLoginDevices();
                 setDevices(devices);
             } catch (err) {
                 globalErrorHandler.handle(err, toast.error);
@@ -47,7 +37,7 @@ export default function DeviceManager() {
     }, []);
 
     // API 请求封装
-    const { run: logoutRequest } = useRequest(axiosService.logoutDevice, {
+    const { run: logoutRequest } = useRequest((deviceId: string) => axiosService.logoutDevice(deviceId), {
         manual: true,
         debounceTrailing: true,
         debounceWait: 1000,
@@ -62,12 +52,20 @@ export default function DeviceManager() {
         },
     });
 
+     console.log(axiosService.getCurrentDeviceInfo().deviceId);
+     console.log(devices[0]);
+
+
+
 
     async function handleOutAllDevices() {
-        if (devices.length === 1 && devices[0].device_id === axiosService.getCurrentDeviceInfo().deviceId) return;
-        setLogoutAll(true);
+        if (devices.length === 1 && devices[0].device_id === axiosService.getCurrentDeviceInfo().deviceId) {
+            setLogoutAll(false);
+            return;
+        }
         try {
             await axiosService.logoutOtherDevices();
+            setDevices(prev => prev.filter((value) => value.device_id === axiosService.getCurrentDeviceInfo().deviceId))
         } catch (error) {
             globalErrorHandler.handle(error, toast.error);
         } finally {
@@ -89,8 +87,6 @@ export default function DeviceManager() {
             />)
     }
 
-
-
     return (
         <div className="py-6 w-full px-6 mx-auto space-y-6">
             <div className="flex justify-between items-center mb-6 py-4 pl-4 bg-white rounded-sm border-b-2 border-gray-100">
@@ -106,7 +102,8 @@ export default function DeviceManager() {
                 <div className="flex items-eng ">
                     <button
                         onClick={() => {
-                            handleOutAllDevices();
+                            setLogoutAll(true);
+                            setTimeout(handleOutAllDevices, 500)
                         }}
                         disabled={logoutAll}
                         className={`

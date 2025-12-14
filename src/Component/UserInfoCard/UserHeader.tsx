@@ -14,16 +14,16 @@ import { Link } from "react-router-dom";
 
 
 interface UserHeaderProps {
-  avatar: string;
+  avatarUrl: string;
   userName: string;
   memberType: string;
   centerLink: string;
 }
 
- const UserHeader: React.FC<UserHeaderProps> = ({ avatar, userName, memberType, centerLink }) => {
+ const UserHeader: React.FC<UserHeaderProps> = ({ avatarUrl, userName, memberType, centerLink }) => {
   return (
     <div className='px-1 h-[80px] flex border-b-[1.5px] border-[#e6e6e6]'>
-      <Avatar size={65} draggable={false} src={avatar}>
+      <Avatar size={65} draggable={false} src={avatarUrl}>
         Lenovo
       </Avatar>
       <div className='ml-6 mt-2 w-[180px]'>

@@ -18,14 +18,15 @@ interface Props {
 }
 
 const FlashProductCard: React.FC<Props> = ({ product, status }) => {
-  const { name, image, currentPrice, originalPrice, discount, link, desc, soldPercent } = product;
+  const { name, image, currentPrice, originalPrice, discount, link, desc, soldCount = 0, totalCount = 100 } = product;
   
-  // 处理可选字段的默认值
   const displayDesc = desc || '爆款特惠，限时抢购';
-  const displayPercent = soldPercent !== undefined ? soldPercent : 0;
-
-  const isUpcoming = status === 'wait';   // 是否即将开始 (状态为 'wait')
-    const isSoldOut = !isUpcoming && displayPercent >= 100;  // 是否已抢光
+  
+  // 计算百分比 (向下取整，避免出现 99.9% 让人以为还没抢完)
+  const displayPercent = totalCount > 0 ? Math.floor((soldCount / totalCount) * 100) : 0;
+  // 状态判断
+  const isUpcoming = status === 'wait';
+  const isSoldOut = !isUpcoming && soldCount >= totalCount; // 使用具体数量判断是否抢光
 
  
   let btnText = '立即抢购';

@@ -1,13 +1,3 @@
-/*
- * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @Date: 2025-11-27 20:26:40
- * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-28 23:23:25
- * @FilePath: \lenovo-shop\src\types\searchFilter.ts
- * @Description: 
- * 
- * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
- */
 export interface TabFilters {
   self: boolean,
   discountCoupon: boolean,

@@ -11,7 +11,7 @@
 // components/Search/ProductList.tsx
 import React from 'react';
 import ProductCard from './ProductCard';
-import type { Product } from '../../types/searchProduct';
+import type { Product } from '../../types/product';
 import { Empty } from 'antd';
 
 

@@ -1,4 +1,3 @@
-
 import { CgShoppingCart } from "react-icons/cg"; import { MdOutlineEditLocation } from "react-icons/md";
 import { RiMessageLine } from "react-icons/ri"; import { RiFileList2Line } from "react-icons/ri";
 import type { FC } from "react";
@@ -6,6 +5,7 @@ import UserHeader from "./UserHeader";
 import CouponSection from "./CouponSection";
 import FunctionIconButton from "./FunctionIconButton";
 import useUserInfoStore from "../../store/userInfostore";
+import { getUserAvatarUrl } from "../../utils/imageConfig";
 
 
 interface fbItem {
@@ -20,7 +20,7 @@ const functionButtons: fbItem[] = [
   {
     icon: <RiFileList2Line size={40} />,
     text: '我的订单',
-    to: '',
+    to: '/my-order',
     hasBadge: false,
   },
   {
@@ -54,7 +54,7 @@ const UserInfoCard: FC = () => {
     <div className='w-[360px] h-[200px] p-2 m-auto'>
       <div className='w-[340px]'>
         <UserHeader
-          avatar={avatar}
+          avatarUrl={getUserAvatarUrl(avatar)}
           userName={userName}
           memberType={memberType}
           centerLink='/user-center'

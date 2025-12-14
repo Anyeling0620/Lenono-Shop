@@ -13,7 +13,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ConfigProvider, Pagination } from 'antd';
 import ProductList from '../component/Search/ProductList';
-import type { Product } from '../types/searchProduct';
+import type { Product } from '../types/product';
 import type { SearchResult } from '../types/searchResult';
 import type { SearchFiltersType, SearchParams } from '../types/searchFilter';
 import SearchFilters from '../component/Search/SearchFilters';

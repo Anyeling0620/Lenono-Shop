@@ -17,26 +17,9 @@ const items: MenuItem[] = [
         icon: <UserOutlined />,
         children: [
             { key: 'k1', label: '账号信息' },
-            {
-                key: 'k2',
-                label: '更换邮箱',
-                children: [
-                    { key: '1', label: '通过原密码更换' },
-                    { key: '2', label: '通过验证码更换' },
-                ],
-            },
-            {
-                key: 'k3',
-                label: '更改密码',
-                children: [
-                    { key: '3', label: '通过原密码更改' },
-                    { key: '4', label: '通过验证码更改' },
-                ],
-            },
-            {
-                key: 'k4',
-                label: '设备管理',
-            },
+            { key: 'k2', label: '更换邮箱', },
+            { key: 'k3', label: '更改密码', },
+            { key: 'k4', label: '设备管理', },
         ],
     },
     { type: 'divider' },
@@ -158,16 +141,16 @@ const UserCenter: FC = () => {
     });
 
     const { run: setRefresh } = useRequest(
-            async (value: number) => {
+        async (value: number) => {
             return new Promise<void>((resolve) => {
                 setRefreshTrigger(value);
                 resolve();
             });
         }, {
-            manual: true,
-            debounceLeading: true,
-            debounceWait: 100
-        });
+        manual: true,
+        debounceLeading: true,
+        debounceWait: 1000
+    });
     /* ----------- 点击菜单项：切换选中 ----------- */
     const onClick: MenuProps['onClick'] = ({ key }) => {
         if (selectedKeys[0] === key) {

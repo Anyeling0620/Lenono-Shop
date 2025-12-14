@@ -1,37 +1,62 @@
 
-import React from 'react';
-
+import React, { createContext } from 'react';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import Carousel from '../component/Carousel/Carousel';
 import type { CarouselItemType } from '../types/carouselItem';
 import NewProductList from '../component/NewProductList/NewProductList';
 import NewProductRelease from '../component/NewProductList/NewProductRelease';
+import type { ProductsResponse } from '../types/product';
+import { getNewProductList } from '../services/products';
+import globalErrorHandler from '../utils/globalAxiosErrorHandler';
 
-// --- 1. 静态数据配置 ---
 
 const carouselData: CarouselItemType[] = [
     { imageName: "1.jpg", linkUrl: "/new", alt: "暖冬福利季" },
     { imageName: "2.png", linkUrl: "/new", alt: "新品发布" },
     { imageName: "3.png", linkUrl: "/new", alt: "新年好礼" },
-    { imageName: "4.jpg", linkUrl: "/new", alt: "新年好礼" },
-    { imageName: "5.jpg", linkUrl: "/new", alt: "新年好礼" },
 ];
 
 
-// 同学的商品组数据 (下半部分)
-// 修复：将 ID 改为字符串，并修正数据结构
+const NewProductContext = createContext<ProductsResponse[]>(
+    [{
+        title: '',
+        productList: []
+    }]
+);
 
-// --- 2. 页面组件 ---
 
 const NewProduct: React.FC = () => {
-    
+    const [newProductGroups, setNewProductGroups] = useState<ProductsResponse[]>(
+        [{
+            title: '',
+            productList: []
+        }]
+    )
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const data = await getNewProductList()
+                setNewProductGroups(data)
+            } catch (error) {
+                globalErrorHandler.handle(error, toast.error)
+            }
+        }
+        fetchData()
+    }, [])
+
 
     return (
-        <div className="bg-[#f5f5f5] min-h-screen pb-20">
-            <Carousel data={carouselData} className='h-[340px]' />
-            <NewProductRelease />
-            <NewProductList className='w-[1200px] mx-auto py-[10px]' />
-        </div>
+        <NewProductContext.Provider value={newProductGroups}>
+            <div className="bg-[#f5f5f5] min-h-screen pb-20">
+                <Carousel data={carouselData} className='h-[340px]' />
+                <NewProductRelease />
+                <NewProductList className='w-[1200px] mx-auto py-[10px]' />
+            </div>
+        </NewProductContext.Provider>
     );
 };
 
+export { NewProductContext }
 export default NewProduct;
