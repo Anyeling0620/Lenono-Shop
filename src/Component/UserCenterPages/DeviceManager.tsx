@@ -52,12 +52,6 @@ export default function DeviceManager() {
         },
     });
 
-     console.log(axiosService.getCurrentDeviceInfo().deviceId);
-     console.log(devices[0]);
-
-
-
-
     async function handleOutAllDevices() {
         if (devices.length === 1 && devices[0].device_id === axiosService.getCurrentDeviceInfo().deviceId) {
             setLogoutAll(false);

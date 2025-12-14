@@ -14,7 +14,7 @@ import Checkout from "./pages/Checkout"
 import { CartProvider } from "./context/CartContext"
 import UserCenter from "./pages/UserCenter"
 import UserLayout from "./component/Layout/UserLayout"
-import ProtectedRoute from "./component/ProtectedRoute"
+import ProtectedRoute, { HavingLoginRoute } from "./component/ProtectedRoute"
 import useAuthLifecycle from "./hooks/useAuthLifecycle"
 import { WebSocketProvider } from "./services/ws/WebSocketProvider"
 import ConsultList from "./component/UserCenterPages/ConsultList"
@@ -43,8 +43,8 @@ function App() {
             <Route element={<MainLayout />}>
               <Route path="/" element={<Index />} />
               <Route path="index" element={<Index />} />
-              <Route path='login' element={<Login />} />
-              <Route path='register' element={<Register />} />
+              <Route path='login' element={<HavingLoginRoute ><Login /></HavingLoginRoute>} />
+              <Route path='register' element={<HavingLoginRoute ><Register /></HavingLoginRoute>} />
               <Route path='products/:type' element={<Product />} />
               <Route path="new-product" element={<NewProduct />} />
               <Route path="search" element={<Search />} />
