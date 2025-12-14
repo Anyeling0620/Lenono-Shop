@@ -38,4 +38,31 @@ export interface ProductsResponse {
 
 export
   type ProductType =
-  '笔记本' | '台式机' | '显示器' | '平板' | '手机' | '配件'
+| "notebooks"
+| "tablets"
+| "desktops"
+| "monitor"
+| "phones"
+| "fittings"
+| "services";
+
+
+
+export interface NewProductTab {
+    name: string;      // Tab显示的名称
+    key: string;       // Tab的唯一标识符，用于状态管理
+}
+
+export interface SubProductTab extends NewProductTab {
+    iconClass: string; }
+
+export interface MainTab{
+    id: string;
+    name: string;
+}
+
+export interface SubCategory{
+    id:ProductType;
+    name: string;
+    icon: React.ReactNode;
+}

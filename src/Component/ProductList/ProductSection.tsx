@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Carousel } from 'antd';
 import { Link } from 'react-router-dom';
 import ProductListToPages from './ProductListToPages';
-import type { ProductItem } from '../types/searchProduct';
+import type { ProductItem } from '../../types/product';
 
 
 interface AutoScrollProductSectionProps {

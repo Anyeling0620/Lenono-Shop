@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Tag from '../Search/Tag';
-import type { ProductItem } from '../../types/searchProduct';
+import type { ProductItem } from '../../types/product';
 
 
 

@@ -33,7 +33,7 @@ const Navbar: React.FC<NavbarProps> = ({ items }) => {
 
   return (
     <ul className="float-left h-[60px] ml-[62px] m-0 list-none">
-      {items.map((item,index,array) => (
+      {items.map((item) => (
         <li
           key={item.path}
           className="

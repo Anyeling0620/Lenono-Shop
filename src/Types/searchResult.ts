@@ -1,4 +1,4 @@
-import type { Product } from "./searchProduct";
+import type { Product } from "./product";
 
 
 export interface SearchResult {  // 搜索结果

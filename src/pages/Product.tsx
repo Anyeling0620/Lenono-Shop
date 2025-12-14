@@ -1,23 +1,15 @@
 // pages/DesktopComputer.tsx
 import React, { useCallback, useEffect, useState } from 'react';
-import ProductSection from '../component/ProductSection';
-import type { ProductItem, ProductsResponse, ProductType } from '../types/searchProduct';
+import ProductSection from '../component/ProductList/ProductSection';
+import type { ProductItem, ProductsResponse, ProductType } from '../types/product';
 import globalErrorHandler from '../utils/globalAxiosErrorHandler';
 import toast from 'react-hot-toast';
 import { useParams } from 'react-router-dom';
 import NotFound from './404';
 import { getProductList } from '../services/products';
 
-const reverseTranslation: {
-    [key: string]: string;
-} = {
-    "new-products": "新品",
-    "notebooks": "笔记本",
-    "tablets": "平板",
-    "desktops": "台式机",
-    "monitor": "显示器",
-    "phones": "手机",
-    "fittings": "配件"
+const isValidProductType = (type: string): type is ProductType => {
+    return ['notebooks', 'tablets', 'desktops', 'monitor', 'phones', 'fittings'].includes(type);
 };
 
 const Product: React.FC = () => {
@@ -28,21 +20,23 @@ const Product: React.FC = () => {
     const [carouselProducts, setCarouselProducts] = useState<ProductItem[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const { type } = useParams();
-    if (!type || !Object.keys(reverseTranslation).includes(type)) {
-        return <NotFound />
+    // 若不存在参数或参数不是paramsType类型
+    if (!type || !isValidProductType(type)) {
+        return <NotFound />;
     }
+
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const fetchDesktopProducts = useCallback(async () => {
         setLoading(true);
         try {
-            const list = await getProductList(reverseTranslation[type] as ProductType);
+            const list = await getProductList(type);
             setProductList(list);
             const carouselList = list.productList.filter((item: ProductItem) => item.isCarousel);
             setCarouselProducts(carouselList);
         } catch (error) {
             globalErrorHandler.handle(error, toast.error);
-            setProductList({ title: '台式机', productList: [] });
+            setProductList({ title: '', productList: [] });
             setCarouselProducts([]);
         } finally {
             setLoading(false);

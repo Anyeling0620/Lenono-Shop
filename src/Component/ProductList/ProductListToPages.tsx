@@ -1,6 +1,6 @@
 import React from 'react'
-import type {  ProductItem } from '../types/searchProduct'
-import ProductCard from './Search/ProductCard'
+import type {  ProductItem } from '../../types/product'
+import ProductCard from '../Search/ProductCard'
 
 
 
