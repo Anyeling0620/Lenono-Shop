@@ -8,17 +8,13 @@ import ConsultList from './ConsultList';
 import ChangeEmail from './ChangeEmail';
 import ChangePassword from './ChangePassword';
 import Comments from './Comments';
+import Roast from './Roast';
+import AfterSale from './AfterSale';
+import Complaint from './Complaint';
 import Orders from './Orders';
 import Address from './Address';
 
-
-
 const Cart = () => <div>我的购物车</div>;
-const Roast = () => <div>我的吐槽</div>;
-
-
-const AfterSale = () => <div>我的售后</div>;
-const Complaint = () => <div>我的投诉</div>;
 
 /* ------------ 用 Record 构建 key → 组件 的映射表 ------------ */
 
@@ -44,8 +40,6 @@ const pages: Record<string, React.ReactNode> = {
     15: <ConsultList />,
 };
 
-
-
 interface Props {
     selectedKey: string;
 }
@@ -57,6 +51,5 @@ const UserCenterPages: React.FC<Props> = ({ selectedKey }) => {
         </div>
     );
 };
-
 
 export default UserCenterPages;
