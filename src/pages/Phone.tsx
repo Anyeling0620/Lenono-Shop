@@ -1,6 +1,6 @@
 import { Carousel } from 'antd'
 import { Link } from 'react-router-dom'
-import ProductListToPages from '../component/ProductListToPages'
+import ProductListToPages from '../component/ProductList/ProductListToPages'
 
 const Phone = () => {
     // 使用一些高质量的图片URL

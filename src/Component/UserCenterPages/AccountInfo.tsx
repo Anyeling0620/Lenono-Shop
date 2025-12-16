@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/pages/AccountInfo.tsx
 import React, { useEffect, useRef, useState } from "react";
-import zhCN from 'antd/es/date-picker/locale/zh_CN'; import { DatePicker, Result, Spin } from "antd";
+import zhCN from 'antd/es/date-picker/locale/zh_CN'; import { DatePicker, Spin } from "antd";
 import dayjs, { Dayjs } from "dayjs";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
@@ -36,14 +36,19 @@ type AccountInfoForm = z.infer<typeof accountInfoSchema>;
 // -------------------- 主组件 --------------------
 const AccountInfo: React.FC = () => {
     const [loading, setLoading] = useState(true);
-    const [serverAvatarUrl, setServerAvatarUrl] = useState<string | null>(null);
     const [rawImageUrl, setRawImageUrl] = useState<string | null>(null); // 本地待裁切图片预览
     const [isCropperOpen, setIsCropperOpen] = useState(false);
+    const [isSubmissionAllowed, setIsSubmissionAllowed] = useState(false)
+    const uploadAvatarState = useUserInfoStore(state => state.uploadAvatar)
+    const avaterName = useUserInfoStore(state => state.avatar)
+    const nickName = useUserInfoStore(state => state.nikeName)
+    const updateNickName = useUserInfoStore(state => state.updateNikeName)
+    const setEmailToStore = useUserInfoStore(state => state.setEmail)
+    const email = useUserInfoStore(state => state.email)
 
     // 存储 API 返回的不可编辑字段
     const [account, setAccount] = useState<string>("");
     const [memberType, setMemberType] = useState<string>("");
-    const [email, setEmail] = useState<string>("");
     const setEmailToUserInfo = useUserInfoStore((state) => state.setEmail);  // 邮箱
 
     const {
@@ -61,21 +66,30 @@ const AccountInfo: React.FC = () => {
         },
         mode: "onChange" // onChange: 当表单值变化时触发验证
     });
- 
+
+    useEffect(() => {
+        setIsSubmissionAllowed(!!isDirty)
+    }, [isDirty])
+
 
     useEffect(() => {
         let mounted = true;  // 防止组件卸载后执行副作用
-        (async () => {
+        const timer = setTimeout(async () => {
             try {
-                setLoading(true);
                 const info = await getAccountInfo();
                 if (!mounted) return;
 
                 setAccount(info.account);
-                setMemberType(info.memberType || "普通会员");
-                setEmail(info.email);
-                setServerAvatarUrl(info?.avatarUrl || null);
+                setMemberType(info.memberType);
+                setEmailToStore(info.email)
                 setEmailToUserInfo(info.email);
+                if(info.nickName && info.nickName !== nickName){
+                    updateNickName(info.nickName)
+                }
+
+                if (info.avatarUrl && info.avatarUrl !== avaterName) {
+                    uploadAvatarState(info.avatarUrl)
+                }
 
                 // 将 API 的字段映射到表单：birthday -> Dayjs -> Date for zod
                 const birthdayDate = info.birthday ? new Date(info.birthday) : new Date();
@@ -89,12 +103,14 @@ const AccountInfo: React.FC = () => {
             } finally {
                 setLoading(false);
             }
-        })();
+        }, 500);  // 延迟 500ms
 
         return () => {
             mounted = false;
+            clearTimeout(timer);  // 清除定时器
         };
-    }, [account, email, memberType, reset]);   
+    }, [account, avaterName, email, memberType, nickName, reset, setEmailToStore, setEmailToUserInfo, updateNickName, uploadAvatarState]);
+
 
 
     const fileInputRef = useRef<HTMLInputElement | null>(null);  // 
@@ -115,15 +131,12 @@ const AccountInfo: React.FC = () => {
     // 2) 裁切后返回文件 -> 上传 -> 更新 avatar url
     const handleCroppedFile = async (file: File) => {
         setIsCropperOpen(false);
-        const uploading = toast.loading("头像上传中...");
         try {
             const url = await uploadAvatar(file);
-            setServerAvatarUrl(url);
-            toast.success("头像上传成功");
+            uploadAvatarState(url)
         } catch (e: any) {
             toast.error(e?.message || "上传失败");
         } finally {
-            toast.dismiss(uploading);
             if (rawImageUrl) {
                 URL.revokeObjectURL(rawImageUrl);
                 setRawImageUrl(null);
@@ -134,17 +147,22 @@ const AccountInfo: React.FC = () => {
 
     // ---------- 表单提交 ----------
     const onSubmit = async (data: AccountInfoForm) => {
+        const isoDate = new Date(data.birthday).toLocaleString();
+        console.log(isoDate);
+        
         if (!isDirty) return;  // 如果表单没有修改过，则不提交
-        updateInfoRun(data);
+        
+        updateInfoRun(data)
+        updateNickName(data.nickName)
     };
     // 防抖
     const { run: updateInfoRun, loading: sumbitLoading } = useRequest((data: AccountInfoForm) => {
-        const isoDate = (data.birthday as Date).toISOString().slice(0, 10);
+        const isoDate = new Date(data.birthday).toLocaleString();
         return updateAccountInfo({ ...data, birthday: isoDate })
     }, {
         manual: true, // 手动触发
         debounceLeading: true,  // 防抖方式：尾调用
-        debounceWait: 300,
+        debounceWait: 1000,
         onSuccess: (_, params) => {
             const [data] = params;
             reset(data)
@@ -160,15 +178,6 @@ const AccountInfo: React.FC = () => {
                 <Spin />
             </div>
         );
-    }
-
-    if (!account) {
-        return (
-        <Result
-            status="500"
-            title="500"
-            subTitle="Sorry, you are not authorized to access this page."
-        />)
     }
 
 
@@ -293,7 +302,7 @@ const AccountInfo: React.FC = () => {
                             <div className="w-28" />
                             <button
                                 type="submit"
-                                className="mt-2 px-6 py-2 w-[120px] bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-60"
+                                className={`${!isSubmissionAllowed ? 'cursor-not-allowed' : 'cursor-pointer'} mt-2 px-6 py-2 w-[120px] bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-60`}
                                 disabled={sumbitLoading}
                             >
                                 {sumbitLoading ? "保存中..." : "保存修改"}
@@ -307,7 +316,7 @@ const AccountInfo: React.FC = () => {
                 <div className="w-[40%] flex flex-col items-center space-y-4">
                     <div className="mt-8">
                         <img
-                            src={getUserAvatarUrl(serverAvatarUrl)}
+                            src={getUserAvatarUrl(avaterName)}
                             alt="avatar"
                             className="w-40 h-40 bg-gray-200 object-cover"
                         />

@@ -14,16 +14,13 @@ import Checkout from "./pages/Checkout"
 import { CartProvider } from "./context/CartContext"
 import UserCenter from "./pages/UserCenter"
 import UserLayout from "./component/Layout/UserLayout"
-import ProtectedRoute from "./component/ProtectedRoute"
+import ProtectedRoute, { HavingLoginRoute } from "./component/ProtectedRoute"
 import useAuthLifecycle from "./hooks/useAuthLifecycle"
 import { WebSocketProvider } from "./services/ws/WebSocketProvider"
 import ConsultList from "./component/UserCenterPages/ConsultList"
 import MyConsult from "./component/UserCenterPages/MyConsult"
-import Notebook from "./pages/Notebook"
-import Tablet from "./pages/Tablet"
-import DesktopComputer from "./pages/DesktopComputer"
-import Phone from "./pages/Phone"
 import MyOrder from "./pages/MyOrder";
+import Product from "./pages/Product"
 
 /**
  * App组件：应用程序的主要组件，负责路由配置和布局
@@ -46,13 +43,10 @@ function App() {
             <Route element={<MainLayout />}>
               <Route path="/" element={<Index />} />
               <Route path="index" element={<Index />} />
-              <Route path='login' element={<Login />} />
-              <Route path='register' element={<Register />} />
-              <Route path='new-product' element={<NewProduct />} />
-              <Route path="notebook-computer" element={<Notebook />} />
-              <Route path='tablet-phone' element={<Tablet />} />
-              <Route path='desktop-computer' element={<DesktopComputer />} />
-              <Route path='phone' element={<Phone />} />
+              <Route path='login' element={<HavingLoginRoute ><Login /></HavingLoginRoute>} />
+              <Route path='register' element={<HavingLoginRoute ><Register /></HavingLoginRoute>} />
+              <Route path='products/:type' element={<Product />} />
+              <Route path="new-product" element={<NewProduct />} />
               <Route path="search" element={<Search />} />
               <Route path="flash-sale" element={<FlashSalePage />} />
               <Route path="product/:id" element={<ProductDetail />} />
@@ -63,7 +57,7 @@ function App() {
             </Route>
 
             <Route element={<UserLayout />}>
-              <Route path="user-center" element={<ProtectedRoute redirectTo={"/login"} ><UserCenter /></ProtectedRoute>} />
+              <Route path="user-center" element={<ProtectedRoute redirectTo={"/index"} ><UserCenter /></ProtectedRoute>} />
               <Route path="consult" element={<ConsultList />} />
             </Route>
 

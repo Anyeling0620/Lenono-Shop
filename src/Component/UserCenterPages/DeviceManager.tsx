@@ -25,16 +25,6 @@ export default function DeviceManager() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // const data: DeviceInfo[] = Array.from({ length: 1 }).map((_, i) => ({
-                //     device_id: String(i + 1),
-                //     device_type: i % 2 === 0 ? "web" : "mobile_web",
-                //     device_name: i % 2 === 0 ? `Chrome Device ${i + 1} 1233333` : `Safari iPhone ${i + 1}`,
-                //     login_time: "2025-01-12 14:23:11",
-                //     ip_address: `192.168.0.${i}`,
-                // }));
-
-                // await new Promise((r) => setTimeout(r, 400));
-
                 const devices = await axiosService.getLoginDevices();
                 setDevices(devices);
             } catch (err) {
@@ -47,7 +37,7 @@ export default function DeviceManager() {
     }, []);
 
     // API 请求封装
-    const { run: logoutRequest } = useRequest(axiosService.logoutDevice, {
+    const { run: logoutRequest } = useRequest((deviceId: string) => axiosService.logoutDevice(deviceId), {
         manual: true,
         debounceTrailing: true,
         debounceWait: 1000,
@@ -62,10 +52,11 @@ export default function DeviceManager() {
         },
     });
 
-
     async function handleOutAllDevices() {
-        if (devices.length === 1 && devices[0].device_id === axiosService.getCurrentDeviceInfo().deviceId) return;
-        setLogoutAll(true);
+        if (devices.length === 1 && devices[0].device_id === axiosService.getCurrentDeviceInfo().deviceId) {
+            setLogoutAll(false);
+            return;
+        }
         try {
             await axiosService.logoutOtherDevices();
             setDevices(prev => prev.filter((value) => value.device_id === axiosService.getCurrentDeviceInfo().deviceId))
@@ -105,7 +96,8 @@ export default function DeviceManager() {
                 <div className="flex items-eng ">
                     <button
                         onClick={() => {
-                            handleOutAllDevices();
+                            setLogoutAll(true);
+                            setTimeout(handleOutAllDevices, 500)
                         }}
                         disabled={logoutAll}
                         className={`

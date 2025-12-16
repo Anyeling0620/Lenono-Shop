@@ -10,10 +10,12 @@ import type { HiddenPaths } from '../../types/hiddenPaths'
 
 const navItems: NavItem[] = [
     { name: "新品", path: "/new-product" },
-    { name: "笔记本", path: "/notebook-computer" },
-    { name: "平板", path: "/tablet-phone" },
-    { name: "台式机", path: "/desktop-computer" },
-    { name: "手机", path: "/phone" },
+    { name: "笔记本", path: "notebooks" },
+    { name: "平板", path: "tablets" },
+    { name: "台式机", path: "desktops" },
+    { name: "显示器", path: "monitor" },
+    { name: "手机", path: "phones" },
+    { name: "配件", path:"fittings"},
 ]
 
 const Header: React.FC = () => {

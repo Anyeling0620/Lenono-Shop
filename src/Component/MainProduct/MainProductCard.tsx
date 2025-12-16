@@ -1,55 +1,69 @@
 // src/component/MainProduct/MainProductCard.tsx
-import type { MainProduct } from "../../types/mainProduct";
-import { Link } from "react-router-dom"; // 1. 引入 Link 组件
+import type { ProductItem } from "../../types/product";
+import { Link } from "react-router-dom";
 
 interface CardProps {
-  product: MainProduct;
+  product: ProductItem;
 }
 
 const Card = ({ product }: CardProps) => {
-  const featuresText = product.features.join(" | ");
+  const name = product.productName;
+  const image = product.mainImage || '';
+  const featuresText = product.description || '';
+  const hasCoupon = product.hasCoupon;
+  const couponInfo = product.couponInfo;
+  const customerize = product.isCustomizable;
+  const tradeIn = product.supportTradeIn;
+  const originalPrice = product.originalPrice || product.minPrice;
+  const id = product.productId;
+
+  let finalPrice = product.minPrice;
   const tags = [];
-  if (product.coupon > 0) {
-    tags.push({
-      type: "coupon",
-      text: `${product.coupon}元券`,
-      value: product.coupon,
-    });
+
+  if (hasCoupon && couponInfo) {
+    if (couponInfo.type === 'CASH') {
+      finalPrice = originalPrice - couponInfo.value;
+      tags.push({
+        type: "coupon",
+        text: `${couponInfo.value}元券`,
+        value: couponInfo.value,
+      });
+    } else if (couponInfo.type === 'DISCOUNT') {
+      finalPrice = originalPrice * couponInfo.value;
+      tags.push({
+        type: "discount",
+        text: `${(couponInfo.value * 10).toFixed(1)}折`,
+        value: couponInfo.value * 10,
+      });
+    }
   }
-  if (product.customerize) {
+
+  if (customerize) {
     tags.push({ type: "normal", text: "外观定制" });
   }
-  if (product.tradeIn) {
+  if (tradeIn) {
     tags.push({ type: "normal", text: "以旧换新" });
   }
 
-  const finalPrice = product.originalPrice - product.coupon;
-
   return (
     <div className="bg-white hover:shadow-2xl transition-shadow duration-300 text-center">
-      {/* 2. 关键修改：将 a 标签改为 Link，to 属性指向详情页路由 */}
-      {/* 这里的 product.id 对应 App.tsx 中的 :id */}
-      <Link to={`/product/${product.id}`} className="block" target="_blank">
-        {/* 图片居中 */}
+      <Link to={`/product/${id}`} className="block">
         <div className="flex justify-center mb-3 hover:opacity-90 transition-opacity duration-300">
           <img
-            src={product.image}
-            alt={product.name}
+            src={image}
+            alt={name}
             className="h-[160px] object-contain"
           />
         </div>
 
-        {/* 商品名称 */}
         <div className="text-[15px] text-[#242424] font-semibold mb-2 overflow-hidden text-ellipsis whitespace-nowrap px-4">
-          {product.name}
+          {name}
         </div>
 
-        {/* 特点 */}
         <div className="text-xs text-[#858585] h-[14px] leading-[14px] overflow-hidden break-all px-2">
           {featuresText}
         </div>
 
-        {/* 标签 (代码保持不变) */}
         <div className="h-[18px] overflow-hidden flex justify-center gap-1 mt-2">
           {tags.map((tag, index) =>
             tag.type === "coupon" ? (
@@ -76,6 +90,13 @@ const Card = ({ product }: CardProps) => {
                   券
                 </span>
               </div>
+            ) : tag.type === "discount" ? (
+              <span
+                key={tag.text}
+                className="border-[.5px] rounded-[2px] text-xs px-1 py-0.5 h-[18px] flex items-center border-[#ef1e0b] text-[#ef1e0b]"
+              >
+                {tag.text}
+              </span>
             ) : (
               <span
                 key={tag.text}
@@ -91,20 +112,19 @@ const Card = ({ product }: CardProps) => {
           )}
         </div>
 
-        {/* 价格 */}
         <div className="mt-[7px] block text-[#e2231a] tracking-[-0.1px] text-center font-semibold text-[0] font-microsoft-yahei pb-4">
-          {product.coupon > 0 ? (
+          {hasCoupon ? (
             <div className="flex items-baseline justify-center gap-1 mt-3">
               <span className="text-[#e2231a] text-base font-bold leading-none">
-                到手价￥{finalPrice}
+                到手价￥{finalPrice.toFixed(0)}
               </span>
               <span className="text-xs text-gray-500 line-through leading-none">
-                ￥{product.originalPrice}
+                ￥{originalPrice.toFixed(0)}
               </span>
             </div>
           ) : (
             <span className="text-base font-semibold text-[#e2231a] block mt-3">
-              ￥{product.originalPrice}元
+              ￥{originalPrice.toFixed(0)}元
             </span>
           )}
         </div>

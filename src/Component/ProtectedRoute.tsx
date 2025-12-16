@@ -21,3 +21,14 @@ const ProtectedRoute: FC<ProtectedRouteProps> = ({ children, redirectTo = '/' })
 }
 
 export default ProtectedRoute
+
+
+
+export const HavingLoginRoute: FC<ProtectedRouteProps> = ({ children, redirectTo = '/' }) => {
+    const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+
+    if (isAuthenticated) {
+        return <Navigate to={redirectTo} />
+    }
+    return <>{children}</>
+}

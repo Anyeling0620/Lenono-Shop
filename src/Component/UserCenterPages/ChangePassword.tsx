@@ -8,6 +8,11 @@ import VerificationCodeField from '../Auth/VerificationCodeField';
 import SubmitButton from '../Auth/SubmitButton';
 import useVerificationCode from '../../hooks/useVerificationCode';
 import useUserInfoStore from '../../store/userInfostore';
+import { useRequest } from 'ahooks';
+import axiosService, { type ApiResponse, axiosInstance } from '../../services/axiosService';
+import { API_PATHS } from '../../services/apiPaths';
+import globalErrorHandler from '../../utils/globalAxiosErrorHandler';
+import toast from 'react-hot-toast';
 
 const { TabPane } = Tabs;
 
@@ -17,8 +22,8 @@ const { TabPane } = Tabs;
 const codeSchema = z.object({
     email: z.string().email('请输入有效的邮箱地址'),
     code: z.string().regex(/^\d{6}$/, '验证码必须为6位数字'),
-    newPassword: z.string().min(6, '密码至少需要6位字符'),
-    confirmPassword: z.string().min(6, '请确认密码'),
+    newPassword: z.string().min(6, '密码至少需要6位字符').regex(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, '密码必须包含大小写字母和数字'),
+    confirmPassword: z.string().min(6, '请确认密码').regex(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, '密码必须包含大小写字母和数字'),
 }).refine((data) => data.newPassword === data.confirmPassword, {
     message: '两次密码输入不一致',
     path: ['confirmPassword'],
@@ -27,10 +32,12 @@ const codeSchema = z.object({
 const passwordSchema = z.object({
     oldPassword: z.string()
         .nonempty('原密码不能为空')
-        .min(6, '密码至少需要6位字符'),
+        .min(6, '密码至少需要6位字符')
+        .regex(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, '密码必须包含大小写字母和数字'),
     newPassword: z.string()
         .nonempty('密码不能为空')
-        .min(6, '密码至少需要6位字符'),
+        .min(6, '密码至少需要6位字符')
+        .regex(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, '密码必须包含大小写字母和数字'),
     confirmPassword: z.string().nonempty('请确认密码'),
 }).refine((data) => data.newPassword === data.confirmPassword, {
     message: '两次密码输入不一致',
@@ -58,7 +65,7 @@ const ChangePassword: React.FC<ChangePasswordProps> = ({ onSubmitByCode, onSubmi
 
     const codeMethods = useForm<CodeFormValues>({
         resolver: zodResolver(codeSchema),
-        defaultValues: { email: '', code: '', newPassword: '', confirmPassword: '' },
+        defaultValues: { email: currentEmail, code: '', newPassword: '', confirmPassword: '' },
         mode: 'onChange',
     });
 
@@ -103,15 +110,51 @@ const ChangePassword: React.FC<ChangePasswordProps> = ({ onSubmitByCode, onSubmi
         if (valid) setCurrentStepPassword(prev => prev + 1);
     };
 
-    const renderFormErrors = (errorsObj: Record<string, { message?: string }>) => {
-        const messages = Object.values(errorsObj).map(err => err?.message).filter(Boolean);
-        if (!messages.length) return null;
-        return (
-            <div className="bg-[#ffe8e8] text-[#e1140a] p-2 rounded mb-2">
-                {messages.map((msg, idx) => <div key={idx}>{msg}</div>)}
-            </div>
-        );
-    };
+
+    interface ChangePasswordPayload {
+        type: 'email' | 'password';
+        email?: string;
+        code?: string;
+        new_password: string;
+        confirm_password: string;
+        old_password?: string;
+    }
+    const { run: changePassword } = useRequest((payload: ChangePasswordPayload) =>
+        axiosInstance.post<ApiResponse<null>>(API_PATHS.USER_CHANGE_PASSWORD,
+            payload
+        ), {
+        manual: true,
+        onSuccess: () => {
+            message.success('密码修改成功');
+            axiosService.forceLogout()
+        },
+        onError: (err) => {
+            globalErrorHandler.handle(err, toast.error)
+        }
+    })
+
+    async function handleChangePassword() {
+        if (activeTab === 'code') {
+            const values = codeMethods.getValues();
+            await changePassword({
+                type: 'email',
+                email: values.email,
+                code: values.code,
+                new_password: values.newPassword,
+                confirm_password: values.confirmPassword,
+            })
+        } else if (activeTab === 'password') {
+            const values = passwordMethods.getValues();
+            await changePassword({
+                type: 'password',
+                old_password: values.oldPassword,
+                new_password: values.newPassword,
+                confirm_password: values.confirmPassword,
+            })
+        }
+
+
+    }
 
     return (
         <div className="p-6 w-full mx-auto">
@@ -126,7 +169,7 @@ const ChangePassword: React.FC<ChangePasswordProps> = ({ onSubmitByCode, onSubmi
                             current={currentStepCode}
                             size="small"
                             items={[
-                                { title: '验证邮箱与' },
+                                { title: '验证邮箱' },
                                 { title: '新密码' },
                                 { title: '确认密码' },
                             ]}
@@ -136,7 +179,7 @@ const ChangePassword: React.FC<ChangePasswordProps> = ({ onSubmitByCode, onSubmi
                             <form onSubmit={handleSubmitCode(onSubmitByCode || (() => { }))} className="flex flex-col gap-4">
                                 {currentStepCode === 0 && (
                                     <>
-                                        <FormField type="email" placeholder="请输入邮箱" error={errorsCode.email?.message} {...codeMethods.register('email')} />
+                                        <FormField type="email" disabled placeholder="请输入邮箱" error={errorsCode.email?.message} {...codeMethods.register('email')} />
                                         <VerificationCodeField placeholder="请输入验证码" error={errorsCode.code?.message} verificationSent={sendingCode} countdown={countdownCode} onSendCode={sendCode} {...codeMethods.register('code')} />
                                         <SubmitButton label="下一步" onClick={nextStepCode} type="button" className="mt-5 w-auto" />
                                     </>
@@ -153,10 +196,9 @@ const ChangePassword: React.FC<ChangePasswordProps> = ({ onSubmitByCode, onSubmi
                                 {currentStepCode === 2 && (
                                     <>
                                         <FormField type="password" placeholder="请确认新密码" error={errorsCode.confirmPassword?.message} {...codeMethods.register('confirmPassword')} />
-                                        {renderFormErrors(errorsCode)}
                                         <div className="flex justify-between gap-2 mt-5">
-                                            <SubmitButton label="提交" loading={codeMethods.formState.isSubmitting} />
-                                            <SubmitButton label="上一步" onClick={() => setCurrentStepCode(1)} type="button" />
+                                            <SubmitButton label="上一步" onClick={() => setCurrentStepCode(1)} type="button" className='w-1/2' />
+                                            <SubmitButton label="提交" onClick={handleChangePassword} loading={codeMethods.formState.isSubmitting} className='w-1/2' />
                                         </div>
                                     </>
                                 )}
@@ -196,10 +238,9 @@ const ChangePassword: React.FC<ChangePasswordProps> = ({ onSubmitByCode, onSubmi
                                 {currentStepPassword === 2 && (
                                     <>
                                         <FormField type="password" placeholder="请确认新密码" error={errorsPassword.confirmPassword?.message} {...passwordMethods.register('confirmPassword')} />
-                                        {renderFormErrors(errorsPassword)}
                                         <div className="flex justify-between gap-2 mt-5">
-                                            <SubmitButton label="提交" loading={passwordMethods.formState.isSubmitting} />
-                                            <SubmitButton label="上一步" onClick={() => setCurrentStepPassword(1)} type="button" />
+                                            <SubmitButton label="上一步" onClick={() => setCurrentStepPassword(1)} type="button" className="w-1/2" />
+                                            <SubmitButton label="提交" onClick={handleChangePassword} loading={passwordMethods.formState.isSubmitting} className="w-1/2" />
                                         </div>
                                     </>
                                 )}
