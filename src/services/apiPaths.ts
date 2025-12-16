@@ -19,7 +19,6 @@ export const API_PATHS = {
     GET_NEW_PRODUCT:'/products/new/index',
     GET_INDEX_PRODUCT:'/products/index/groups',
 
+    ROAST_LIST: '/user/roast/list',
     
-
 } as const;
-
