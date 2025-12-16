@@ -110,8 +110,10 @@ const ChangeEmail: React.FC<ChangeEmailProps> = ({ onSubmitByCode, onSubmitByPas
         if (valid) setCurrentStepPassword((prev) => prev + 1);
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const renderFormErrors = (errorsObj: any) => {
-        const messages = Object.values(errorsObj).map((err: any, idx) => err?.message).filter(Boolean);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+        const messages = Object.values(errorsObj).map((err: any) => err?.message).filter(Boolean);
         if (!messages.length) return null;
         return (
             <div className="bg-[#ffe8e8] text-[#e1140a] p-2 rounded mb-2">

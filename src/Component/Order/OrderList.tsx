@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Pagination, message, ConfigProvider } from 'antd'; // 1. 引入 ConfigProvider
-import zhCN from 'antd/locale/zh_CN'; // 2. 引入中文包
+import { Pagination, message, ConfigProvider } from 'antd';
+import zhCN from 'antd/locale/zh_CN';
 import OrderItem from './OrderItem';
 import OrderEmpty from './OrderEmpty';
 
@@ -8,7 +8,7 @@ import OrderEmpty from './OrderEmpty';
 const allOrders = [
   {
     id: '1',
-    createTime: '2025-12-10 12:44:33',
+    createTime: '2025-12-16 12:44:33', // 这是一个未来的时间，处于待付款
     orderNo: '300181180',
     status: 'pending',
     statusText: '待付款',
@@ -29,7 +29,7 @@ const allOrders = [
   },
   {
     id: '2',
-    createTime: '2025-12-08 19:44:33',
+    createTime: '2023-12-08 19:44:33', // 这是一个过去的时间，应该会立即超时
     orderNo: '300181181',
     status: 'pending',
     statusText: '待付款',
@@ -136,71 +136,82 @@ const OrderList: React.FC = () => {
   const [orders, setOrders] = useState(allOrders); 
   const [keyword, setKeyword] = useState(''); 
 
-  // 分页状态：当前页码和每页条数
+  // 分页状态
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
-  const tabs = [
-    { key: 'all', label: '全部订单' },
-    // 动态计算待付款数量
-    { key: 'pending', label: '待付款', count: orders.filter(o => o.status === 'pending').length },
-    { key: 'shipping', label: '待发货', count: 0 },
-    { key: 'receiving', label: '待收货', count: 0 },
-  ];
 
-  // --- 1. Tab 切换逻辑 ---
-  const handleTabChange = (key: string) => {
-    setActiveTab(key);
-    setCurrentPage(1); // 切换 Tab 时重置回第 1 页
+  // --- 逻辑修改：取消订单 ---
+  // 不直接删除数据，而是将状态改为 cancelled。
+  // 这样 activeTab === 'pending' 时，它会被 filteredOrders 过滤掉，从而从“待付款”列表消失。
+  const handleCancelOrder = (id: string) => {
+    setOrders(prev => prev.map(item => {
+      if (item.id === id) {
+        return { ...item, status: 'cancelled', statusText: '已取消' };
+      }
+      return item;
+    }));
+    message.success('订单已取消');
   };
 
-  // --- 2. 搜索逻辑 ---
+  // --- 逻辑修改：处理超时 ---
+  // 当子组件检测到超时，调用此函数更新父组件状态
+  const handleTimeout = (id: string) => {
+    setOrders(prev => prev.map(item => {
+      if (item.id === id && item.status === 'pending') {
+        // 只有状态改变时才更新，避免死循环
+        return { ...item, status: 'cancelled', statusText: '已取消' };
+      }
+      return item;
+    }));
+  };
+
+  // Tabs 配置
+  const tabs = [
+    { key: 'all', label: '全部订单' },
+    { key: 'pending', label: '待付款', count: orders.filter(o => o.status === 'pending').length },
+    { key: 'shipping', label: '待发货', count: orders.filter(o => o.status === 'shipping').length },
+    { key: 'receiving', label: '待收货', count: orders.filter(o => o.status === 'receiving').length },
+  ];
+
+  // --- Tab 切换 ---
+  const handleTabChange = (key: string) => {
+    setActiveTab(key);
+    setCurrentPage(1);
+  };
+
+  // --- 搜索逻辑 ---
   const handleSearch = () => {
     const term = keyword.trim();
-    // 如果搜索词为空，重置为所有数据并回第一页
     if (!term) {
-        setOrders(allOrders);
-        setCurrentPage(1);
+        // 搜索逻辑如果涉及到重新请求API则这里需要调整，这里仅针对前端模拟数据
+        // 因为 orders 已经是 state，这里搜索应该基于原始数据 filter，或者我们假设 orders 就是当前展示数据
+        // 简单起见，我们这里仅提示，实际应配合 useEffect 或请求重置 orders
+        message.info('请输入搜索内容'); 
         return;
     }
-    // 模糊匹配：订单号 OR 商品名
+    // 简单的本地过滤演示（实际通常是后端搜索）
     const filtered = allOrders.filter(o => {
        const matchOrderNo = o.orderNo.includes(term);
        const matchProductName = o.product.name.toLowerCase().includes(term.toLowerCase());
        return matchOrderNo || matchProductName;
     });
     setOrders(filtered);
-    setCurrentPage(1); // 搜索后重置回第 1 页
-    
-    if(filtered.length === 0) {
-        message.warning('未找到相关订单');
-    } else {
-        message.success('搜索完成');
-    }
+    setCurrentPage(1);
   };
 
-  // --- 3. 取消订单逻辑 ---
-  const handleCancelOrder = (id: string) => {
-    message.success('订单取消申请已提交');
-    setOrders(prev => prev.filter(o => o.id !== id)); 
-  };
-
-  // --- 4. 分页与筛选逻辑 ---
-  
-  // 第一步：根据 Tab 筛选
+  // --- 核心筛选逻辑 ---
   const filteredOrders = orders.filter(order => {
     if (activeTab === 'all') return true;
     return order.status === activeTab;
   });
 
-  // 第二步：为当前页切片数据
+  // 分页切片
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
   const currentShowOrders = filteredOrders.slice(startIndex, endIndex);
 
-  // 第三步：处理页码变更
   const onPageChange = (page: number) => {
       setCurrentPage(page);
-      // 平滑滚动回顶部
       window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -276,6 +287,7 @@ return (
               key={order.id} 
               order={order} 
               onCancelSuccess={handleCancelOrder} 
+              onTimeout={handleTimeout} // 传递超时处理函数
             />
           ))
         ) : (
@@ -285,7 +297,6 @@ return (
 
       {/* 分页 */}
       {filteredOrders.length > 0 && (
-        // 4. 使用 ConfigProvider 实现中文，使用 class 实现方形
         <ConfigProvider locale={zhCN}>
             <div className="flex justify-center py-6 custom-square-pagination">
             <Pagination

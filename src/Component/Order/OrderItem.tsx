@@ -4,64 +4,79 @@ import { UserOutlined, MessageOutlined, DeleteOutlined } from '@ant-design/icons
 import { Link, useNavigate } from 'react-router-dom'; 
 import { Popover, message } from 'antd';
 import CancelOrderModal from './CancelOrderModal';
-// 引入 useCart 
 import { useCart } from '../../context/CartContext'; 
 
 interface OrderItemProps {
   order: any;
   onCancelSuccess: (id: string) => void;
+  onTimeout: (id: string) => void; // 新增 prop 类型定义
 }
 
-const OrderItem: React.FC<OrderItemProps> = ({ order, onCancelSuccess }) => {
+const OrderItem: React.FC<OrderItemProps> = ({ order, onCancelSuccess, onTimeout }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [timeLeft, setTimeLeft] = useState('');
-  const [isExpired, setIsExpired] = useState(false);
+  
+  // 移除本地 isExpired 状态，直接依赖 order.status
+  // const [isExpired, setIsExpired] = useState(false); 
 
   const navigate = useNavigate();
   const { addToCart } = useCart();
 
-  // .(倒计时 useEffect 逻辑保持不变)
+  // 倒计时逻辑
   useEffect(() => {
-    if (order.status !== 'pending' || isExpired) return;
+    // 如果订单状态已经不是 pending，则不需要倒计时
+    if (order.status !== 'pending') {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setTimeLeft('');
+        return;
+    }
+
     const calculateTimeLeft = () => {
       const createTime = new Date(order.createTime).getTime();
-      const expireTime = createTime + 24 * 60 * 60 * 1000;
+      const expireTime = createTime + 24 * 60 * 60 * 1000; // 假设24小时过期
       const now = new Date().getTime();
       const diff = expireTime - now;
+
       if (diff <= 0) {
-        setIsExpired(true);
-        setTimeLeft(''); 
+        // 超时了！调用父组件方法更新状态
+        setTimeLeft('已超时'); 
+        if (order.status === 'pending') {
+            onTimeout(order.id);
+        }
         return;
       }
+
       const h = Math.floor(diff / (1000 * 60 * 60));
       const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const s = Math.floor((diff % (1000 * 60)) / 1000);
       setTimeLeft(`${String(h).padStart(2, '0')}小时${String(m).padStart(2, '0')}分${String(s).padStart(2, '0')}秒`);
     };
+
+    // 立即执行一次
     calculateTimeLeft();
     const timer = setInterval(calculateTimeLeft, 1000);
+
     return () => clearInterval(timer);
-  }, [order.createTime, order.status, isExpired]);
+  }, [order.createTime, order.status, order.id, onTimeout]);
 
-  const currentStatus = isExpired ? 'cancelled' : order.status;
+  // 直接使用 props 中的 status，不再依赖本地 isExpired
+  const currentStatus = order.status;
 
-  //再次购买
+  // 再次购买
   const handleBuyAgain = () => {
     const productToAdd = {
       ...order.product,
       originalPrice: order.product.price, 
       coupon: 0 
     };
-
     addToCart(productToAdd, 1, order.product.spec);
-  
     message.success('已加入购物车');
-  
     navigate('/shopping-cart');
   };
 
+
   const handleDeleteOrder = () => {
-    onCancelSuccess(order.id);
+    onCancelSuccess(order.id); 
   };
 
   const recipientContent = (
@@ -74,7 +89,7 @@ const OrderItem: React.FC<OrderItemProps> = ({ order, onCancelSuccess }) => {
 
   return (
     <div className="border border-gray-200 hover:border-gray-300 transition-colors bg-white">
-      {/* 头部代码不变 */}
+      {/* 头部 */}
       <div className="bg-[#f5f5f5] px-4 py-2 text-xs text-gray-500 flex justify-between items-center">
         <div className="flex items-center gap-6">
           <span className="font-mono">{order.createTime}</span>
@@ -84,7 +99,8 @@ const OrderItem: React.FC<OrderItemProps> = ({ order, onCancelSuccess }) => {
             <Link to="/service" className="flex items-center gap-1 cursor-pointer hover:text-[#e1140a] text-gray-500">
                 <MessageOutlined /> <span>客服咨询</span>
             </Link>
-            {(currentStatus === 'cancelled' || currentStatus === 'closed') && (
+            {/* 只有非 pending 状态才显示删除按钮 */}
+            {(currentStatus === 'cancelled' || currentStatus === 'completed') && (
                 <DeleteOutlined 
                     className="text-lg cursor-pointer hover:text-[#e1140a] transition-colors" 
                     title="删除订单"
@@ -137,7 +153,7 @@ const OrderItem: React.FC<OrderItemProps> = ({ order, onCancelSuccess }) => {
            ) : currentStatus === 'cancelled' ? (
                <span className="text-gray-500">已取消</span>
            ) : (
-               <span className="text-gray-600">{order.statusText}</span>
+               <span className="text-gray-600">{order.statusText || order.status}</span>
            )}
            <Link to="/order-detail/123" className="text-xs text-gray-500 hover:text-[#e1140a] hover:underline">
              订单详情
@@ -165,7 +181,6 @@ const OrderItem: React.FC<OrderItemProps> = ({ order, onCancelSuccess }) => {
                </button>
              </>
           ) : currentStatus === 'cancelled' ? (
-             // 5. 绑定点击事件到“再次购买”按钮
              <button 
                 onClick={handleBuyAgain}
                 className="w-full py-1.5 border border-[#e1140a] text-[#e1140a] bg-white text-xs rounded-sm hover:bg-red-50 transition-colors"
