@@ -1,6 +1,6 @@
 // 文件路径: src/pages/Checkout.tsx
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   PlusOutlined, 
   CheckCircleFilled, 
@@ -8,11 +8,11 @@ import {
   DownOutlined,
   CheckOutlined
 } from '@ant-design/icons';
-import { Modal, Form, Input, Checkbox, Select, message, Cascader } from 'antd';
-
+import { Modal, Form, Input, Checkbox, Select, message } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { chinaRegions } from '../assets/data/chinaRegions';
+// 1. 引入封装好的地址选择器组件
+import AddressSelector from '../component/AddressSelector';
 
 const { Option } = Select;
 
@@ -21,16 +21,10 @@ interface Address {
   id: string;
   name: string;
   phone: string;
-  region: string[];
+  region: string[]; // 存代码
+  regionLabels?: string[]; // 存中文名称 (用于展示)
   detail: string;
   isDefault: boolean;
-}
-
-// 定义 Cascader 选项类型
-interface Option {
-  value: string;
-  label: string;
-  children?: Option[];
 }
 
 const Checkout: React.FC = () => {
@@ -54,9 +48,12 @@ const Checkout: React.FC = () => {
   const [openPanelId, setOpenPanelId] = useState<string | null>(null);
   const [openPanelType, setOpenPanelType] = useState<"service" | "gift" | "coupon" | null>(null);
 
-  // 地址列表状态 (模拟)
+  // 地址列表状态
   const [addressList, setAddressList] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>('');
+
+  // 临时存储选中的地址中文名称 (用于解决列表显示问题)
+  const tempRegionLabels = useRef<string[]>([]);
 
   const [addressForm] = Form.useForm();
   const [invoiceForm] = Form.useForm();
@@ -64,25 +61,6 @@ const Checkout: React.FC = () => {
   const shippingFee = 0; 
   const discount = 0;    
   const finalPrice = totalPrice + shippingFee - discount;
-
-  // --- 数据转换：chinaRegions -> Cascader Options ---
-  const addressOptions: Option[] = useMemo(() => {
-    // 确保 chinaRegions 数据存在且格式正确
-    if (!chinaRegions || !Array.isArray(chinaRegions)) return [];
-    
-    return chinaRegions.map((province) => ({
-      value: province.province, // 使用 correct property name from chinaRegions.ts
-      label: province.province,
-      children: province.cities?.map((city) => ({
-        value: city.city, // 使用 correct property name from chinaRegions.ts
-        label: city.city,
-        children: city.districts?.map((district) => ({
-          value: district,
-          label: district,
-        }))
-      }))
-    }));
-  }, []);
 
   const handleTogglePanel = (id: string, type: "service" | "gift" | "coupon") => {
     if (openPanelId === id && openPanelType === type) {
@@ -97,11 +75,16 @@ const Checkout: React.FC = () => {
   // 处理添加新地址
   const handleAddAddress = () => {
     addressForm.validateFields().then((values) => {
+      // 这里的 values.region 可能是代码数组 (取决于 AddressSelector 的 value)
+      // 我们使用 tempRegionLabels.current 来获取对应的中文名称
+      const labels = tempRegionLabels.current.length > 0 ? tempRegionLabels.current : values.region;
+
       const newAddress: Address = {
         id: Date.now().toString(),
         name: values.name,
         phone: values.phone,
-        region: values.region, // Cascader 返回的是数组 ['省', '市', '区']
+        region: values.region, // 保存原始值(可能是代码)
+        regionLabels: labels,  // 保存中文名称用于展示
         detail: values.detail,
         isDefault: values.isDefault || false,
       };
@@ -114,9 +97,17 @@ const Checkout: React.FC = () => {
       message.success('地址添加成功！');
       setIsAddressModalOpen(false);
       addressForm.resetFields();
+      tempRegionLabels.current = []; // 重置临时标签
     }).catch(errorInfo => {
       console.log('Failed:', errorInfo);
     });
+  };
+
+  // 捕获地址选择器的变化，保存中文标签
+  const onAddressChange = (_val: string[], selectedOptions: any[]) => {
+    if (selectedOptions) {
+      tempRegionLabels.current = selectedOptions.map(opt => opt.label);
+    }
   };
 
   const handleSaveInvoice = () => {
@@ -147,6 +138,13 @@ const Checkout: React.FC = () => {
   // 获取当前选中的地址对象，用于底部展示
   const currentAddress = addressList.find(addr => addr.id === selectedAddressId);
 
+  // 辅助函数：获取显示用的地址字符串
+  const getDisplayRegion = (addr: Address) => {
+    // 优先使用 regionLabels (中文), 降级使用 region
+    const parts = addr.regionLabels || addr.region;
+    return parts.join(' '); // 用空格分隔
+  };
+
   return (
     <div className="bg-[#f5f5f5] min-h-screen pb-20 pt-5 font-sans text-[#333]" onClick={() => { setOpenPanelId(null); setOpenPanelType(null); }}>
       <div className="w-[1200px] mx-auto space-y-4">
@@ -168,13 +166,16 @@ const Checkout: React.FC = () => {
                 className={`w-[298px] h-[148px] border p-4 cursor-pointer relative transition-all bg-white hover:border-[#e1140a] ${selectedAddressId === addr.id ? 'border-[#e1140a] ring-1 ring-[#e1140a]' : 'border-[#e0e0e0]'}`}
               >
                 <div className="flex justify-between items-center mb-3 border-b border-[#f0f0f0] pb-2">
-                  <span className="font-bold text-sm truncate max-w-[100px]" title={addr.region[0]}>{addr.region[0]} ({addr.name})</span>
+                  <span className="font-bold text-sm truncate max-w-[100px]" title={getDisplayRegion(addr)}>
+                    {/* 显示省份作为标题 (取第一个) */}
+                    {(addr.regionLabels || addr.region)[0]} ({addr.name})
+                  </span>
                   {addr.isDefault && <span className="text-xs bg-[#999] text-white px-1">默认</span>}
                 </div>
                 <div className="text-xs text-[#666] space-y-1">
                   <p>收货人：{addr.name}</p>
                   <p>电话：{addr.phone}</p>
-                  <p className="line-clamp-2 h-[32px]">地址：{addr.region.join('')} {addr.detail}</p>
+                  <p className="line-clamp-2 h-[32px]">地址：{getDisplayRegion(addr)} {addr.detail}</p>
                 </div>
                 
                 {selectedAddressId === addr.id && (
@@ -313,7 +314,7 @@ const Checkout: React.FC = () => {
               <div className="text-xs text-gray-500 mb-2 bg-[#fbfcff] p-2 border border-[#f0f0f0] inline-block">
                 {currentAddress ? (
                   <>
-                    寄送至：{currentAddress.region.join(' ')} {currentAddress.detail} &nbsp;&nbsp; 收货人：{currentAddress.name} {currentAddress.phone}
+                    寄送至：{getDisplayRegion(currentAddress)} {currentAddress.detail} &nbsp;&nbsp; 收货人：{currentAddress.name} {currentAddress.phone}
                   </>
                 ) : (
                   <span className="text-[#e1140a]">请先添加并选择收货地址</span>
@@ -332,7 +333,7 @@ const Checkout: React.FC = () => {
         </section>
       </div>
 
-      {/* --- 弹窗 1: 添加地址 (已修复：级联选择) --- */}
+      {/* --- 弹窗 1: 添加地址 (已使用 AddressSelector) --- */}
       <Modal
         title={<div className="text-base font-normal pb-2 border-b border-[#eee]">添加新地址</div>}
         open={isAddressModalOpen}
@@ -352,14 +353,17 @@ const Checkout: React.FC = () => {
                 </Form.Item>
             </div>
             
-            {/* 使用 Cascader 实现省市区三级联动 */}
-            <Form.Item name="region" label="所在地区" required rules={[{ required: true, message: '请选择地区' }]}>
-                <Cascader 
-                  options={addressOptions} 
-                  placeholder="请选择省 / 市 / 区" 
-                  size="large" 
-                  className="rounded-none w-full"
-                  expandTrigger="hover"
+            {/* 使用 AddressSelector 替换原有的 Cascader */}
+            {/* onAddressChange 用于捕获选中项的详细对象（包含中文名称） */}
+            <Form.Item 
+                name="region" 
+                label="所在地区" 
+                required 
+                rules={[{ required: true, message: '请选择地区' }]}
+            >
+                <AddressSelector 
+                    placeholder="请选择省 / 市 / 区" 
+                    onChange={onAddressChange} // 捕获中文名称
                 />
             </Form.Item>
 
@@ -421,7 +425,8 @@ const Checkout: React.FC = () => {
         .custom-modal .ant-modal-header { margin-bottom: 0; border-radius: 0; }
         .ant-select-selector { border-radius: 0 !important; }
         .ant-form-item-label > label { color: #666; }
-        .ant-cascader-menu-item-active { color: #e1140a !important; background-color: #fff0f0 !important; }
+        /* 覆盖 AddressSelector 样式以匹配 Modal */
+        .address-selector-container .address-cascader { width: 100% !important; max-width: none !important; }
       `}</style>
     </div>
   );
