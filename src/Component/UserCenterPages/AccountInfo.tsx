@@ -147,13 +147,17 @@ const AccountInfo: React.FC = () => {
 
     // ---------- 表单提交 ----------
     const onSubmit = async (data: AccountInfoForm) => {
+        const isoDate = new Date(data.birthday).toLocaleString();
+        console.log(isoDate);
+        
         if (!isDirty) return;  // 如果表单没有修改过，则不提交
+        
         updateInfoRun(data)
         updateNickName(data.nickName)
     };
     // 防抖
     const { run: updateInfoRun, loading: sumbitLoading } = useRequest((data: AccountInfoForm) => {
-        const isoDate = (data.birthday as Date).toISOString().slice(0, 10);
+        const isoDate = new Date(data.birthday).toLocaleString();
         return updateAccountInfo({ ...data, birthday: isoDate })
     }, {
         manual: true, // 手动触发

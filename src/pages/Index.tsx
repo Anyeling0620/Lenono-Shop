@@ -1,13 +1,4 @@
-/*
- * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @Date: 2025-11-18 20:09:36
- * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-30 16:00:07
- * @FilePath: \lenovo-shop\src\pages\Index.tsx
- * @Description: 
- * 
- * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
- */
+
 
 import React from 'react';
 import QuickAccess from '../component/QuickAccess/QuickAccess';
@@ -15,6 +6,7 @@ import type { CarouselItemType } from '../types/carouselItem';
 import Carousel from '../component/Carousel/Carousel';
 import FlashSale from '../component/FlashSale/FlashSale';
 import MainProduct from '../component/MainProduct/MainProduct';
+
 
 const rollData: CarouselItemType[] = [
   {
@@ -47,13 +39,17 @@ const rollData: CarouselItemType[] = [
 
 const Index: React.FC = () => {
 
+
+
   return (
     <div className='bg-[#f5f5f5]'>
+
+  
       <Carousel
         className='h-[400px]'
         data={rollData}
       />
-      <QuickAccess/>
+      <QuickAccess />
       <FlashSale />
       <MainProduct />
     </div>

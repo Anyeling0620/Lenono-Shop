@@ -386,12 +386,15 @@ class AxiosService {
 
     public async forceLogout(): Promise<void> {
         // 强制登出：使用无拦截器的实例
-        await this.refreshInstance.post(API_PATHS.LOGOUT_PATH, {}, {
-            deviceCheck: false,
-            isRefreshRequest: true
-        });
-        this.setAccessToken(null);
-        window.dispatchEvent(new CustomEvent(EVENT_NAMES.AUTH_EXPIRED));
+        try {
+            await this.refreshInstance.post(API_PATHS.LOGOUT_PATH, {}, {
+                deviceCheck: false,
+                isRefreshRequest: true
+            });
+        } finally {
+            this.setAccessToken(null);
+            window.dispatchEvent(new CustomEvent(EVENT_NAMES.AUTH_EXPIRED));
+        }
     }
 }
 

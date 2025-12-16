@@ -18,3 +18,15 @@
     animation: border-blink 0.4s ease-in-out;
   }
 }
+
+/* 隐藏 Antd Cascader 弹出面板的滚动条（仍保留滚动功能） */
+.address-cascader-popup .ant-cascader-menus,
+.address-cascader-popup .ant-cascader-menu {
+  -ms-overflow-style: none; /* IE 10+ */
+  scrollbar-width: none; /* Firefox */
+}
+.address-cascader-popup .ant-cascader-menus::-webkit-scrollbar,
+.address-cascader-popup .ant-cascader-menu::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
