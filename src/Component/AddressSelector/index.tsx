@@ -55,9 +55,20 @@ const AddressSelectorComponent: React.FC<AddressSelectorProps> = ({
             }
         };
 
-        // 如果预加载，立即开始加载
+        // 如果预加载，使用 requestIdleCallback 或 setTimeout 延迟加载以避免阻塞主线程
         if (prefetch) {
-            loadOptions();
+            const scheduleLoad = () => {
+                if (typeof requestIdleCallback !== 'undefined') {
+                    requestIdleCallback(() => {
+                        if (mounted) loadOptions();
+                    });
+                } else {
+                    setTimeout(() => {
+                        if (mounted) loadOptions();
+                    }, 0);
+                }
+            };
+            scheduleLoad();
         }
 
         // 组件卸载时取消
