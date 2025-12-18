@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Cascader, type CascaderProps, Typography } from 'antd';
-import { addressOptions, type AddressTreeNode } from '../../utils/addressData';
+import { getAddressOptions, type AddressTreeNode } from '../../utils/addressData';
 
 const { Text } = Typography;
 
@@ -23,6 +23,9 @@ const AddressSelector: React.FC<AddressSelectorProps> = ({
     placeholder = '请选择省/市/区/街道',
 }) => {
     const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
+
+    // 延迟加载地址选项，只在组件首次渲染时构建一次
+    const addressOptions = useMemo(() => getAddressOptions(), []);
 
     // 处理级联选择变化
     const handleChange: CascaderProps['onChange'] = (value, selectedOptions) => {

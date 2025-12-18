@@ -1,7 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Modal, Form, Input, Checkbox, message } from 'antd';
+import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
+import { Modal, Form, Input, Checkbox, message, Spin } from 'antd';
 import { EditOutlined, CloseOutlined } from '@ant-design/icons';
-import AddressSelector from '../AddressSelector';
+
+// 延迟加载 AddressSelector 组件，避免阻塞页面加载
+const AddressSelector = lazy(() => import('../AddressSelector'));
 
 // 定义地址类型
 interface Address {
@@ -391,19 +393,24 @@ const Address: React.FC = () => {
                 <span className="text-red-500">*</span> 地址:
               </span>
             }
-            rules={[{ required: true, message: '请选择地址' }]}
+            rules={[{ required: true, message: "请选择地址" }]}
           >
-            <AddressSelector
-              placeholder="请选择省/市/区/街道"
-              onChange={(value, selectedOptions) => {
-                // 保存中文标签
-                if (selectedOptions && selectedOptions.length > 0) {
-                  tempRegionLabels.current = selectedOptions.map(opt => opt.label);
-                }
-                // 更新表单字段值
-                form.setFieldValue('region', value);
-              }}
-            />
+            {/* 延迟加载 AddressSelector，避免阻塞页面 */}
+            <Suspense fallback={<Spin size="small" />}>
+              <AddressSelector
+                placeholder="请选择省/市/区/街道"
+                onChange={(value, selectedOptions) => {
+                  if (selectedOptions && selectedOptions.length > 0) {
+                    tempRegionLabels.current = selectedOptions.map(
+                      (opt: any) => opt.label as string
+                    );
+                  } else {
+                    // 兜底：直接使用编码数组
+                    tempRegionLabels.current = value;
+                  }
+                }}
+              />
+            </Suspense>
           </Form.Item>
 
           <Form.Item

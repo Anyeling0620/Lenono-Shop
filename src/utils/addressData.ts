@@ -26,14 +26,37 @@ export interface AddressTreeNode {
   children?: AddressTreeNode[];
 }
 
+// 使用 Map 建立 parentCode -> children[] 的索引，大幅提升性能
+let addressIndexMap: Map<string, AddressItem[]> | null = null;
+
 /**
- * 构建层级地址数据（递归）
+ * 构建地址索引 Map（只构建一次）
+ */
+const buildAddressIndex = (): Map<string, AddressItem[]> => {
+  if (addressIndexMap) {
+    return addressIndexMap;
+  }
+  
+  const indexMap = new Map<string, AddressItem[]>();
+  for (const item of allAddressData) {
+    const children = indexMap.get(item.parentCode) || [];
+    children.push(item);
+    indexMap.set(item.parentCode, children);
+  }
+  
+  addressIndexMap = indexMap;
+  return indexMap;
+};
+
+/**
+ * 构建层级地址数据（递归，使用索引优化性能）
  * @param parentCode 父级编码（初始为 '0'，对应省级的 parentCode）
  * @returns 嵌套的层级数据（适配 Cascader 组件）
  */
-export const buildAddressTree = (parentCode: string = '0'):AddressTreeNode[] => {
-  // 筛选当前父级下的子节点
-  const children = allAddressData.filter(item => item.parentCode === parentCode);
+const buildAddressTree = (parentCode: string = '0'): AddressTreeNode[] => {
+  const indexMap = buildAddressIndex();
+  // 使用索引查找子节点，O(1) 时间复杂度
+  const children = indexMap.get(parentCode) || [];
   
   // 递归构建子节点的层级结构
   return children.map(item => {
@@ -47,5 +70,16 @@ export const buildAddressTree = (parentCode: string = '0'):AddressTreeNode[] => 
   });
 };
 
-// 导出构建好的地址层级数据
-export const addressOptions = buildAddressTree();
+// 延迟构建地址树，只在首次访问时构建
+let cachedAddressOptions: AddressTreeNode[] | null = null;
+
+/**
+ * 获取地址选项（延迟构建，提升初始加载性能）
+ * 只在首次调用时构建地址树，后续调用直接返回缓存
+ */
+export const getAddressOptions = (): AddressTreeNode[] => {
+  if (!cachedAddressOptions) {
+    cachedAddressOptions = buildAddressTree();
+  }
+  return cachedAddressOptions;
+};
