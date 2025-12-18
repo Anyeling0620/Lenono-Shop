@@ -1,4 +1,4 @@
-import { axiosInstance, type ApiResponse } from "./axiosService";
+import { axiosInstance, type ApiResponse } from "./AxiosService";
 
 export interface Notice {
     id: number;

@@ -1,13 +1,11 @@
 import { useEffect } from "react";
 import useAuthStore from "../store/authStore";
 import useUserInfoStore from "../store/userInfostore";
-import { EVENT_NAMES } from "../services/axiosService";
+import { EVENT_NAMES } from "../services/AxiosService";
 import globalErrorHandler from "../utils/globalAxiosErrorHandler";
 import toast from "react-hot-toast";
 import { getUserInfo } from "../services/accountInfo";
 import { useNavigate } from "react-router-dom";
-
-
 
 
 const handleLoginUserInfo = async () => {
@@ -25,17 +23,34 @@ const useAuthLifecycle = () => {
 
         const handleToken = () => {
             useAuthStore.getState().login();
-            handleLoginUserInfo();
-            nav('/')
+            // 延迟执行用户信息获取，避免阻塞UI
+            setTimeout(() => {
+                handleLoginUserInfo();
+            }, 100);
+            // 延迟导航，让UI有机会响应
+            setTimeout(() => {
+                nav('/')
+            }, 50);
         }
 
         const handleExpired = () => {
             useAuthStore.getState().logout();
             useUserInfoStore.getState().clearUserInfo(); // 清空用户信息
-            nav('/')
+            // 延迟导航，避免立即跳转
+            setTimeout(() => {
+                nav('/')
+            }, 50);
         }
+        
+        // 添加性能监控
+        const startTime = performance.now();
+        
         window.addEventListener(EVENT_NAMES.AUTH_EXPIRED, handleExpired);
         window.addEventListener(EVENT_NAMES.TOKEN_REFRESHED, handleToken);
+        
+        const endTime = performance.now();
+        console.log(`[性能监控] useAuthLifecycle 初始化耗时: ${endTime - startTime}ms`);
+        
         return () => {
             window.removeEventListener(EVENT_NAMES.TOKEN_REFRESHED, handleToken);
             window.removeEventListener(EVENT_NAMES.AUTH_EXPIRED, handleExpired);

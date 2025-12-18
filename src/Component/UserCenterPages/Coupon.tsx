@@ -3,7 +3,7 @@ import { Tabs, Card, Row, Col, Tag, Descriptions, Divider, Button, Spin } from "
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import duration from "dayjs/plugin/duration";
-import { axiosInstance, type ApiResponse } from "../../services/axiosService";
+import { axiosInstance, type ApiResponse } from "../../services/AxiosService";
 import globalErrorHandler from "../../utils/globalAxiosErrorHandler";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
