@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Cascader, type CascaderProps, Typography, Spin } from 'antd';
 import { getAddressOptions, type AddressTreeNode, prefetchAddressData } from '../../utils/addressData';
+
 
 const { Text } = Typography;
 
@@ -76,6 +77,9 @@ const AddressSelectorComponent: React.FC<AddressSelectorProps> = ({
             mounted = false;
         };
     }, [options.length, prefetch]);
+
+    // 延迟加载地址选项，只在组件首次渲染时构建一次
+    const addressOptions = useMemo(() => getAddressOptions(), []);
 
     // 处理级联选择变化
     const handleChange: CascaderProps['onChange'] = (value, selectedOptions) => {

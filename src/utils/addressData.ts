@@ -76,7 +76,7 @@ export async function buildAddressTree(parentCode: string = '0', depth: number =
   
   // 筛选当前父级下的子节点
   const children = allAddressData.filter(item => item.parentCode === parentCode);
-  
+
   // 递归构建子节点的层级结构
   const childTrees = await Promise.all(
     children.map(async (item) => {
