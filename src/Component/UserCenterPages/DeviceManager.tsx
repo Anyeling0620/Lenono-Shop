@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
-import axiosService, { type DeviceInfo } from "../../services/axiosService";
+import axiosService, { type DeviceInfo } from "../../services/AxiosService";
 import globalErrorHandler from "../../utils/globalAxiosErrorHandler";
 import { useRequest } from "ahooks";
 import { Pagination, Result, Spin } from "antd";

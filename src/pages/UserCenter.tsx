@@ -4,7 +4,6 @@ import { Menu } from 'antd';
 import type { MenuProps } from 'antd';
 import { useSearchParams } from 'react-router-dom';
 import UserCenterPages from '../component/UserCenterPages/UserCenterPages';
-import { useRequest } from 'ahooks';
 
 /* ------------------------- 菜单数据 ------------------------- */
 
@@ -140,23 +139,11 @@ const UserCenter: FC = () => {
         return ['sub1'];
     });
 
-    const { run: setRefresh } = useRequest(
-        async (value: number) => {
-            return new Promise<void>((resolve) => {
-                setRefreshTrigger(value);
-                resolve();
-            });
-        }, {
-        manual: true,
-        debounceLeading: true,
-        debounceWait: 1000
-    });
     /* ----------- 点击菜单项：切换选中 ----------- */
     const onClick: MenuProps['onClick'] = ({ key }) => {
         if (selectedKeys[0] === key) {
             // 点击相同菜单项时触发刷新
-
-            setRefresh(refreshTrigger + 1);
+            setRefreshTrigger(prev => prev + 1);
         } else {
             setSelectedKeys([key]);
         }

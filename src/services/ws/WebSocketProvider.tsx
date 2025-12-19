@@ -9,7 +9,7 @@ import React, {
 import useWebSocket from "react-use-websocket";
 import { MessageRouter } from "./messageRouter";
 import type { WSMessage, ForceLogoutPayload } from "./types";
-import { axiosService, EVENT_NAMES } from "../axiosService";
+import { axiosService, EVENT_NAMES } from "../AxiosService";
 import { WSContext } from "./webSocketContext";
 
 

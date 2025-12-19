@@ -1,7 +1,7 @@
 
 import toast from "react-hot-toast";
 import { API_PATHS } from "./apiPaths";
-import axiosService, { axiosInstance, type ApiResponse } from "./axiosService";
+import axiosService, { axiosInstance, type ApiResponse } from "./AxiosService";
 
 /**
  * 账户信息接口

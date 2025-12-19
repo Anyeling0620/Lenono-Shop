@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import AgreementModal from "../Auth/AgreementModal ";
 import { Popover } from "antd";
 import UserInfoCard from "../UserInfoCard/UserInfoCard";
-import { axiosService } from "../../services/axiosService";
+import { axiosService } from "../../services/AxiosService";
 import { globalErrorHandler } from "../../utils/globalAxiosErrorHandler";
 import toast from "react-hot-toast";
 import useAuthStore from "../../store/authStore";

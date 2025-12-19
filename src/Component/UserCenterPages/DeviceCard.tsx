@@ -1,4 +1,4 @@
-import type { DeviceInfo } from "../../services/axiosService";
+import type { DeviceInfo } from "../../services/AxiosService";
 import React from "react";
 
 interface DeviceCardProps {

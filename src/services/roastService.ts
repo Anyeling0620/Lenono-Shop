@@ -1,4 +1,4 @@
-import { axiosInstance, type ApiResponse } from "./axiosService";
+import { axiosInstance, type ApiResponse } from "./AxiosService";
 import { API_PATHS } from "./apiPaths";
 import type { RoastItem } from "../types/roast";
 

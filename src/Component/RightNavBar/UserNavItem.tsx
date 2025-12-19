@@ -30,9 +30,8 @@ const UserNavItem: React.FC<UserNavItemProps> = ({
 
   return (
     <li className='list-none'>
-      <Link 
-        to={href} 
-        target="_user-center"
+      <Link
+        to={href}
         className='w-[70px] h-[65px] block rounded-t-lg bg-white text-[#413f3f] hover:text-[#fff] transition-all duration-200 hover:bg-red-500 text-center'
         rel="noopener noreferrer"
         onMouseLeave={()=>setIsHovered(false)}

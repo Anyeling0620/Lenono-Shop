@@ -9,7 +9,7 @@ import SubmitButton from '../Auth/SubmitButton';
 import useVerificationCode from '../../hooks/useVerificationCode';
 import useUserInfoStore from '../../store/userInfostore';
 import { useRequest } from 'ahooks';
-import axiosService, { type ApiResponse, axiosInstance } from '../../services/axiosService';
+import axiosService, { type ApiResponse, axiosInstance } from '../../services/AxiosService';
 import { API_PATHS } from '../../services/apiPaths';
 import globalErrorHandler from '../../utils/globalAxiosErrorHandler';
 import toast from 'react-hot-toast';
