@@ -58,14 +58,16 @@ class AxiosService {
     private deviceId: string;
     private deviceType: DeviceType;
 
-    private localStorageKey = 'access_token';
+    // 改为Cookie的key，不再使用localStorage
+    private tokenCookieKey = 'access_token';
+    // token的过期时间（秒）
+    private tokenExpires = 15*60;
 
-    constructor() {
+    constructor() {  
         this.deviceId = this.initDeviceId();
         this.deviceType = this.initDeviceType();
 
         const baseURL = this.getBaseURL();
-        // 原有实例（带拦截器：处理普通API的令牌注入和401刷新）
         this.instance = axios.create({
             baseURL,
             timeout: 10000,
@@ -73,7 +75,6 @@ class AxiosService {
             headers: { 'Content-Type': 'application/json' }
         });
 
-        // 刷新token的实例（无拦截器：纯请求，避免触发401逻辑）
         this.refreshInstance = axios.create({
             baseURL,
             timeout: 10000,
@@ -81,23 +82,33 @@ class AxiosService {
             headers: { 'Content-Type': 'application/json' }
         });
 
-        // 初始化时从 localStorage 读取 token
-        const token = localStorage.getItem(this.localStorageKey);
-        if (token) this.setAccessToken(token);
+        // 初始化时从Cookie获取token（不再从localStorage）
+        const token = this.getAccessToken();
+        if (token) {
+            // 这里不需要额外设置，因为getAccessToken已经从Cookie读取
+        }
 
         this.setupInterceptors();
     }
 
-    // ========== token 管理 ==========
-    public getAccessToken(): string | null {
-        return localStorage.getItem(this.localStorageKey);
+    // ========== token 管理（全部改为Cookie） ==========
+    /**
+     * 获取AccessToken（从Cookie读取）
+     */
+    public getAccessToken(): string | undefined {
+        return Cookie.get(this.tokenCookieKey);
     }
 
+    /**
+     * 设置AccessToken（写入Cookie，null则删除）
+     */
     private setAccessToken(token: string | null) {
         if (token) {
-            localStorage.setItem(this.localStorageKey, token);
+            // 写入Cookie：配置过期时间、安全属性
+            this.setSecureCookie(this.tokenCookieKey, token, this.tokenExpires);
         } else {
-            localStorage.removeItem(this.localStorageKey);
+            // 删除Cookie
+            this.removeSecureCookie(this.tokenCookieKey);
         }
     }
 
@@ -112,14 +123,13 @@ class AxiosService {
 
     private initDeviceId(): string {
         try {
-            let deviceId = localStorage.getItem('device_id') || Cookie.get('device_id');
-            console.log('did:', deviceId);
+            let deviceId = Cookie.get('device_id');
 
             if (!deviceId) {
                 this.removeSecureCookie('device_id');
                 deviceId = uuidv4();
-                localStorage.setItem('device_id', deviceId);
-                this.setSecureCookie('device_id', deviceId, 365 * 24 * 60 * 60);
+                // 设备ID长期有效：设置为10年
+                this.setSecureCookie('device_id', deviceId, 365 * 24 * 60 * 60 * 10);
             }
             return deviceId;
         } catch (error) {
@@ -241,7 +251,7 @@ class AxiosService {
                 throw new Error('刷新接口未返回 access_token');
             }
 
-            // 保存新token
+            // 保存新token（写入Cookie）
             this.setAccessToken(access_token);
 
             // 多端登录提醒
@@ -281,7 +291,7 @@ class AxiosService {
         this.failedQueue = [];
         this.isRefreshing = false;
 
-        // 清空本地令牌
+        // 清空Cookie中的令牌
         this.setAccessToken(null);
         // 通知前端登录过期
         window.dispatchEvent(new CustomEvent(EVENT_NAMES.AUTH_EXPIRED));
@@ -294,26 +304,33 @@ class AxiosService {
     }
 
     // ========== Cookie 工具 ==========
+    /**
+     * 设置安全的Cookie
+     * @param name Cookie名称
+     * @param value Cookie值
+     * @param maxAgeInSeconds 过期时间（秒）
+     */
     private setSecureCookie(name: string, value: string, maxAgeInSeconds: number): void {
         const isProd = (import.meta as any).env?.PROD;
         Cookie.set(name, value, {
             expires: new Date(Date.now() + maxAgeInSeconds * 1000),
-            secure: Boolean(isProd),
-            sameSite: 'strict',
-            path: '/'
+            secure: Boolean(isProd), // 生产环境开启secure（仅HTTPS）
+            sameSite: 'strict', // 严格的跨站策略
+            path: '/' // 根路径生效
         });
     }
 
+    /**
+     * 删除Cookie
+     * @param name Cookie名称
+     */
     private removeSecureCookie(name: string): void {
+        const isProd = (import.meta as any).env?.PROD;
         Cookie.remove(name, {
             path: '/',
-            secure: Boolean((import.meta as any).env?.PROD),
+            secure: Boolean(isProd),
             sameSite: 'strict'
         });
-
-        if (name === 'device_id') {
-            localStorage.removeItem('device_id');
-        }
     }
 
     // ========== 公共方法 ==========
@@ -340,6 +357,7 @@ class AxiosService {
         const { access_token } = response.data.data;
         if (!access_token) throw new Error('登录成功，但未收到 access_token');
 
+        // 保存token到Cookie
         this.setAccessToken(access_token);
         window.dispatchEvent(new CustomEvent(EVENT_NAMES.TOKEN_REFRESHED));
         return true;
@@ -356,6 +374,7 @@ class AxiosService {
         const { access_token } = response.data.data;
         if (!access_token) throw new Error('注册成功，但未返回 access_token');
 
+        // 保存token到Cookie
         this.setAccessToken(access_token);
         window.dispatchEvent(new CustomEvent(EVENT_NAMES.TOKEN_REFRESHED));
         return true;
@@ -392,6 +411,7 @@ class AxiosService {
                 isRefreshRequest: true
             });
         } finally {
+            // 清空Cookie中的token
             this.setAccessToken(null);
             window.dispatchEvent(new CustomEvent(EVENT_NAMES.AUTH_EXPIRED));
         }

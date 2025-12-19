@@ -1,11 +1,10 @@
 
 import React from 'react'
-import type { CarouselItemType } from '../../types/carouselItem'
 import { Link } from 'react-router-dom';
-import { getImageUrl, IMAGE_CONFIG } from '../../utils/imageConfig';
+import type { CarouseProduct } from '../../types/product';
 
 interface CarouselItemProps {
-    item: CarouselItemType;
+    item: CarouseProduct;
     className?: string;
 }
 
@@ -16,10 +15,10 @@ const CarouselItem: React.FC<CarouselItemProps> = ({
 
     return (
         <div className="w-full flex-shrink-0 bg-white">
-            <Link to={item.linkUrl} className="block w-full">
+            <Link to={''} className="block w-full">
                 <img
-                    src={getImageUrl(item.imageName,IMAGE_CONFIG.FOLDERS.ROLL)}
-                    alt={item.alt || '轮播图'}
+                    src={item.image}
+                    alt={item.product.product.name }
                     className={`w-full  object-cover ${className}`}
                 />
             </Link>

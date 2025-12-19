@@ -1,13 +1,4 @@
-/*
- * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @Date: 2025-11-27 16:00:29
- * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-27 19:53:11
- * @FilePath: \lenovo-shop\src\component\Search\ProductList.tsx
- * @Description: 
- * 
- * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
- */
+
 // components/Search/ProductList.tsx
 import React from 'react';
 import ProductCard from './ProductCard';

@@ -1,13 +1,3 @@
-/*
- * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @Date: 2025-11-30 20:02:00
- * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-30 20:06:40
- * @FilePath: \lenovo-shop\src\component\UserInfoCard\UserHeader.tsx
- * @Description: 
- * 
- * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
- */
 
 import { Avatar } from "antd";
 import { Link } from "react-router-dom";

@@ -1,9 +1,9 @@
 import {type FC} from 'react'
-import type { CarouselItemType } from '../../types/carouselItem'
 import CarouselItem from './CarouselItem';
+import type { CarouseProduct } from '../../types/product';
 
 interface CarouselTrackProps {
-  data:CarouselItemType[];
+  data:CarouseProduct[];
   currentIndex:number;
   duration:number;
   className?:string;

@@ -91,7 +91,6 @@ const AccountInfo: React.FC = () => {
                     uploadAvatarState(info.avatarUrl)
                 }
 
-                // 将 API 的字段映射到表单：birthday -> Dayjs -> Date for zod
                 const birthdayDate = info.birthday ? new Date(info.birthday) : new Date();
                 reset({
                     nickName: info.nickName || "",
@@ -103,7 +102,7 @@ const AccountInfo: React.FC = () => {
             } finally {
                 setLoading(false);
             }
-        }, 500);  // 延迟 500ms
+        }, 100);  // 延迟 500ms
 
         return () => {
             mounted = false;

@@ -1,39 +1,39 @@
 // src/component/MainProduct/MainProductCard.tsx
-import type { ProductItem } from "../../types/product";
 import { Link } from "react-router-dom";
+import type { ProductCardItem } from "../../types/product";
 
 interface CardProps {
-  product: ProductItem;
+  product: ProductCardItem;
 }
 
-const Card = ({ product }: CardProps) => {
-  const name = product.productName;
-  const image = product.mainImage || '';
-  const featuresText = product.description || '';
-  const hasCoupon = product.hasCoupon;
-  const couponInfo = product.couponInfo;
-  const customerize = product.isCustomizable;
-  const tradeIn = product.supportTradeIn;
-  const originalPrice = product.originalPrice || product.minPrice;
-  const id = product.productId;
+const MainProductCard = ({ product }: CardProps) => {
+  const name = product.product.name;
+  const image = product.product.mainImage;
+  const featuresText = product.product.description;  
+  const hasCoupon = product.coupons.length > 0;
+  const couponInfo = product.coupons[0];
+  const customerize = product.shelfProduct.isCustomizable;
+  const tradeIn = product.shelfProduct.isSelfOperated;
+  const originalPrice = product.minPriceConfig?.originalPrice || product?.minPriceConfig.salePrice;
+  const id = product.shelfProduct.id;
 
-  let finalPrice = product.minPrice;
+  let finalPrice = product.minPriceConfig.salePrice;
   const tags = [];
 
   if (hasCoupon && couponInfo) {
-    if (couponInfo.type === 'CASH') {
-      finalPrice = originalPrice - couponInfo.value;
+    if (couponInfo.coupon.type ==='满减') {
+      finalPrice = Number(originalPrice) - Number(couponInfo.coupon.amount);
       tags.push({
         type: "coupon",
-        text: `${couponInfo.value}元券`,
-        value: couponInfo.value,
+        text: `${couponInfo.coupon.amount}元券`,
+        value: couponInfo.coupon.amount,
       });
-    } else if (couponInfo.type === 'DISCOUNT') {
-      finalPrice = originalPrice * couponInfo.value;
+    } else if (couponInfo.coupon.type === '折扣') {
+      finalPrice = Number(originalPrice) * Number(couponInfo.coupon.discount);
       tags.push({
         type: "discount",
-        text: `${(couponInfo.value * 10).toFixed(1)}折`,
-        value: couponInfo.value * 10,
+        text: `${(Number(couponInfo.coupon.discount)* 10).toFixed(1)}折`,
+        value: Number(couponInfo.coupon.discount) * 10,
       });
     }
   }
@@ -116,15 +116,15 @@ const Card = ({ product }: CardProps) => {
           {hasCoupon ? (
             <div className="flex items-baseline justify-center gap-1 mt-3">
               <span className="text-[#e2231a] text-base font-bold leading-none">
-                到手价￥{finalPrice.toFixed(0)}
+                到手价￥{Number(finalPrice).toFixed(0)}
               </span>
               <span className="text-xs text-gray-500 line-through leading-none">
-                ￥{originalPrice.toFixed(0)}
+                ￥{Number(originalPrice).toFixed(0)}
               </span>
             </div>
           ) : (
             <span className="text-base font-semibold text-[#e2231a] block mt-3">
-              ￥{originalPrice.toFixed(0)}元
+              ￥{Number(originalPrice).toFixed(0)}元
             </span>
           )}
         </div>
@@ -133,4 +133,4 @@ const Card = ({ product }: CardProps) => {
   );
 };
 
-export default Card;
+export default MainProductCard;

@@ -27,10 +27,6 @@ const useAuthLifecycle = () => {
             setTimeout(() => {
                 handleLoginUserInfo();
             }, 100);
-            // 延迟导航，让UI有机会响应
-            setTimeout(() => {
-                nav('/')
-            }, 50);
         }
 
         const handleExpired = () => {

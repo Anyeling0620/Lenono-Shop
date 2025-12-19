@@ -1,21 +1,24 @@
-import type { ProductItem } from "../../types/product";
-import Card from "./MainProductCard";
+import type { ProductGroup } from "../../types/product";
+import MainProductCard from "./MainProductCard";
 import type { CarouselItemType } from "../../types/carouselItem";
 import Indicators from "../Carousel/Indicators";
 import { useEffect, useState } from "react";
 import { useCallback, useRef } from "react";
+import { Link } from "react-router-dom";
 
-interface CategoryProps {
-  group: {
-    title: string;
-    productList: ProductItem[];
-  };
-}
 
-const Category = ({ group }: CategoryProps) => {
-  const name = group.title;
-  const products = group.productList;
-  const image: CarouselItemType[] = [{imageName: "https://p4.lefile.cn/fes/cms/2025/12/12/paw2mkso142v1kafd6y4jawfkrdqra866049.jpg", linkUrl: "https://p4.lefile.cn/fes/cms/2025/12/12/paw2mkso142v1kafd6y4jawfkrdqra866049.jpg", alt: "Image 1"},{imageName: "https://p1.lefile.cn/fes/cms/2025/11/26/migz3rsh5epkt5928ti5kvp2khyq7k298631.jpg", linkUrl: "https://p1.lefile.cn/fes/cms/2025/11/26/migz3rsh5epkt5928ti5kvp2khyq7k298631.jpg", alt: "Image 2"}]; 
+const MainProductCategory = ({ group }: { group: ProductGroup }) => {
+  const products = group.items;
+  const image: CarouselItemType[] = [{
+    imageName: "https://p4.lefile.cn/fes/cms/2025/12/12/paw2mkso142v1kafd6y4jawfkrdqra866049.jpg",
+    linkUrl: "",
+    alt: "Image 1"
+  },
+  {
+    imageName: "https://p1.lefile.cn/fes/cms/2025/11/26/migz3rsh5epkt5928ti5kvp2khyq7k298631.jpg",
+    linkUrl: "",
+    alt: "Image 2"
+  }];
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const timerRef = useRef<number | null>(null);
@@ -64,9 +67,12 @@ const Category = ({ group }: CategoryProps) => {
   const hasImage = image.length > 0;
 
   return (
-    <div className="pt-[20px] pb-[20px] w-[1200px]">
-      <div className="head mb-[16px]">
-        <span className="text-shadow text-[24px] font-bold">{name}</span>
+    <div   className="pt-[20px] pb-[20px] w-[1200px] ">
+      <div className=" mb-3  relative">
+        <span className="text-shadow text-[24px] font-bold"  id={group.title}>{group.title}</span>
+       {group.items.length > 8 && <Link to={`/more-products`} state={group}>
+          <span className=" absolute text-[12px]  right-3 bottom-0">查看更多</span>
+        </Link>}
       </div>
       <div className="grid grid-cols-5 gap-3">
         {hasImage ? (
@@ -85,7 +91,7 @@ const Category = ({ group }: CategoryProps) => {
                 >
                   <img
                     src={img.imageName}
-                    alt={img.alt || name}
+                    alt={group.title}
                     className="w-full h-full object-cover"
                   />
                 </a>
@@ -105,12 +111,12 @@ const Category = ({ group }: CategoryProps) => {
         <div className="col-span-4 grid grid-rows-2 gap-3">
           <div className="grid grid-cols-4 gap-3">
             {products.slice(0, 4).map((product) => (
-              <Card key={product.productId} product={product} />
+              <MainProductCard key={product.shelfProduct.id} product={product} />
             ))}
           </div>
           <div className="grid grid-cols-4 gap-3">
             {products.slice(4, 8).map((product) => (
-              <Card key={product.productId} product={product} />
+              <MainProductCard key={product.shelfProduct.id} product={product} />
             ))}
           </div>
         </div>
@@ -119,4 +125,4 @@ const Category = ({ group }: CategoryProps) => {
   );
 };
 
-export default Category;
+export default MainProductCategory;

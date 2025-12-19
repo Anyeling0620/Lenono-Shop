@@ -9,11 +9,11 @@ import {
     CustomerServiceOutlined,
 } from '@ant-design/icons';
 import { NewProductContext } from '../../pages/NewProduct';
-import type { MainTab, ProductsResponse, ProductType, SubCategory } from '../../types/product';
 import { Link } from 'react-router-dom';
+import type { ProductGroup } from '../../types/product';
 
 // 一级分类
-const mainTabs: MainTab[] = [
+const mainTabs: {id: string, name: string}[] = [
     { id: 'host', name: '主机' },
     { id: 'phone', name: '手机' },
     { id: 'tablet', name: '平板' },
@@ -22,7 +22,7 @@ const mainTabs: MainTab[] = [
 ];
 
 // 二级分类配置 (图标栏)
-const subCategoriesMap: Record<string, SubCategory[]> = {
+const subCategoriesMap: Record<string, { id: string, name: string, icon: React.ReactNode}[]> = {
     host: [
         { id: 'notebooks', name: '笔记本新品', icon: <LaptopOutlined style={{ fontSize: '22px' }} /> },
         { id: 'desktops', name: '台式机新品', icon: <DesktopOutlined style={{ fontSize: '22px' }} /> },
@@ -42,24 +42,27 @@ const subCategoriesMap: Record<string, SubCategory[]> = {
     ]
 };
 
+
 // 关键：二级分类ID与新品列表标题的映射关系
-const subTabToTitleMap: Record<ProductType, string> = {
+const subTabToTitleMap: Record<string, string> = {
     notebooks: '笔记本',
     desktops: '台式机',
     monitor: '显示器',
-    phones: '手机',
-    tablets: '平板',
+    phone: '手机',
+    tablet: '平板',
     fittings: '配件',
     services: '服务',
 };
 
+
+
 const NewProductRelease = () => {
     // 从上下文获取新品数据
-    const newProductGroups = use(NewProductContext);
-
-    // 修正初始二级标签ID（原notebook是错误的，对应subCategoriesMap里的notebooks）
+    const data = use(NewProductContext);
+    const newProductGroups = data.items;
+    
     const [activeMainTab, setActiveMainTab] = useState<string>('host');
-    const [activeSubTab, setActiveSubTab] = useState<ProductType>('notebooks');
+    const [activeSubTab, setActiveSubTab] = useState<string>('notebooks');
 
     // 切换一级标签时，重置二级标签为第一个
     const handleMainTabChange = (tabId: string) => {
@@ -69,15 +72,15 @@ const NewProductRelease = () => {
     };
 
     // 根据当前二级标签筛选对应的产品列表
-    const currentProducts: ProductsResponse = useMemo(() => {
+    const currentProducts: ProductGroup = useMemo(() => {
         // 1. 获取当前二级标签对应的标题
         const targetTitle = subTabToTitleMap[activeSubTab];
 
-        if (!targetTitle) return { title: '', productList: [] };
+        if (!targetTitle) return { title: '', items: [] };
 
         // 2. 找到对应的产品分组
         const targetGroup = newProductGroups.find(group => group.title === targetTitle);
-        if (!targetGroup) return { title: '', productList: [] };
+        if (!targetGroup) return { title: '', items: [] };
         console.log(targetGroup);
 
         return targetGroup
@@ -85,6 +88,7 @@ const NewProductRelease = () => {
 
     const currentSubCategories = subCategoriesMap[activeMainTab] || [];
 
+    if(!newProductGroups) return <></>
     return (
         <div className="w-[1200px] mx-auto mt-8 bg-white shadow-sm min-h-[600px] mb-10 rounded-sm">
             {/* 1. 标题区域 */}
@@ -145,31 +149,31 @@ const NewProductRelease = () => {
 
             {/* 4. 商品展示列表 (上半部分) */}
             <div className="px-8 h-[400px]">
-                {currentProducts.productList.length > 0 ? (
+                {currentProducts.items.length > 0 ? (
                     <ul className="grid grid-cols-3 gap-2 py-4">
-                        {currentProducts.productList.filter((_, index) => index < 3).map((product) => (
-                            <li key={product.productId} className="bg-white p-4 transition-shadow hover:shadow-xl group cursor-pointer border border-transparent hover:border-[#eee]">
+                        {currentProducts.items.filter((_, index) => index < 3).map((product) => (
+                            <li key={product.shelfProduct.id} className="bg-white p-4 transition-shadow hover:shadow-xl group cursor-pointer border border-transparent hover:border-[#eee]">
                                 <Link
-                                to={`/product/${product.productId}&default=${product.configId}`}
-                                target={product.productId}
+                                to={`/product/${product.shelfProduct.id}`}
+                                target={product.shelfProduct.id}
                                 >
 
                                     <div className="w-full h-[220px] flex items-center justify-center overflow-hidden mb-4">
                                         <img
-                                            src={product.mainImage!}
-                                            alt={product.productName}
+                                            src={product.product.mainImage}
+                                            alt={product.product.name}
                                             className="w-full object-contain transition-transform duration-300 group-hover:scale-105"
                                         />
                                     </div>
                                     <div className="text-left px-2">
-                                        <h3 className="text-[15px] text-[#333] font-normal mb-1 truncate" title={product.productName}>
-                                            {product.productName}
+                                        <h3 className="text-[15px] text-[#333] font-normal mb-1 truncate" title={product.product.name}>
+                                            {product.product.name}
                                         </h3>
                                         <p className="text-[12px] text-[#999] h-[36px] overflow-hidden leading-[18px] mb-3 line-clamp-2">
-                                            {product.description}
+                                            {product.product.description}
                                         </p>
                                         <div className="text-[18px] text-red-500 font-bold">
-                                            ¥ {product.minPrice.toFixed(2)}
+                                            ¥ {product?.minPriceConfig.salePrice}
                                         </div>
 
                                     </div>

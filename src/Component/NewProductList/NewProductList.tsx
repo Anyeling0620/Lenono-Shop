@@ -11,8 +11,10 @@ const NewProductList = ({ className }:
     }) => {
 
 
-    const newProductGroups = use(NewProductContext)
+    const data = use(NewProductContext)
+    const newProductGroups = data.items
 
+    if (!newProductGroups) return <></>
     return (
         <div className={`${className}`}>
             {newProductGroups.map((group) => (
@@ -24,8 +26,8 @@ const NewProductList = ({ className }:
                     </div>
 
                     <ul className="grid grid-cols-4 gap-3">
-                        {group.productList.map(product => (
-                            <ProductCard key={product.productId} product={product} />
+                        {group.items.map(product => (
+                            <ProductCard key={product.shelfProduct.id} product={product} />
                         ))}
                     </ul>
                 </section>

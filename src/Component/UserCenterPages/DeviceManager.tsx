@@ -33,10 +33,9 @@ export default function DeviceManager() {
                 setLoading(false);
             }
         };
-        setTimeout(fetchData, 500);
+        setTimeout(fetchData, 100);
     }, []);
 
-    // API 请求封装
     const { run: logoutRequest } = useRequest((deviceId: string) => axiosService.logoutDevice(deviceId), {
         manual: true,
         debounceTrailing: true,
@@ -114,7 +113,7 @@ export default function DeviceManager() {
             </div>
 
             <>
-                <div className={`grid gap-2 auto-rows-max min-h-[540px] ${paginated.length <= 4
+                <div className={`grid gap-2 auto-rows-max min-h-[520px] ${paginated.length <= 3
                     ? 'grid-cols-1'
                     : 'grid-cols-1 sm:grid-cols-2'
                     }`}>

@@ -1,8 +1,4 @@
-/*
- * @Author: 不见霞
- * @FilePath: \lenovo-shop\src\component\Auth\AuthForm.tsx
- * @Description: 登录/注册表单（基于react-hook-form + zod重构）
- */
+
 import { useState, useRef } from "react";
 import { useForm, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

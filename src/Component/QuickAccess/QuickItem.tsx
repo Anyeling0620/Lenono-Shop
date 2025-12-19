@@ -1,16 +1,7 @@
-/*
- * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @Date: 2025-11-24 23:02:09
- * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-30 15:15:34
- * @FilePath: \lenovo-shop\src\component\QuickAccess\QuickItem.tsx
- * @Description: 
- * 
- * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
- */
+
 import { useState, type FC } from 'react'
 import { Link } from 'react-router-dom';
-import type { QuickAccessItems } from '../../types/quickAccessItems';
+import type { QuickAccessItems } from './QuickAccess';
 
 interface QuickItemProps {
     index: number;
@@ -32,9 +23,14 @@ const QuickItem: FC<QuickItemProps> = ({
             onMouseLeave={() => setHoveredIndex(null)}
         >
             <Link
-                to={item.link}
-                target="_blank"
-                rel="noopener noreferrer"
+                to={`#${item.id}`}
+                onClick={(e) => {
+                    e.preventDefault();
+                    const element = document.getElementById(item.id);
+                    if (element) {
+                        element.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }}
                 className="w-full h-full flex flex-col items-center justify-center no-underline text-inherit"
             >
                 <div className="text-lg transition-all duration-200">

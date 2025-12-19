@@ -1,21 +1,14 @@
-/*
- * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @Date: 2025-11-23 13:37:33
- * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-30 15:09:16
- * @FilePath: \lenovo-shop\src\component\Carousel\Carousel.tsx
- * @Description: 
- * 
- * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
- */
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+
+import React, { use, useCallback, useEffect, useRef, useState } from 'react';
 import CarouselTrack from './CarouselTrack';
 import NavigationButtons from './NavigationButtons';
 import Indicators from './Indicators';
-import type { CarouselItemType } from '../../types/carouselItem';
+import { NewProductContext } from '../../pages/NewProduct';
+import { IndexProductContext } from '../../pages/Index';
+import type { CarouseProduct } from '../../types/product';
 
 interface CarouselProps {
-    data: CarouselItemType[];
+    type: 'index' | 'new';
     interval?: number;
     duration?: number;
     className?: string;
@@ -24,11 +17,18 @@ interface CarouselProps {
 type NavigationDirection = 'prev' | 'next';
 
 const Carousel: React.FC<CarouselProps> = ({
-    data,
+    type,
     interval = 3000,
     duration = 500,
     className = '',
 }) => {
+    let data: CarouseProduct[] = [];
+    if (type === 'index') {
+        data = use(IndexProductContext).carouselItems
+    } else if (type === 'new') {
+        data = use(NewProductContext).carouselItems
+    }
+
     const [currentIndex, setCurrentIndex] = useState(0); //  当前展示项的索引状态管理
 
     const timerRef = useRef<number | null>(null); //  定时器引用，用于存储和清除定时器

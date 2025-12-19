@@ -8,6 +8,7 @@ import UserLayout from "./component/Layout/UserLayout"
 import ProtectedRoute, { HavingLoginRoute } from "./component/ProtectedRoute"
 import useAuthLifecycle from "./hooks/useAuthLifecycle"
 import { WebSocketProvider } from "./services/ws/WebSocketProvider"
+import { LoadingFallback } from "./component/LoadingFallback"
 
 // 懒加载页面组件
 const Login = lazy(() => import("./pages/Auth/Login"))
@@ -24,22 +25,11 @@ const Product = lazy(() => import("./pages/Product"))
 const UserCenter = lazy(() => import("./pages/UserCenter"))
 const ConsultList = lazy(() => import("./component/UserCenterPages/ConsultList"))
 const MyConsult = lazy(() => import("./component/UserCenterPages/MyConsult"))
+const MoreProducts = lazy(() => import("./pages/MoreProducts"))
 
-// 加载中组件
-const LoadingFallback = () => (
-  <div className="flex items-center justify-center min-h-[200px]">
-    <div className="text-gray-500">加载中...</div>
-  </div>
-)
 
-/**
- * App组件：应用程序的主要组件，负责路由配置和布局
- * 包含了页面路由和Toaster提示组件的配置
- */
 function App() {
-
   useAuthLifecycle()  // 登陆状态生命周期
-
   return (
     <main>
       <WebSocketProvider> {/* websocket全局工具上下文 */}
@@ -47,7 +37,7 @@ function App() {
           <Toaster position="top-center" reverseOrder={false}
             toastOptions={{
               style: {}
-            }} />{/* 全局消息 */}
+            }} />
 
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
@@ -57,6 +47,7 @@ function App() {
                 <Route path='login' element={<HavingLoginRoute ><Login /></HavingLoginRoute>} />
                 <Route path='register' element={<HavingLoginRoute ><Register /></HavingLoginRoute>} />
                 <Route path='products/:type' element={<Product />} />
+                <Route path='more-products' element={<MoreProducts />} />
                 <Route path="new-product" element={<NewProduct />} />
                 <Route path="search" element={<Search />} />
                 <Route path="flash-sale" element={<FlashSalePage />} />

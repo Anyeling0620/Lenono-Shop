@@ -1,38 +1,18 @@
 // src/component/MainProduct/MainProduct.tsx
 
-// 1. 引入我们新建的数据文件 (新增这行)
-import { useEffect, useState } from "react";
-import globalErrorHandler from "../../utils/globalAxiosErrorHandler";
-
-// 2. 引入组件 (保持不变)
-import Category from "./MainProductCategory";
-import toast from "react-hot-toast";
+import { use } from "react";
+import MainProductCategory from "./MainProductCategory";
+import { IndexProductContext } from "../../pages/Index";
 
 
 const MainProduct = () => {
-  const [indexProductGroups, setIndexProductGroups] = useState<ProductsResponse[]>(
-          [{
-              title: '',
-              productList: []
-          }]
-      )
-  
-      useEffect(() => {
-          const fetchData = async () => {
-              try {
-                  const data = await getIndexProductList()
-                  setIndexProductGroups(data)
-              } catch (error) {
-                  globalErrorHandler.handle(error, toast.error)
-              }
-          }
-          fetchData()
-      }, [])
+  const indexProductGroups = use(IndexProductContext).items
 
+  if (!indexProductGroups) return <></>
   return (
     <div className="relative w-[1200px] mx-auto my-0">
       {indexProductGroups.map((group) => (
-        <Category
+        <MainProductCategory
           key={group.title}
           group={group}
         />

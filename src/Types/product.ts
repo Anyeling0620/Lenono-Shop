@@ -160,3 +160,24 @@ export type ProductType =
   | 'PART'
 
 
+
+
+
+export interface ProductGroup {
+  title: string | ProductType; //  (ProductCardIndexResponse)品牌名+品类名  (ProductCardNewResponse)品类名
+  items: ProductCardItem[]; // 该品牌+品类的所有商品卡片
+}
+
+export interface CarouseProduct{
+  image : string;
+  product : ProductCardItem;
+}
+
+export interface ProductCardNewResponse {
+  carouselItems: CarouseProduct[]; // 轮播图
+  items: ProductGroup[];  // 该品类的所有商品卡片
+}
+export interface ProductCardIndexResponse{
+  carouselItems: CarouseProduct[]; // 轮播图
+  items: ProductGroup[]; // 该品牌+品类的所有商品卡片
+}

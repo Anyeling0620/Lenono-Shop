@@ -1,49 +1,40 @@
-/*
- * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @Date: 2025-11-22 13:38:47
- * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-30 15:10:30
- * @FilePath: \lenovo-shop\src\component\QuickAccess\QuickAccess.tsx
- * @Description: 
- * 
- * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
- */
-import type { QuickAccessItems } from '../../types/quickAccessItems';
+
+import { use, useMemo } from 'react';
 import QuickItem from './QuickItem';
+import { IndexProductContext } from '../../pages/Index';
 
-
+export interface QuickAccessItems {
+  label: string;
+  id: string;
+  icon: string;
+  hoverIcon: string;
+}
 
 const QuickAccess = () => {
+  const data = use(IndexProductContext).items;
+  const navItemsData = useMemo(() => {  // 为什么使用useMemo：为了防止在每次渲染时都重新计算navItemsData，从而提高性能。
+    return data?.map(value => ({
+      label: value.title,
+      id: value.title,
+      icon: '⚡',
+      hoverIcon: '🎯'
+    })) || [];
+  }, [data]);
 
-  const navItems :QuickAccessItems[] = [
-    { label: '氪金通道1', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
-    { label: '氪金通道2', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
-    { label: '氪金通道3', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
-    { label: '氪金通道4', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
-    { label: '氪金通道5', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
-    { label: '氪金通道6', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
-    { label: '氪金通道7', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
-    { label: '氪金通道8', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
-    { label: '氪金通道9', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
-    { label: '氪金通道10', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
-    { label: '氪金通道11', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
-    { label: '氪金通道12', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
-    { label: '氪金通道02', link: 'https://www.jxutcm.top', icon: '👤', hoverIcon: '⚙️' },
-  ];
+  const navItemsToRender = navItemsData;
 
   return (
     <div className='w-full h-[90px] z-0'>
       <ul className="flex justify-center bg-white items-center  list-none">
-        {navItems.map((item, index) => (
-         <QuickItem 
+        {navItemsToRender.map((item, index) => (
+          <QuickItem
             key={item.label}
             item={item}
-            index = {index}
-            />
+            index={index}
+          />
         ))}
       </ul>
     </div>
-
   );
 };
 

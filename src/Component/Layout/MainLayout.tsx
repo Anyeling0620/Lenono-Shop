@@ -1,13 +1,4 @@
-/*
- * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @Date: 2025-11-22 10:58:21
- * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-22 10:58:35
- * @FilePath: \lenovo-shop\src\Component\Layout\MainLayout.tsx
- * @Description: 
- * 
- * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
- */
+
 
 import Header from "../Header/Header";
 import Footer from "../Footer/Footer";
