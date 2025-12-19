@@ -2,12 +2,10 @@
 
 // 1. 引入我们新建的数据文件 (新增这行)
 import { useEffect, useState } from "react";
-import { getIndexProductList } from "../../services/products";
 import globalErrorHandler from "../../utils/globalAxiosErrorHandler";
 
 // 2. 引入组件 (保持不变)
 import Category from "./MainProductCategory";
-import type { ProductsResponse } from "../../types/product";
 import toast from "react-hot-toast";
 
 

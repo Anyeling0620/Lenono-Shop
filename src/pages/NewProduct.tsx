@@ -6,8 +6,7 @@ import Carousel from '../component/Carousel/Carousel';
 import type { CarouselItemType } from '../types/carouselItem';
 import NewProductList from '../component/NewProductList/NewProductList';
 import NewProductRelease from '../component/NewProductList/NewProductRelease';
-import type { ProductsResponse } from '../types/product';
-import { getNewProductList } from '../services/products';
+
 import globalErrorHandler from '../utils/globalAxiosErrorHandler';
 
 

@@ -1,23 +1,34 @@
 // pages/DesktopComputer.tsx
 import React, { useCallback, useEffect, useState } from 'react';
 import ProductSection from '../component/ProductList/ProductSection';
-import type { ProductItem, ProductsResponse, ProductType } from '../types/product';
 import globalErrorHandler from '../utils/globalAxiosErrorHandler';
 import toast from 'react-hot-toast';
 import { useParams } from 'react-router-dom';
 import NotFound from './404';
 import { getProductList } from '../services/products';
+import type { ProductCardItem, ProductType, SingleProductCardResponse } from '../types/product';
 
 const isValidProductType = (type: string): type is ProductType => {
-    return ['notebooks', 'tablets', 'desktops', 'monitor', 'phones', 'fittings'].includes(type);
+    return ['LAPTOP', 'TABLET', 'DESKTOP', 'MONITOR', 'PHONE', 'PART' ,'SERVICE'].includes(type);
+};
+const getChineseProductType = (type: string): string => {
+    const typeMap: Record<string, string> = {
+        'LAPTOP': '笔记本',
+        'TABLET': '平板',
+        'DESKTOP': '台式机',
+        'MONITOR': '显示器',
+        'PHONE': '手机',
+        'PART' : '配件',
+        'SERVICE': '服务'
+    };
+    return typeMap[type] || type; // 如果找不到对应翻译，返回原值
 };
 
 const Product: React.FC = () => {
-    const [productList, setProductList] = useState<ProductsResponse>({
-        title: '',
-        productList: [],
+    const [productList, setProductList] = useState<SingleProductCardResponse>({
+        items: [],
     });
-    const [carouselProducts, setCarouselProducts] = useState<ProductItem[]>([]);
+    const [carouselProducts, setCarouselProducts] = useState<ProductCardItem[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const { type } = useParams();
     // 若不存在参数或参数不是paramsType类型
@@ -32,11 +43,11 @@ const Product: React.FC = () => {
         try {
             const list = await getProductList(type);
             setProductList(list);
-            const carouselList = list.productList.filter((item: ProductItem) => item.isCarousel);
+            const carouselList = list.items.filter((item: ProductCardItem) => item.shelfProduct.isCarousel);
             setCarouselProducts(carouselList);
         } catch (error) {
             globalErrorHandler.handle(error, toast.error);
-            setProductList({ title: '', productList: [] });
+            setProductList({ items: [] });
             setCarouselProducts([]);
         } finally {
             setLoading(false);
@@ -54,8 +65,8 @@ const Product: React.FC = () => {
     return (
         <ProductSection
             loading={loading}
-            title={productList.title}
-            productList={productList.productList}
+            title={getChineseProductType(type)}
+            productList={productList.items}
             carouselProducts={carouselProducts}
         />
     );

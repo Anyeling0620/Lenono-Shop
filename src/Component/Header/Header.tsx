@@ -7,15 +7,15 @@ import { useLocation } from 'react-router-dom'
 import type { NavItem } from '../../types/navItem'
 import type { HiddenPaths } from '../../types/hiddenPaths'
 
-
 const navItems: NavItem[] = [
     { name: "新品", path: "/new-product" },
-    { name: "笔记本", path: "notebooks" },
-    { name: "平板", path: "tablets" },
-    { name: "台式机", path: "desktops" },
-    { name: "显示器", path: "monitor" },
-    { name: "手机", path: "phones" },
-    { name: "配件", path:"fittings"},
+    { name: "笔记本", path: "LAPTOP" },
+    { name: "平板", path: "TABLET" },
+    { name: "台式机", path: "DESKTOP" },
+    { name: "显示器", path: "MONITOR" },
+    { name: "手机", path: "PHONE" },
+    { name: "配件", path:"PART"},
+    { name: "服务", path: "SERVICE" }
 ]
 
 const Header: React.FC = () => {

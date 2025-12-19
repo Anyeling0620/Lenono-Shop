@@ -1,12 +1,12 @@
 import React from 'react'
-import type {  ProductItem } from '../../types/product'
+import type {  ProductCardItem } from '../../types/product'
 import ProductCard from '../Search/ProductCard'
 
 
 
 interface Props {
   title: string;
-  productList: ProductItem[];
+  productList: ProductCardItem[];
 }
 
 const ProductListToPages:React.FC<Props> = (props) => {
@@ -19,7 +19,7 @@ const ProductListToPages:React.FC<Props> = (props) => {
       </div>
       <ul className='grid grid-cols-4 gap-3'>
         {props.productList.map(product => (
-          <ProductCard key={product.productId}
+          <ProductCard key={product.shelfProduct.id}
             product={product}
           />
         ))}

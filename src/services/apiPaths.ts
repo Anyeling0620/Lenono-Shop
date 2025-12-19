@@ -15,7 +15,7 @@ export const API_PATHS = {
     USER_CHANGE_EMAIL: '/user/change-email',
     USER_CHANGE_PASSWORD: '/user/change-password',
 
-    GET_PRODUCT: '/products',
+    GET_PRODUCT: '/products/product-cards',
     GET_NEW_PRODUCT:'/products/new/index',
     GET_INDEX_PRODUCT:'/products/index/groups',
 

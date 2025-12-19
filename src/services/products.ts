@@ -1,19 +1,9 @@
-import type { ProductsResponse, ProductType } from "../types/product";
+import type { SingleProductCardResponse, ProductType } from "../types/product";
 import { API_PATHS } from "./apiPaths";
 import { type ApiResponse, axiosInstance } from "./axiosService";
 
 export async function getProductList(type: ProductType) {
-    const res = await axiosInstance.get<ApiResponse<ProductsResponse>>(`${API_PATHS.GET_PRODUCT}/${type}`)
-    return res.data.data
-}
-
-export async function getNewProductList() {
-    const res = await axiosInstance.get<ApiResponse<ProductsResponse[]>>(`${API_PATHS.GET_NEW_PRODUCT}`)
-    return res.data.data
-}
-
-export async function getIndexProductList() {
-    const res = await axiosInstance.get<ApiResponse<ProductsResponse[]>>(`${API_PATHS.GET_INDEX_PRODUCT}`)
+    const res = await axiosInstance.get<ApiResponse<SingleProductCardResponse>>(`${API_PATHS.GET_PRODUCT}/${type}`)
     return res.data.data
 }
 
