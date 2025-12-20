@@ -14,9 +14,6 @@ import type { SeckillConfigDetailVO, SeckillProductDetailResponse, ShelfItemVO, 
 import type { ProductConfigVO } from "../types/flashSale";
 import type { CouponItem } from "../types/product";
 
-// 统一导入类型（解决类型重复定义问题，建议将所有类型抽离到单独的 types 目录）
-
-
 dayjs.locale('zh-cn');
 dayjs.extend(relativeTime);
 
@@ -51,6 +48,8 @@ const ProductDetail: React.FC = () => {
   const [quantity, setQuantity] = useState<number>(1);
   const [activeTab, setActiveTab] = useState<"detail" | "specs" | "comments">("detail");
   const [couponExpanded, setCouponExpanded] = useState<number | null>(null);
+  // 过滤后的规格选项（根据已选择的规格动态计算）
+  const [filteredSpecOptions, setFilteredSpecOptions] = useState<SpecOption[]>([]);
 
   // 统一数据获取
   const productData = seckill ? seckillProductData : shelfProductData;
@@ -110,7 +109,7 @@ const ProductDetail: React.FC = () => {
   const buildSpecOptions = () => {
     if (allConfigValues.has('config1')) {
       specOptions.push({
-        label: '颜色', // 实际项目中可从后端获取标签
+        label: '颜色', 
         values: Array.from(allConfigValues.get('config1')!)
       });
     }
@@ -131,6 +130,60 @@ const ProductDetail: React.FC = () => {
   // 执行规格提取和构建
   extractConfigValues();
   buildSpecOptions();
+
+  // 计算过滤后的规格选项
+  const calculateFilteredSpecOptions = (): SpecOption[] => {
+    const configs = seckill ? seckillConfigs.map(item => item.config) : shelfConfigs;
+    const specLabels = ['颜色', '内存', '尺寸'];
+    
+    return specOptions.map(spec => {
+      // 如果这个规格已经被选中，直接返回所有值（因为用户可能需要取消选择）
+      if (selectedSpecs[spec.label]) {
+        return spec;
+      }
+      
+      // 计算在当前已选择规格的条件下，这个规格有哪些可选值
+      const availableValues = new Set<string>();
+      
+      configs.forEach((config: ProductConfigVO) => {
+        // 检查这个配置是否匹配所有已选择的规格
+        let matchesAllSelected = true;
+        
+        specLabels.forEach(label => {
+          if (selectedSpecs[label]) {
+            const configValue = label === '颜色' ? config.config1 :
+                               label === '内存' ? config.config2 :
+                               config.config3;
+            if (configValue !== selectedSpecs[label]) {
+              matchesAllSelected = false;
+            }
+          }
+        });
+        
+        // 如果配置匹配所有已选择的规格，则这个配置的当前规格值是可选的
+        if (matchesAllSelected) {
+          const value = spec.label === '颜色' ? config.config1 :
+                       spec.label === '内存' ? config.config2 :
+                       config.config3;
+          if (value) {
+            availableValues.add(value);
+          }
+        }
+      });
+      
+      return {
+        label: spec.label,
+        values: Array.from(availableValues)
+      };
+    });
+  };
+
+  // 更新过滤后的规格选项
+  useEffect(() => {
+    if (specOptions.length > 0) {
+      setFilteredSpecOptions(calculateFilteredSpecOptions());
+    }
+  }, [selectedSpecs, specOptions, seckillConfigs, shelfConfigs]);
 
   // 初始化数据加载
   useEffect(() => {
@@ -175,14 +228,29 @@ const ProductDetail: React.FC = () => {
       if (Object.keys(selectedSpecs).length === 0) {
         return seckillConfigs[0];
       }
-      // 匹配选中规格
-      return seckillConfigs.find((item: SeckillConfigDetailVO) => {
+      // 匹配选中规格 - 必须完全匹配所有已选择的规格
+      const matchedConfig = seckillConfigs.find((item: SeckillConfigDetailVO) => {
         const config = item.config;
         const config1Match = selectedSpecs['颜色'] ? config.config1 === selectedSpecs['颜色'] : true;
         const config2Match = selectedSpecs['内存'] ? config.config2 === selectedSpecs['内存'] : true;
         const config3Match = selectedSpecs['尺寸'] ? config.config3 === selectedSpecs['尺寸'] : true;
         return config1Match && config2Match && config3Match;
-      }) || seckillConfigs[0];
+      });
+      
+      // 检查是否所有已选择的规格都匹配（不能有未匹配的规格）
+      if (matchedConfig) {
+        const config = matchedConfig.config;
+        // 验证是否所有已选择的规格都完全匹配
+        const allSpecsMatched =
+          (!selectedSpecs['颜色'] || config.config1 === selectedSpecs['颜色']) &&
+          (!selectedSpecs['内存'] || config.config2 === selectedSpecs['内存']) &&
+          (!selectedSpecs['尺寸'] || config.config3 === selectedSpecs['尺寸']);
+        
+        if (allSpecsMatched) {
+          return matchedConfig;
+        }
+      }
+      return null; // 没有完全匹配的配置
     } else {
       // 货架商品配置
       if (shelfConfigs.length === 0) return null;
@@ -190,13 +258,26 @@ const ProductDetail: React.FC = () => {
       if (Object.keys(selectedSpecs).length === 0) {
         return shelfConfigs[0];
       }
-      // 匹配选中规格
-      return shelfConfigs.find((config: ProductConfigVO) => {
+      // 匹配选中规格 - 必须完全匹配所有已选择的规格
+      const matchedConfig = shelfConfigs.find((config: ProductConfigVO) => {
         const config1Match = selectedSpecs['颜色'] ? config.config1 === selectedSpecs['颜色'] : true;
         const config2Match = selectedSpecs['内存'] ? config.config2 === selectedSpecs['内存'] : true;
         const config3Match = selectedSpecs['尺寸'] ? config.config3 === selectedSpecs['尺寸'] : true;
         return config1Match && config2Match && config3Match;
-      }) || shelfConfigs[0];
+      });
+      
+      // 检查是否所有已选择的规格都匹配
+      if (matchedConfig) {
+        const allSpecsMatched =
+          (!selectedSpecs['颜色'] || matchedConfig.config1 === selectedSpecs['颜色']) &&
+          (!selectedSpecs['内存'] || matchedConfig.config2 === selectedSpecs['内存']) &&
+          (!selectedSpecs['尺寸'] || matchedConfig.config3 === selectedSpecs['尺寸']);
+        
+        if (allSpecsMatched) {
+          return matchedConfig;
+        }
+      }
+      return null; // 没有完全匹配的配置
     }
   };
 
@@ -247,6 +328,25 @@ const ProductDetail: React.FC = () => {
   const stockCount = getStockCount();
   const hasStock = stockCount > 0;
   const selectedConfig = getSelectedConfig();
+
+  // 处理规格选择
+  const handleSpecSelect = (specLabel: string, value: string) => {
+    // 如果点击已选中的规格，则取消选择
+    if (selectedSpecs[specLabel] === value) {
+      const newSelectedSpecs = { ...selectedSpecs };
+      delete newSelectedSpecs[specLabel];
+      setSelectedSpecs(newSelectedSpecs);
+    } else {
+      // 选择新的规格
+      setSelectedSpecs({
+        ...selectedSpecs,
+        [specLabel]: value,
+      });
+    }
+  };
+
+  // 检查当前选择的规格组合是否存在
+  const isConfigValid = !!selectedConfig;
 
   // 加入购物车处理
   const handleAddToCart = async () => {
@@ -347,12 +447,12 @@ const ProductDetail: React.FC = () => {
 
           {/* 商品标签 / 特性 */}
           <div className="flex items-center flex-wrap gap-2 mb-4 text-xs">
-            {!seckill && productData?.shelf?.isSelfOperated && (
+            {!seckill && (productData as ShelfProductDetailResponse)?.shelf?.isSelfOperated && (
               <span className="px-2 py-0.5 bg-[#f5f9ff] text-[#3677ff] rounded-sm border border-[#d0e0ff]">
                 自营商品
               </span>
             )}
-            {!seckill && productData?.shelf?.isCustomizable && (
+            {!seckill && (productData as ShelfProductDetailResponse)?.shelf?.isCustomizable && (
               <span className="px-2 py-0.5 bg-[#f5fff4] text-[#18a600] rounded-sm border border-[#c8f0c2]">
                 支持定制
               </span>
@@ -362,9 +462,9 @@ const ProductDetail: React.FC = () => {
                 秒杀商品
               </span>
             )}
-            {!seckill && productData?.shelf?.installment > 0 && (
+            {!seckill && (productData as ShelfProductDetailResponse)?.shelf?.installment > 0 && (
               <span className="px-2 py-0.5 bg-[#fff7e6] text-[#ff8800] rounded-sm border border-[#ffe1b8]">
-                支持{productData.shelf.installment}期分期
+                支持{(productData as ShelfProductDetailResponse).shelf.installment}期分期
               </span>
             )}
           </div>
@@ -468,40 +568,55 @@ const ProductDetail: React.FC = () => {
           <div className="w-full h-[1px] bg-gray-200 my-4"></div>
 
           {/* 规格选择 */}
-          {specOptions.length > 0 && (
+          {filteredSpecOptions.length > 0 && (
             <div className="space-y-4 mb-8">
-              {specOptions.map((spec, specIdx) => (
+              {filteredSpecOptions.map((spec, specIdx) => (
                 <div key={`spec-${specIdx}`} className="flex">
                   <span className="text-sm text-gray-500 w-[60px] leading-[34px]">
                     {spec.label}
                   </span>
                   <div className="flex flex-wrap gap-3 flex-1">
-                    {spec.values.map((value, valIdx) => (
-                      <button
-                        key={`spec-${specIdx}-val-${valIdx}`}
-                        onClick={() =>
-                          setSelectedSpecs({
-                            ...selectedSpecs,
-                            [spec.label]: value,
-                          })
-                        }
-                        className={`
-                          px-4 py-1.5 text-sm border 
-                          ${selectedSpecs[spec.label] === value
-                            ? "border-[#e1140a] text-[#e1140a] relative"
-                            : "border-gray-300 text-[#333] hover:border-[#e1140a]"
-                          }
-                        `}
-                      >
-                        {value}
-                        {selectedSpecs[spec.label] === value && (
-                          <i className="absolute right-0 bottom-0 w-0 h-0 border-b-[10px] border-b-[#e1140a] border-l-[10px] border-l-transparent"></i>
-                        )}
-                      </button>
-                    ))}
+                    {spec.values.map((value, valIdx) => {
+                      // 检查这个值是否可用（在过滤后的列表中）
+                      const isAvailable = spec.values.includes(value);
+                      const isSelected = selectedSpecs[spec.label] === value;
+                      
+                      return (
+                        <button
+                          key={`spec-${specIdx}-val-${valIdx}`}
+                          onClick={() => isAvailable && handleSpecSelect(spec.label, value)}
+                          disabled={!isAvailable}
+                          className={`
+                            px-4 py-1.5 text-sm border
+                            ${isSelected
+                              ? "border-[#e1140a] text-[#e1140a] relative"
+                              : isAvailable
+                                ? "border-gray-300 text-[#333] hover:border-[#e1140a]"
+                                : "border-gray-200 text-gray-400 cursor-not-allowed opacity-50"
+                            }
+                          `}
+                        >
+                          {value}
+                          {isSelected && (
+                            <i className="absolute right-0 bottom-0 w-0 h-0 border-b-[10px] border-b-[#e1140a] border-l-[10px] border-l-transparent"></i>
+                          )}
+                          {!isAvailable && (
+                            <span className="absolute -top-1 -right-1 w-2 h-2 bg-gray-400 rounded-full"></span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
+              
+              {/* 配置有效性提示 */}
+              {Object.keys(selectedSpecs).length > 0 && !isConfigValid && (
+                <div className="mt-2 text-sm text-red-600 flex items-center">
+                  <span className="mr-1">⚠</span>
+                  当前选择的规格组合暂无库存，请选择其他组合
+                </div>
+              )}
             </div>
           )}
 
@@ -538,20 +653,20 @@ const ProductDetail: React.FC = () => {
           {/* 按钮组 */}
           <div className="flex gap-4">
             <button
-              className={`w-[160px] h-[50px] text-white text-[18px] font-bold rounded-sm transition-colors ${hasStock ? "bg-[#e1140a] hover:bg-[#c91008]" : "bg-gray-400 cursor-not-allowed"
+              className={`w-[160px] h-[50px] text-white text-[18px] font-bold rounded-sm transition-colors ${hasStock && isConfigValid ? "bg-[#e1140a] hover:bg-[#c91008]" : "bg-gray-400 cursor-not-allowed"
                 }`}
-              disabled={!hasStock || !selectedConfig}
+              disabled={!hasStock || !isConfigValid}
               onClick={handleBuyNow}
             >
-              {hasStock ? seckill ? "立即抢购" : "立即购买" : "缺货"}
+              {!isConfigValid ? "请选择完整规格" : hasStock ? seckill ? "立即抢购" : "立即购买" : "缺货"}
             </button>
             {!seckill && (
               <button
-                className={`w-[160px] h-[50px] text-[18px] font-bold rounded-sm transition-colors ${hasStock
+                className={`w-[160px] h-[50px] text-[18px] font-bold rounded-sm transition-colors ${hasStock && isConfigValid
                   ? "bg-[#ffeded] border border-[#e1140a] text-[#e1140a] hover:bg-[#ffdcdc]"
                   : "bg-gray-100 border border-gray-300 text-gray-400 cursor-not-allowed"
                 }`}
-                disabled={!hasStock || !selectedConfig}
+                disabled={!hasStock || !isConfigValid}
                 onClick={handleAddToCart}
               >
                 加入购物车
@@ -656,8 +771,8 @@ const ProductDetail: React.FC = () => {
                         <div className="flex justify-between">
                           <span className="text-gray-600">分期支持：</span>
                           <span className="text-[#333]">
-                            {productData?.shelf?.installment > 0
-                              ? `${productData.shelf.installment}期分期`
+                            {(productData as ShelfProductDetailResponse)?.shelf?.installment > 0
+                              ? `${(productData as ShelfProductDetailResponse).shelf.installment}期分期`
                               : "不支持分期"}
                           </span>
                         </div>
