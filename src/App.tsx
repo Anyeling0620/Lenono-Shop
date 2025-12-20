@@ -3,7 +3,6 @@ import { Routes, Route } from "react-router-dom"
 import MainLayout from "./component/Layout/MainLayout"
 import NotFound from "./pages/404"
 import { Toaster } from "react-hot-toast"
-import { CartProvider } from "./context/CartContext"
 import UserLayout from "./component/Layout/UserLayout"
 import ProtectedRoute, { HavingLoginRoute } from "./component/ProtectedRoute"
 import useAuthLifecycle from "./hooks/useAuthLifecycle"
@@ -33,7 +32,6 @@ function App() {
   return (
     <main>
       <WebSocketProvider> {/* websocket全局工具上下文 */}
-        <CartProvider>
           <Toaster position="top-center" reverseOrder={false}
             toastOptions={{
               style: {}
@@ -57,16 +55,13 @@ function App() {
                 <Route path="my-consult/:customerId" element={<MyConsult />} />
                 <Route path="my-order" element={<ProtectedRoute redirectTo={"/login"}><MyOrder /></ProtectedRoute>} />
               </Route>
-
               <Route element={<UserLayout />}>
                 <Route path="user-center" element={<ProtectedRoute redirectTo={"/index"} ><UserCenter /></ProtectedRoute>} />
                 <Route path="consult" element={<ConsultList />} />
               </Route>
-
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
-        </CartProvider>
       </WebSocketProvider>
     </ main>
   )

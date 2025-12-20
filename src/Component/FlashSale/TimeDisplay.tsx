@@ -1,75 +1,99 @@
-/*
- * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @Date: 2025-11-25 22:01:42
- * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-25 23:21:36
- * @FilePath: \lenovo-shop\src\component\FlashSale\TimeDisplay.tsx
- * @Description: 
- * 
- * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
- */
-// components/TimeDisplay.tsx
 import React, { useEffect, useState } from 'react';
-import type { TimeInfo, TimeUnit } from '../../types/flashSale';
-import {
-    calculateRemainingTime,
-    getSessionDisplayTime,
-    getStatusText
-} from '../../utils/timeCalculator';
 
+// 直接接收源数据的开始/结束时间
 interface TimeDisplayProps {
-    timeInfo: TimeInfo;
-    className?: string;
+  startTime: string;
+  endTime: string;
+  className?: string;
 }
 
-const TimeDisplay: React.FC<TimeDisplayProps> = ({ timeInfo, className = '' }) => {
-    const { duration, time } = timeInfo;
+// 时间单位类型
+interface TimeUnit {
+  hours: string;
+  minutes: string;
+  seconds: string;
+}
 
-    const [remainingTime, setRemainingTime] = useState<TimeUnit>({
-        hours: '00',
-        minutes: '00',
-        seconds: '00'
-    });
-    const [statusText, setStatusText] = useState('');
-    useEffect(() => {
-        const updateTimer = () => {
-            const newRemainingTime = calculateRemainingTime(time, duration);
-            const newStatusText = getStatusText(time, duration);
+const TimeDisplay: React.FC<TimeDisplayProps> = ({ startTime, endTime, className = '' }) => {
+  const [remainingTime, setRemainingTime] = useState<TimeUnit>({
+    hours: '00',
+    minutes: '00',
+    seconds: '00'
+  });
+  const [statusText, setStatusText] = useState('');
+  const [displayTime, setDisplayTime] = useState('');
 
-            setRemainingTime(newRemainingTime);
-            setStatusText(newStatusText);
-        };
+  // 优化：防抖处理，避免频繁更新（可选，根据性能需求）
+  useEffect(() => {
+    const updateTimer = () => {
+      try {
+        const now = new Date().getTime();
+        const start = new Date(startTime).getTime();
+        const end = new Date(endTime).getTime();
 
-        // 立即更新一次
-        updateTimer();
+        // 计算剩余时间
+        let remaining = 0;
+        if (now < start) {
+          remaining = start - now;
+          setStatusText('即将开始');
+        } else if (now >= start && now < end) {
+          remaining = end - now;
+          setStatusText('正在进行');
+        } else {
+          remaining = 0;
+          setStatusText('已结束');
+        }
 
-        // 每秒更新一次
-        const timer = setInterval(updateTimer, 1000);
+        // 格式化剩余时间（补零）
+        const formatUnit = (num: number) => num.toString().padStart(2, '0');
+        const hours = Math.floor(remaining / (1000 * 60 * 60));
+        const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
 
-        return () => clearInterval(timer);
-    }, [time, duration]);
-    const displayTime = getSessionDisplayTime(time);
+        setRemainingTime({
+          hours: formatUnit(hours),
+          minutes: formatUnit(minutes),
+          seconds: formatUnit(seconds)
+        });
 
-    return (
-        <div className={`text-center ${className}`}>
-            <span className="text-[20px] text-white font-semibold">{displayTime}</span>
-            <span className="text-[20px] text-white font-semibold"> 场</span>
-            <div className="text-[16px] text-white font-semibold">{statusText}</div>
-            <div className="mt-[18px] text-center">
-                <TimeUnit value={remainingTime.hours} />
-                <span className='text-white'>:</span>
-                <TimeUnit value={remainingTime.minutes} />
-                <span className='text-white'>:</span>
-                <TimeUnit value={remainingTime.seconds} />
-            </div>
-        </div>
-    );
+        // 格式化显示时间：HH:mm（处理时间格式异常）
+        const startDate = new Date(startTime);
+        setDisplayTime(`${formatUnit(startDate.getHours())}:${formatUnit(startDate.getMinutes())}`);
+      } catch (error) {
+        console.error('时间计算错误：', error);
+      }
+    };
+
+    // 立即更新
+    updateTimer();
+    // 每秒更新（使用requestAnimationFrame优化性能）
+    const timer = setInterval(() => {
+      requestAnimationFrame(updateTimer);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [startTime, endTime]);
+
+  return (
+    <div className={`text-center ${className}`}>
+      <span className="text-[20px] text-white font-semibold">{displayTime}</span>
+      <span className="text-[20px] text-white font-semibold"> 场</span>
+      <div className="text-[16px] text-white font-semibold">{statusText}</div>
+      <div className="mt-[18px] text-center">
+        <TimeUnit value={remainingTime.hours} />
+        <span className='text-white'>:</span>
+        <TimeUnit value={remainingTime.minutes} />
+        <span className='text-white'>:</span>
+        <TimeUnit value={remainingTime.seconds} />
+      </div>
+    </div>
+  );
 };
 
 const TimeUnit: React.FC<{ value: string }> = ({ value }) => (
-    <span className="text-[16px] inline-block w-[30px] h-[30px] leading-[30px] bg-[#242424] rounded text-white mx-1">
-        {value}
-    </span>
+  <span className="text-[16px] inline-block w-[30px] h-[30px] leading-[30px] bg-[#242424] rounded text-white mx-1">
+    {value}
+  </span>
 );
 
 export default TimeDisplay;

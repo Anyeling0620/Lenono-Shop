@@ -181,3 +181,8 @@ export interface ProductCardIndexResponse{
   carouselItems: CarouseProduct[]; // 轮播图
   items: ProductGroup[]; // 该品牌+品类的所有商品卡片
 }
+
+
+
+
+

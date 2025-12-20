@@ -1,4 +1,7 @@
+import type { ProductEvaluationListResponse } from "../types/evaluation";
+import type { SeckillRoundListResponse } from "../types/flashSale";
 import type { SingleProductCardResponse, ProductType, ProductCardNewResponse, ProductCardIndexResponse } from "../types/product";
+import type { SeckillProductDetailResponse, ShelfProductDetailResponse } from "../types/productComment";
 import { API_PATHS } from "./apiPaths";
 import { type ApiResponse, axiosInstance } from "./AxiosService";
 
@@ -17,3 +20,37 @@ export async function getIndexProductGroups() {
     const res = await axiosInstance.get<ApiResponse<ProductCardIndexResponse>>(`${API_PATHS.GET_INDEX_PRODUCT}`)
     return res.data.data
 }
+
+
+export async function getSeckillProductGroups() {
+    const res = await axiosInstance.get<ApiResponse<SeckillRoundListResponse>>(`${API_PATHS.GET_SECKILL_PRODUCT}`)
+    return res.data.data
+}
+
+export async function getProductEvaluations(productId: string): Promise<ProductEvaluationListResponse> {
+  const res = await axiosInstance.get<ApiResponse<ProductEvaluationListResponse>>(
+    API_PATHS.GET_PRODUCT_EVALATIONS({ productId })
+  );
+  return res.data.data;
+}
+
+export async function getShelfProductDetail(id: string): Promise<ShelfProductDetailResponse> {
+  const res = await axiosInstance.get<ApiResponse<ShelfProductDetailResponse>>(
+    API_PATHS.GET_PRODUCT_DETAIL_BY_SHELF({ id })
+  );
+  return res.data.data;
+}
+
+
+export async function getSeckillProductDetail(id: string): Promise<SeckillProductDetailResponse> {
+  const res = await axiosInstance.get<ApiResponse<SeckillProductDetailResponse>>(
+    API_PATHS.GET_PRODUCT_DETAIL_BY_SECKILL({ id })
+  );
+  return res.data.data;
+}
+
+
+
+
+
+

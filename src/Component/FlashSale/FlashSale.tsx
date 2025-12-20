@@ -1,148 +1,73 @@
-// components/FlashSale.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import TimeDisplay from './TimeDisplay';
 import ProductCard from './ProductCard';
 import SessionTab from './SessionTab';
-import type { Product, flashSaleMenu, TimeInfo } from '../../types/flashSale';
-
-// Mock data - 在实际项目中应该从 API 获取
-const mockSessions: flashSaleMenu[] = [
-    {
-        id: '1',
-        time: '2025-11-26-12-00-00',
-        duration: '6h',
-        products: [
-            {
-                id: '1',
-                name: '联想有线鼠标 M280',
-                image: 'https://p3.lefile.cn/product/adminweb/2025/08/19/rUVzuGyeMITeoRCvxtdtW7CKe-8992.jpg',
-                currentPrice: 9.9,
-                originalPrice: 29.9,
-                discount: 4.6,
-                link: '/product/1'
-            },
-            {
-                id: '2',
-                name: '联想有线鼠标 M280',
-                image: 'https://p3.lefile.cn/product/adminweb/2025/08/19/rUVzuGyeMITeoRCvxtdtW7CKe-8992.jpg',
-                currentPrice: 9.9,
-                originalPrice: 29.9,
-                discount: 4.6,
-                link: '/product/1'
-            },
-            {
-                id: '3',
-                name: '联想有线鼠标 M280',
-                image: 'https://p3.lefile.cn/product/adminweb/2025/08/19/rUVzuGyeMITeoRCvxtdtW7CKe-8992.jpg',
-                currentPrice: 9.9,
-                originalPrice: 29.9,
-                discount: 4.6,
-                link: '/product/1'
-            },
-            {
-                id: '4',
-                name: '联想有线鼠标 M280',
-                image: 'https://p3.lefile.cn/product/adminweb/2025/08/19/rUVzuGyeMITeoRCvxtdtW7CKe-8992.jpg',
-                currentPrice: 9.9,
-                originalPrice: 29.9,
-                discount: 4.6,
-                link: '/product/1'
-            },
-        ]
-    },
-    {
-        id: '2',
-        time: '2025-11-27-18-00-00',
-        duration: '6h',
-        products: [
-            {
-                id: '1',
-                name: '啊哈哈',
-                image: 'https://p3.lefile.cn/product/adminweb/2025/08/19/rUVzuGyeMITeoRCvxtdtW7CKe-8992.jpg',
-                currentPrice: 19.9,
-                originalPrice: 29.9,
-                discount: 4.6,
-                link: '/product/1'
-            },
-        ]
-    },
-    {
-        id: '3',
-        time: '2025-11-25-18-00-00',
-        duration: '32h',
-        products: [
-            {
-                id: '1',
-                name: '啊哈哈',
-                image: 'https://p3.lefile.cn/product/adminweb/2025/08/19/rUVzuGyeMITeoRCvxtdtW7CKe-8992.jpg',
-                currentPrice: 19.9,
-                originalPrice: 29.9,
-                discount: 4.6,
-                link: '/product/1'
-            },
-             {
-                id: '2',
-                name: '啊哈哈啊啊',
-                image: 'https://p3.lefile.cn/product/adminweb/2025/08/19/rUVzuGyeMITeoRCvxtdtW7CKe-8992.jpg',
-                currentPrice: 19.9,
-                originalPrice: 29.9,
-                discount: 4.6,
-                link: '/product/1'
-            },
-             {
-                id: '3',
-                name: '啊哈a哈',
-                image: 'https://p3.lefile.cn/product/adminweb/2025/08/19/rUVzuGyeMITeoRCvxtdtW7CKe-8992.jpg',
-                currentPrice: 19.9,
-                originalPrice: 29.9,
-                discount: 4.6,
-                link: '/product/1'
-            },
-        ]
-    }
-];
+import type { SeckillRoundListResponse, UnfinishedSeckillRoundVO, SeckillProductVO } from '../../types/flashSale';
+import { getSeckillProductGroups } from '../../services/products';
+import toast from 'react-hot-toast';
+import globalErrorHandler from '../../utils/globalAxiosErrorHandler';
 
 const FlashSale: React.FC = () => {
-    const [activeSession, setActiveSession] = useState<flashSaleMenu>(mockSessions[0]);
+    const [seckillData, setSeckillData] = useState<SeckillRoundListResponse>({
+        list: []
+    });
+    const [activeSession, setActiveSession] = useState<UnfinishedSeckillRoundVO | null>(null);
 
-    // Mock time data - 在实际项目中应该实时计算
-    const mockTimeInfo: TimeInfo = {
-        session: activeSession.time,
-        duration: activeSession.duration,
-        time: activeSession.time
-    };
-    if (activeSession.id === '') return null;
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                const data = await getSeckillProductGroups();
+                setSeckillData(data);
+                if (data.list.length > 0) {
+                    setActiveSession(data.list[0]);
+                }
+            } catch (error) {
+                globalErrorHandler.handle(error, toast.error);
+            }
+        }
+        fetchData();
+    }, []);
+
+    if (seckillData.list.length === 0) return null;
+    if (!activeSession) return null;
+
+    // 直接使用源数据结构生成场次标签栏数据
+    const sessions = seckillData.list;
 
     return (
         <div className="w-full mx-auto my-0 relative">
             <div className="pt-[20px]">
                 <div className="relative w-[1200px] h-[340px] mx-auto my-0">
-                    {/* 左侧时间信息 */}
-                    <SessionInfo timeInfo={mockTimeInfo} />
+                    {/* 左侧时间信息 - 传递活跃场次的开始/结束时间 */}
+                    <SessionInfo
+                        startTime={activeSession.startTime}
+                        endTime={activeSession.endTime}
+                    />
 
                     {/* 中间商品区域 */}
                     <div className="w-[918px] absolute left-[230px] right-[49px] overflow-hidden bg-white">
-                        {/* 场次标签栏 */}
+                        {/* 场次标签栏 - 直接传递源数据场次列表 */}
                         <SessionTabs
-                            sessions={mockSessions}
+                            sessions={sessions}
                             activeSession={activeSession}
                             onSessionChange={setActiveSession}
                         />
 
-                        {/* 商品列表 */}
+                        {/* 商品列表 - 直接传递活跃场次的源商品数据 */}
                         <ProductList products={activeSession.products} />
                     </div>
 
                     {/* 右侧更多链接 */}
-                    <MoreLink />
+                    <MoreLink data={sessions} />
                 </div>
             </div>
         </div>
     );
 };
 
-const SessionInfo: React.FC<{ timeInfo: TimeInfo }> = ({ timeInfo }) => (
+// 时间信息组件 - 直接接收源数据的开始/结束时间
+const SessionInfo: React.FC<{ startTime: string; endTime: string }> = ({ startTime, endTime }) => (
     <Link to="/flash-sale">
         <div className="absolute left-0 w-[230px] h-[340px] bg-[url(https://p2.lefile.cn/product/adminweb/2019/11/26/2b4b9fee-84ee-4fb1-9891-3b3390fb5fd5.png)] bg-[length:230px_340px]">
             <div className="mt-[44px] text-center">
@@ -151,21 +76,24 @@ const SessionInfo: React.FC<{ timeInfo: TimeInfo }> = ({ timeInfo }) => (
             <div className="text-center">
                 <i className="inline-block mt-[22px] w-[28px] h-[60px] bg-[url(https://p2.lefile.cn/product/adminweb/2019/12/11/eb749e1e-e9fa-48ba-95a9-b2041ad01154.png)] bg-[length:28px_60px]"></i>
             </div>
-            <TimeDisplay timeInfo={timeInfo} className="mt-[14px]" />
+            {/* 传递源数据的开始/结束时间给时间显示组件 */}
+            <TimeDisplay startTime={startTime} endTime={endTime} className="mt-[14px]" />
         </div>
     </Link>
 );
 
+// 场次标签栏组件 - 直接使用源数据类型
 const SessionTabs: React.FC<{
-    sessions: flashSaleMenu[];
-    activeSession: flashSaleMenu;
-    onSessionChange: (session: flashSaleMenu) => void;
+    sessions: UnfinishedSeckillRoundVO[];
+    activeSession: UnfinishedSeckillRoundVO;
+    onSessionChange: (session: UnfinishedSeckillRoundVO) => void;
 }> = ({ sessions, activeSession, onSessionChange }) => (
     <div className="h-[66px] leading-[66px] bg-white border-b border-b-[#e8e8e8]">
         <ul className="overflow-hidden h-full ml-[22px] text-[0px] list-none">
             {sessions.map((session) => (
                 <SessionTab
                     key={session.id}
+                    // 直接传递源数据场次对象
                     session={session}
                     isActive={session.id === activeSession.id}
                     onClick={() => onSessionChange(session)}
@@ -175,20 +103,25 @@ const SessionTabs: React.FC<{
     </div>
 );
 
-const ProductList: React.FC<{ products: Product[] }> = ({ products }) => (
+// 商品列表组件 - 直接使用源数据商品类型
+const ProductList: React.FC<{ products: SeckillProductVO[] }> = ({ products }) => (
     <div className="my-0 ml-[23px] mr-0">
         <div className="m-0">
             <ul className="w-full text-[0px] h-[273px] overflow-hidden list-none">
                 {products.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCard
+                        key={`${product.id}-${product.configs[0]?.id || ''}`}
+                        // 直接传递源数据商品对象（包含配置项）
+                        product={product}
+                    />
                 ))}
             </ul>
         </div>
     </div>
 );
 
-const MoreLink: React.FC = () => (
-    <Link to="/flash-sale" className=" no-underline">
+const MoreLink: React.FC<{ data: UnfinishedSeckillRoundVO[] }> = ({ data }) => (
+    <Link to="/flash-sale" state={data} className="no-underline">
         <div className="absolute right-0 w-[49px] h-[340px] bg-gradient-to-br from-[#ec1111] from-1% to-[#ff8200] to-99%">
             <div className="absolute inset-0 m-auto w-[18px] h-[106px] text-sm text-white text-center cursor-pointer">
                 <span className="text-white">更多秒杀</span>

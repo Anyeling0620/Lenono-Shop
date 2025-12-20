@@ -49,39 +49,42 @@ const RecentProducts: React.FC<RecentProductsProps> = ({
   }
 
   return (
-    <div className="mt-8 bg-white rounded-sm shadow-sm p-6">
-      <h3 className="text-lg font-bold mb-6 text-[#333]">最近浏览</h3>
-      <div className="space-y-4">
-        {recentProducts.map((product: MainProduct) => (
-          <Link
-            key={product.id}
-            to={`/product/${product.id}`}
-            className="flex items-center space-x-4 group hover:bg-gray-50 p-2 rounded transition-colors"
-          >
-            <div className="flex-shrink-0">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-16 h-16 object-cover rounded border"
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-medium text-[#333] line-clamp-2 group-hover:text-[#e1140a] transition-colors">
-                {product.name}
-              </h4>
-              <div className="flex items-center space-x-2 mt-1">
-                <span className="text-[#e1140a] font-bold">
-                  ¥{product.originalPrice - product.coupon}
-                </span>
-                {product.coupon > 0 && (
-                  <span className="text-xs text-gray-500 line-through">
-                    ¥{product.originalPrice}
-                  </span>
-                )}
+    <div className="w-[240px] ml-1 flex-shrink-0">
+      <div className="mt-8 bg-white rounded-sm shadow-sm p-6">
+        <h3 className="text-lg font-bold mb-6 text-[#333]">最近浏览</h3>
+        <div className="space-y-4">
+          {recentProducts.map((product: MainProduct) => (
+            <Link
+              key={product.id}
+              to={`/product/${product.id}`}
+              target={product.id}
+              className="flex items-center space-x-4 group hover:bg-gray-50 p-2 rounded transition-colors"
+            >
+              <div className="flex-shrink-0">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-16 h-16 object-cover rounded border"
+                />
               </div>
-            </div>
-          </Link>
-        ))}
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-medium text-[#333] line-clamp-2 group-hover:text-[#e1140a] transition-colors">
+                  {product.name}
+                </h4>
+                <div className="flex items-center space-x-2 mt-1">
+                  <span className="text-[#e1140a] font-bold">
+                    ¥{product.originalPrice - product.coupon}
+                  </span>
+                  {product.coupon > 0 && (
+                    <span className="text-xs text-gray-500 line-through">
+                      ¥{product.originalPrice}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

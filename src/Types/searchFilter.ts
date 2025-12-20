@@ -1,5 +1,5 @@
 export interface TabFilters {
-  self: boolean,
+  self: boolean,  
   discountCoupon: boolean,
   custom: boolean,
   installment: boolean,
@@ -23,7 +23,3 @@ export interface PriceRange {  // 价格范围
     max?: number;
 }
 
-export interface SearchParams extends SearchFiltersType {
-    page?: number;   // 当前页码
-    pageSize?: number;  // 每页显示数量
-}

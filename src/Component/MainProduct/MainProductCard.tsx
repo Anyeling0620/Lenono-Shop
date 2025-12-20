@@ -15,7 +15,7 @@ const MainProductCard = ({ product }: CardProps) => {
   const customerize = product.shelfProduct.isCustomizable;
   const tradeIn = product.shelfProduct.isSelfOperated;
   const originalPrice = product.minPriceConfig?.originalPrice || product?.minPriceConfig.salePrice;
-  const id = product.shelfProduct.id;
+  const id = product.product.id;
 
   let finalPrice = product.minPriceConfig.salePrice;
   const tags = [];
@@ -47,7 +47,7 @@ const MainProductCard = ({ product }: CardProps) => {
 
   return (
     <div className="bg-white hover:shadow-2xl transition-shadow duration-300 text-center">
-      <Link to={`/product/${id}`} className="block">
+      <Link to={`/product/${id}`} target={id} className="block">
         <div className="flex justify-center mb-3 hover:opacity-90 transition-opacity duration-300">
           <img
             src={image}
@@ -116,15 +116,15 @@ const MainProductCard = ({ product }: CardProps) => {
           {hasCoupon ? (
             <div className="flex items-baseline justify-center gap-1 mt-3">
               <span className="text-[#e2231a] text-base font-bold leading-none">
-                到手价￥{Number(finalPrice).toFixed(0)}
+                到手价￥{Number(finalPrice)}
               </span>
               <span className="text-xs text-gray-500 line-through leading-none">
-                ￥{Number(originalPrice).toFixed(0)}
+                ￥{Number(originalPrice)}
               </span>
             </div>
           ) : (
             <span className="text-base font-semibold text-[#e2231a] block mt-3">
-              ￥{Number(originalPrice).toFixed(0)}元
+              ￥{Number(originalPrice)}
             </span>
           )}
         </div>

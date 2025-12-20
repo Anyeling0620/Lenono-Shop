@@ -1,19 +1,12 @@
-/*
- * @Description: 秒杀场次切换栏组件 (FlashSessionBar)
- * @Features:
- * 1. 吸顶悬浮 (Sticky Header) - 滚动时固定在顶部
- * 2. 状态展示 - 显示 "正在抢购", "即将开始" 等文案
- * 3. 倒计时集成 - 选中且有效场次显示倒计时组件
- */
 import React from 'react';
-import type { flashSaleMenu } from '../../types/flashSale';
+import type { UnfinishedSeckillRoundVO } from '../../types/flashSale';
 import { getSessionDisplayTime, getSessionStatus } from '../../utils/timeCalculator';
 import CountdownDisplay from './CountdownDisplay';
 
 interface Props {
-  sessions: flashSaleMenu[];          // 所有场次列表
-  activeSession: flashSaleMenu;       // 当前选中的场次
-  onTabChange: (session: flashSaleMenu) => void; // 切换回调函数
+  sessions: UnfinishedSeckillRoundVO[];          // 替换为新的场次类型
+  activeSession: UnfinishedSeckillRoundVO;       // 当前选中的场次
+  onTabChange: (session: UnfinishedSeckillRoundVO) => void; // 切换回调函数
 }
 
 const FlashSessionBar: React.FC<Props> = ({ sessions, activeSession, onTabChange }) => {
@@ -26,7 +19,7 @@ const FlashSessionBar: React.FC<Props> = ({ sessions, activeSession, onTabChange
         const showBorder = !isActive && index !== sessions.length - 1 && sessions[index + 1].id !== activeSession.id;
 
         return (
-          <SessionItem 
+          <SessionItem
             key={session.id}
             session={session}
             isActive={isActive}
@@ -44,16 +37,16 @@ const FlashSessionBar: React.FC<Props> = ({ sessions, activeSession, onTabChange
  * 负责渲染单个时间块的 UI 和状态逻辑
  */
 const SessionItem: React.FC<{
-  session: flashSaleMenu;
+  session: UnfinishedSeckillRoundVO;
   isActive: boolean;
   showBorder: boolean;
   onClick: () => void;
 }> = ({ session, isActive, showBorder, onClick }) => {
   // 格式化时间 (例如 "12:00")
-  const timeLabel = getSessionDisplayTime(session.time);
+  const timeLabel = getSessionDisplayTime(session.startTime);
   // 获取当前场次的时间状态
-  const status = getSessionStatus(session.time, session.duration);
-  
+  const status = getSessionStatus(session.startTime, session.endTime);
+
   // 1. 配置主状态文案 (第一行)
   let statusText = '即将开始';
   if (status === 'start') statusText = '正在抢购';
@@ -84,10 +77,10 @@ const SessionItem: React.FC<{
       {/* 第二行：条件渲染 */}
       {/* 如果是激活状态 且 (正在进行 或 即将开始)，显示倒计时组件 */}
       {isActive && (status === 'start' || status === 'wait') ? (
-        <CountdownDisplay 
-          time={session.time} 
-          duration={session.duration} 
-          status={status} 
+        <CountdownDisplay
+          startTime={session.startTime} // 传递开始时间
+          endTime={session.endTime}     // 传递结束时间
+          status={status}
         />
       ) : (
         // 否则显示静态副标题

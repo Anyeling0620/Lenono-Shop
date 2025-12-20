@@ -15,7 +15,7 @@ const CarouselItem: React.FC<CarouselItemProps> = ({
 
     return (
         <div className="w-full flex-shrink-0 bg-white">
-            <Link to={''} className="block w-full">
+            <Link to={`/product/${item.product.product.id}` } target={item.product.product.id} className="block w-full">
                 <img
                     src={item.image}
                     alt={item.product.product.name }

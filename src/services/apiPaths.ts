@@ -6,7 +6,7 @@ export const API_PATHS = {
     LOGIN_PATH: '/auth/login',
     REGISTER_PATH: '/auth/register',
     LOGOUT_PATH: '/auth/logout',
-    SEND_VERIFICATION_CODE:'/send-verification-code',
+    SEND_VERIFICATION_CODE: '/send-verification-code',
 
     USER_ACCOUNT_INFO: '/user/account-info',
     USER_UPDATE_INFO: '/user/update-info',
@@ -16,9 +16,16 @@ export const API_PATHS = {
     USER_CHANGE_PASSWORD: '/user/change-password',
 
     GET_PRODUCT: '/products/product-cards',
-    GET_NEW_PRODUCT_GROUPS:'/products/new-product-cards',
-    GET_INDEX_PRODUCT:'/products/index-product-cards',
+    GET_NEW_PRODUCT_GROUPS: '/products/new-product-cards',
+    GET_INDEX_PRODUCT: '/products/index-product-cards',
+    GET_SECKILL_PRODUCT: '/products/seckill-product-cards',
+    GET_SEARCH_PRODUCT: '/products/search-product-cards',
+    
+    GET_PRODUCT_EVALATIONS: (params: { productId: string }) => `/products/${params.productId}/evaluations`,
+    GET_PRODUCT_DETAIL_BY_SHELF: (params: { id: string }) => `/products/shelf-products/${params.id}/detail`,
+    GET_PRODUCT_DETAIL_BY_SECKILL: (params: { id: string }) => `/products/seckill-products/${params.id}/detail`,
+    EVALUATION_LIKE:(id:string)=>`/products/evaluations/${id}/like`,
 
     ROAST_LIST: '/user/roast/list',
-    
+
 } as const;

@@ -1,41 +1,40 @@
-/*
- * @Description: 倒计时显示组件 (Dumb Component)
- * @Responsibility: 
- * 1. 接收目标时间和状态，计算剩余时间
- * 2. 每秒刷新 UI
- * 3. 根据状态显示不同前缀 ("距开始" 或 "距结束")
- */
 import React, { useEffect, useState } from 'react';
+import type { TimeStatus } from '../../types/flashSale';
 import { calculateRemainingTime } from '../../utils/timeCalculator';
 
 interface Props {
-  time: string;     // 场次开始时间字符串
-  duration: string; // 持续时间 (例如 "12h")
-  status: 'start' | 'wait' | 'end'; // 当前场次状态
-  showLabel?: boolean; // 是否显示前缀文本
+  startTime: string;    // 场次开始时间（替换原有 time）
+  endTime: string;      // 场次结束时间（替换原有 duration）
+  status: TimeStatus;   // 当前场次状态
+  showLabel?: boolean;  // 是否显示前缀文本
 }
 
-const CountdownDisplay: React.FC<Props> = ({ time, duration, status, showLabel = true }) => {
+const CountdownDisplay: React.FC<Props> = ({ startTime, endTime, status, showLabel = true }) => {
   // 初始化倒计时状态
-  const [timer, setTimer] = useState(calculateRemainingTime(time, duration));
+  const [timer, setTimer] = useState({
+    hours: '00',
+    minutes: '00',
+    seconds: '00'
+  });
 
   // 倒计时副作用
   useEffect(() => {
     // 如果已结束，无需启动定时器
     if (status === 'end') return;
 
-    // 立即更新一次，避免 UI 闪烁
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTimer(calculateRemainingTime(time, duration));
+    // 立即更新一次
+    const updateTimer = () => {
+      setTimer(calculateRemainingTime(startTime, endTime));
+    };
+
+    updateTimer();
 
     // 设置定时器，每秒更新
-    const intervalId = setInterval(() => {
-      setTimer(calculateRemainingTime(time, duration));
-    }, 1000);
+    const intervalId = setInterval(updateTimer, 1000);
 
     // 清理函数：组件卸载时清除定时器
     return () => clearInterval(intervalId);
-  }, [time, duration, status]);
+  }, [startTime, endTime, status]);
 
   // 根据状态确定前缀文案
   let label = '';

@@ -2,12 +2,12 @@
 // components/Search/ProductList.tsx
 import React from 'react';
 import ProductCard from './ProductCard';
-import type { Product } from '../../types/product';
+import type { ProductCardItem } from '../../types/product';
 import { Empty } from 'antd';
 
 
 interface ProductListProps {
-  products: Product[];
+  products: ProductCardItem[];
   loading: boolean;
   pageSize: number;
   currentPage: number;
@@ -44,7 +44,7 @@ const ProductList: React.FC<ProductListProps> = ({ products, loading, pageSize, 
   return (
     <ul className='w-[1200px] h-auto grid grid-cols-4 gap-3 mx-auto text-sm pt-3'>
       {products.slice(startIndex, endIndex).map((product) => (
-        <ProductCard key={product.id} product={product} />
+        <ProductCard key={product.product.id} product={product} />
       ))}
     </ul>
   );

@@ -78,7 +78,7 @@ const ProductSection: React.FC<AutoScrollProductSectionProps> = ({
               >
                 {carouselProducts.map((value: ProductCardItem) => (
                   <div key={value.shelfProduct.id}>
-                    <Link to={`/product/${value.shelfProduct.id}`} target={value.shelfProduct.id} >
+                    <Link to={`/product/${value.product.id}`} target={value.product.id} >
                       <img
                         src={value.shelfProduct.carouselImage as string}
                         // className=' w-full object-cover'
