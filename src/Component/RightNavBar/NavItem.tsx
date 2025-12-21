@@ -69,6 +69,7 @@ const NavItem: React.FC<NavItemProps> = ({
             <li className='block relative list-none'>
                 <Link
                     to={href || '#'}
+                    target={href}
                     className={`block cursor-pointer text-black no-underline outline-none transition-all duration-200 ${isHovered ? 'bg-white/70' : ''
                         }`}
                     onMouseEnter={handleMouseEnter}
@@ -77,7 +78,7 @@ const NavItem: React.FC<NavItemProps> = ({
                 >
                     <img
                         src={currentImage}
-                        className='w-[70px] border-none inline-block align-middle transition-all duration-200'
+                        className='w-[70px] bg-white hover:bg-[#ee2626] border-none inline-block align-middle transition-all duration-200'
                         alt={alt}
                         loading="lazy"
                     />

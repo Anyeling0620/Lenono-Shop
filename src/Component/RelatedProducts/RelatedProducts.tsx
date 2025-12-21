@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import type { MainProduct } from "../../types/mainProduct";
-import { productCategories } from "../../assets/data/mockProducts";
 
 interface RelatedProductsProps {
   currentProductId: string;

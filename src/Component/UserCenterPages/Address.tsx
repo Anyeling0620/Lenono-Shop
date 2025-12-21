@@ -334,6 +334,7 @@ const Address: React.FC = () => {
 
       {/* 编辑/新增地址模态框 */}
       <Modal
+      maskStyle={{ backdropFilter: "none" }}
         title={
           <div className="text-base font-normal pb-2 border-b border-[#eee] text-blue-500 underline">
             {editingAddress ? '编辑收货地址' : '新增收货地址'}
@@ -380,13 +381,6 @@ const Address: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            name="fixedPhone"
-            label="或固定电话:"
-          >
-            <Input placeholder="固定电话（选填）" size="large" className="rounded-none hover:border-[#e1140a] focus:border-[#e1140a]" />
-          </Form.Item>
-
-          <Form.Item
             name="region"
             label={
               <span>
@@ -427,10 +421,6 @@ const Address: React.FC = () => {
               className="rounded-none hover:border-[#e1140a] focus:border-[#e1140a] resize-none"
               rows={2}
             />
-          </Form.Item>
-
-          <Form.Item name="email" label="邮箱:">
-            <Input placeholder="邮箱（选填）" size="large" className="rounded-none hover:border-[#e1140a] focus:border-[#e1140a]" />
           </Form.Item>
 
           <Form.Item name="isDefault" valuePropName="checked">

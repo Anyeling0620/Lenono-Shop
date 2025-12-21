@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import ShareButtons from "../component/ShareButtons/ShareButtons";
-import RecentProducts from "../component/RecentProducts/RecentProducts";
 import ImageModal from "../component/ImageModal/ImageModal";
 import { addToShoppingCartService, getSeckillProductDetail, getShelfProductDetail } from "../services/products";
 import globalErrorHandler from "../utils/globalAxiosErrorHandler";
@@ -312,7 +311,7 @@ const shelfConfigs = useMemo(() => shelfProductData?.configs || [], [shelfProduc
             <ShareButtons
               productName={product.name}
               productUrl={`/product/${product.id}`}
-              productImage={activeImage}
+              productImage={product.mainImage!}
             />
           </div>
         </div>
@@ -617,8 +616,6 @@ const shelfConfigs = useMemo(() => shelfProductData?.configs || [], [shelfProduc
           </div>
         </div>
 
-        {/* 最近浏览（右侧侧边栏） */}
-        <RecentProducts currentProductId={product.id} />
       </div>
 
       {/* 底部详情Tab页 */}

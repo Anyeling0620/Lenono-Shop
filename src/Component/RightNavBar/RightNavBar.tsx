@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import NavItem from './NavItem';
 import ScrollToTop from './ScrollToTop';
-import { userIcon, userHoverIcon, qrcodeIcon } from '../../assets/icon';
+import { userIcon, userHoverIcon, qrcodeIcon, coupon, couponHover } from '../../assets/icon';
 import UserNavItem from './UserNavItem';
+import useAuthStore from '../../store/authStore';
 
 interface NavItemConfig {
     id: string;
@@ -13,27 +14,23 @@ interface NavItemConfig {
     alt: string;
     hasPopup?: boolean;
     popupContent?: React.ReactNode;
-}
-
-const RightNavBar: React.FC = () => {
-
-    // 导航项配置数据
+}    // 导航项配置数据
     const navItemsData: NavItemConfig[] = [
         {
             id: 'user-center',
             type: 'user',
             normalImage: userIcon,
             hoverImage: userHoverIcon,
-            href: '/user-center',
+            href: 'user-center',
             alt: '用户中心'
         },
          {
-            id: 'shopping-cart',
-            type: 'normal',
-            normalImage: 'https://p4.lefile.cn/fes/cms/2022/02/15/bdf8xwarfegcq94nrcah7fru6bie8f994693.png',
-            hoverImage: 'https://p3.lefile.cn/fes/cms/2022/02/15/zjp7x2qq65ixfzmjkslujwrln5619w815717.png',
-            href: '/shopping-cart',
-            alt: '购物车'
+            id: 'coupon-center',
+            type: 'user',
+            normalImage: coupon,
+            hoverImage: couponHover,
+            href: 'coupon-center',
+            alt: '领券中心'
         },
         {
             id: 'hotline',
@@ -55,7 +52,7 @@ const RightNavBar: React.FC = () => {
             type: 'normal',
             normalImage: 'https://p1.lefile.cn/fes/cms/2025/10/20/50z28vxv0m8xogl4uy0kjpnz1pfe3c035989.jpg',
             hoverImage: 'https://p3.lefile.cn/fes/cms/2025/10/20/4h4gnqksch94pehlf5dtxu6ey6glp4447791.jpg',
-            href: '/manual-consultation',
+            href: 'manual-consultation',
             alt: '人工咨询',
             hasPopup: true,
             popupContent: (
@@ -91,7 +88,7 @@ const RightNavBar: React.FC = () => {
             type: 'normal',
             normalImage: 'https://p2.lefile.cn/fes/cms/2022/04/01/uwvmvtszm9zabuoajqf49jwpztu605300884.png',
             hoverImage: 'https://p3.lefile.cn/fes/cms/2022/04/01/m3gvd1j97ejneroqxlczlrz0sqj5ri536853.png',
-            href: '/feedback',
+            href: 'feedback',
             alt: '吐槽反馈'
         },
         {
@@ -99,7 +96,7 @@ const RightNavBar: React.FC = () => {
             type: 'normal',
             normalImage: 'https://p1.lefile.cn/fes/cms/2022/04/01/8umvhtyukxemz1p2vq1yo5c3sopu85703492.png',
             hoverImage: 'https://p3.lefile.cn/fes/cms/2022/04/01/7ww5fagz71s7noo47by6szu4n1y6az548184.png',
-            href: '/survey',
+            href: 'survey',
             alt: '有奖调研'
         },
        
@@ -110,6 +107,11 @@ const RightNavBar: React.FC = () => {
             alt: '返回页面顶部'
         }
     ];
+
+const RightNavBar: React.FC = () => {
+
+        const isLogin = useAuthStore(state => state.isAuthenticated);
+
 
     const [isAtTop, setIsAtTop] = useState(true);       // 控制是否在页面顶部
 
@@ -186,9 +188,9 @@ const RightNavBar: React.FC = () => {
         <div className='top-[20%] block w-[70px] h-auto z-[11112] fixed right-5 bg-white/50 shadow-md backdrop-blur-md rounded-lg overflow-visible transition-all duration-300'>
             <ul>
                 {navItemsData.filter(item=>{
-                    // if( ( 没有登陆 )&&(item.id === 'user-center' || item.id === 'shopping-cart')){
-                    //     return false;
-                    // }
+                    if( !isLogin&&(item.id === 'user-center' )){
+                        return false;
+                    }
                     return true;
                 }).map(renderNavItem)}
             </ul>

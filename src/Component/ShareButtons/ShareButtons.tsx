@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 
 interface ShareButtonsProps {
   productName: string;
@@ -18,7 +19,7 @@ const ShareButtons: React.FC<ShareButtonsProps> = ({
 
   const shareToWeChat = () => {
     // 微信分享需要微信SDK，这里模拟二维码分享
-    alert("请使用微信扫码分享：\n" + shareUrl);
+    toast("请使用微信扫码分享：\n" + shareUrl);
   };
 
   const shareToWeibo = () => {
@@ -34,7 +35,7 @@ const ShareButtons: React.FC<ShareButtonsProps> = ({
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
-      alert("链接已复制到剪贴板！");
+      toast("链接已复制到剪贴板！");
     } catch {
       // 降级方案
       const textArea = document.createElement("textarea");
@@ -43,7 +44,7 @@ const ShareButtons: React.FC<ShareButtonsProps> = ({
       textArea.select();
       document.execCommand('copy');
       document.body.removeChild(textArea);
-      alert("链接已复制到剪贴板！");
+      toast("链接已复制到剪贴板！");
     }
   };
 

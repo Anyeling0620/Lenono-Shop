@@ -14,6 +14,8 @@ import { API_PATHS } from '../services/apiPaths';
 
 const getSearchProductCards = async (params: SearchFiltersType): Promise<SingleProductCardResponse> => {
   await new Promise(resolve => setTimeout(resolve, 500)); // 添加await
+  console.log(params);
+  
   const response = await axiosInstance.get<ApiResponse<SingleProductCardResponse>>(API_PATHS.GET_SEARCH_PRODUCT, { params: params });
   return response.data.data
 };

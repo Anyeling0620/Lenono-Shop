@@ -8,6 +8,7 @@ import ProtectedRoute, { HavingLoginRoute } from "./component/ProtectedRoute"
 import useAuthLifecycle from "./hooks/useAuthLifecycle"
 import { WebSocketProvider } from "./services/ws/WebSocketProvider"
 import { LoadingFallback } from "./component/LoadingFallback"
+import CouponCenter from "./pages/CouponCenter"
 
 // 懒加载页面组件
 const Login = lazy(() => import("./pages/Auth/Login"))
@@ -54,6 +55,7 @@ function App() {
                 <Route path="checkout" element={<Checkout />} />
                 <Route path="my-consult/:customerId" element={<MyConsult />} />
                 <Route path="my-order" element={<ProtectedRoute redirectTo={"/login"}><MyOrder /></ProtectedRoute>} />
+                <Route path="coupon-center" element={<CouponCenter/>}></Route>
               </Route>
               <Route element={<UserLayout />}>
                 <Route path="user-center" element={<ProtectedRoute redirectTo={"/index"} ><UserCenter /></ProtectedRoute>} />

@@ -1,30 +1,21 @@
 import { useState, useMemo, useEffect } from "react";
-import { Tabs, Card, Row, Col, Tag, Spin, Empty } from "antd";
+import { Tabs, Card, Row, Col, Tag, Empty } from "antd";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import duration from "dayjs/plugin/duration";
-import { axiosInstance, type ApiResponse } from "../../services/AxiosService";
 import globalErrorHandler from "../../utils/globalAxiosErrorHandler";
 import toast from "react-hot-toast";
+import { getVouchersService } from "../../services/coupon";
+import type { UserVoucherItem } from "../../types/coupon";
+import { Loading } from "../LoadingFallback";
 dayjs.extend(relativeTime);
 dayjs.extend(duration);
 
-// 定义优惠券类型接口
-interface Voucher {
-    id: number;  // 优惠券ID
-    title: string;  // 优惠券标题
-    amount: number;  // 优惠券金额
-    remain: number;  // 剩余数量
-    start: string | dayjs.Dayjs;  // 开始时间
-    end: string | dayjs.Dayjs;  // 结束时间
-    stackable: boolean;  // 是否可叠加
-}
-
 const Voucher = () => {
-    const [vouchers, setVouchers] = useState<Voucher[]>([]);
+    const [vouchers, setVouchers] = useState<UserVoucherItem[]>([]);
     const [activeTab, setActiveTab] = useState("active"); // 当前选中的tab
-    const [sortBy, setSortBy] = useState<"expire" | "amount" | "stack" | null>(null); // 当前排序方式
-    const [countdown, setCountdown] = useState<Record<number, string>>({}); // 优惠券倒计时
+    const [sortBy, setSortBy] = useState<"expire" | "amount" | "status" | null>(null); // 当前排序方式
+    const [countdown, setCountdown] = useState<Record<string, string>>({}); // 优惠券倒计时
     const [loading, setLoading] = useState(true); // 加载状态
 
     const now = dayjs();
@@ -32,147 +23,51 @@ const Voucher = () => {
     useEffect(() => {
         const fetchVoucherData = async () => {
             try {
-                // const res = await axiosInstance.get<ApiResponse<{vouchers: Voucher[]}>>('/user/voucher');
-                // const vs = res.data.data.vouchers
-
-                // 测试空数据：注释下面的数组，取消注释空数组即可
-              //  const vs: Voucher[] = []; 
-                const vs: Voucher[] = [
-                    {
-                        id: 1,
-                        title: "新人满减券",
-                        amount: 50,
-                        remain: 20,
-                        start: "2025-01-01",
-                        end: "2025-12-31",
-                        stackable: true,
-                    },
-                    {
-                        id: 2,
-                        title: "限时优惠券",
-                        amount: 100,
-                        remain: 100,
-                        start: "2025-02-01",
-                        end: dayjs().add(1, "day").toISOString(), // 即将过期
-                        stackable: false,
-                    },
-                    {
-                        id: 3,
-                        title: "大额代金券",
-                        amount: 20000,
-                        remain: 10,
-                        start: "2024-12-01",
-                        end: "2025-01-10", // 已过期
-                        stackable: true,
-                    },
-                    {
-                        id: 4,
-                        title: "节日礼券",
-                        amount: 30,
-                        remain: 30,
-                        start: dayjs().subtract(2, "day"),
-                        end: dayjs().add(20, "day"),
-                        stackable: false,
-                    },
-                    {
-                        id: 5,
-                        title: "消费返还券",
-                        amount: 80,
-                        remain: 40,
-                        start: dayjs().subtract(10, "day"),
-                        end: dayjs().add(5, "day"),
-                        stackable: true,
-                    },
-                    {
-                        id: 6,
-                        title: "节日礼券",
-                        amount: 30,
-                        remain: 30,
-                        start: dayjs().subtract(2, "day"),
-                        end: dayjs().add(20, "day"),
-                        stackable: false,
-                    },
-                    {
-                        id: 7,
-                        title: "消费返还券",
-                        amount: 80,
-                        remain: 40,
-                        start: dayjs().subtract(10, "day"),
-                        end: dayjs().add(5, "day"),
-                        stackable: true,
-                    },
-                    {
-                        id: 8,
-                        title: "节日礼券",
-                        amount: 30,
-                        remain: 30,
-                        start: dayjs().subtract(2, "day"),
-                        end: dayjs().add(20, "day"),
-                        stackable: false,
-                    },
-                    {
-                        id: 9,
-                        title: "消费返还券",
-                        amount: 80,
-                        remain: 40,
-                        start: dayjs().subtract(10, "day"),
-                        end: dayjs().add(5, "day"),
-                        stackable: true,
-                    },
-                    {
-                        id: 10,
-                        title: "节日礼券",
-                        amount: 30,
-                        remain: 30,
-                        start: dayjs().subtract(2, "day"),
-                        end: dayjs().add(20, "day"),
-                        stackable: false,
-                    },
-                    {
-                        id: 11,
-                        title: "消费返还券",
-                        amount: 80,
-                        remain: 40,
-                        start: dayjs().subtract(10, "day"),
-                        end: dayjs().add(5, "day"),
-                        stackable: true,
-                    },
-                ]
-                setVouchers(vs);
+                const vouchersData = await getVouchersService();
+                setVouchers(vouchersData.items);
             } catch (error) {
-                globalErrorHandler.handle(error, toast.error)
+                globalErrorHandler.handle(error, toast.error);
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
-        }
-        setTimeout(fetchVoucherData,1000) 
-    }, [])
+        };
+        setTimeout(fetchVoucherData, 200);
+    }, []);
 
-    // 筛选未过期和已过期优惠券
+    // 筛选有效和已过期代金券 - 根据 UserVoucherItem 结构调整
     const activeVouchers = useMemo(() => {
-        return vouchers.filter((v) => dayjs(v.end).isAfter(now));
+        return vouchers.filter((v) => 
+            v.status === true && dayjs(v.voucher.endTime).isAfter(now)
+        );
     }, [vouchers, now]);
 
     const expiredVouchers = useMemo(() => {
-        return vouchers.filter((v) => dayjs(v.end).isBefore(now));
+        return vouchers.filter((v) => 
+            v.status === false || dayjs(v.voucher.endTime).isBefore(now)
+        );
     }, [vouchers, now]);
 
-    // 排序逻辑
+    // 排序逻辑 - 根据 UserVoucherItem 结构调整
     const sortedActive = useMemo(() => {
         const arr = [...activeVouchers];
 
         switch (sortBy) {
             case "expire":
-                arr.sort((a, b) => dayjs(a.end).valueOf() - dayjs(b.end).valueOf());
+                arr.sort((a, b) => 
+                    dayjs(a.voucher.endTime).valueOf() - dayjs(b.voucher.endTime).valueOf()
+                );
                 break;
             case "amount":
-                arr.sort((a, b) => b.amount - a.amount);
+                arr.sort((a, b) => b.remainAmount - a.remainAmount);
                 break;
-            case "stack":
-                arr.sort((a, b) => Number(b.stackable) - Number(a.stackable));
+            case "status":
+                // 按状态排序：有效的在前
+                arr.sort((a, b) => Number(b.status) - Number(a.status));
                 break;
             default:
-                arr.sort((a, b) => dayjs(a.end).valueOf() - dayjs(b.end).valueOf());
+                arr.sort((a, b) => 
+                    dayjs(a.voucher.endTime).valueOf() - dayjs(b.voucher.endTime).valueOf()
+                );
         }
 
         return arr;
@@ -181,9 +76,9 @@ const Voucher = () => {
     // 倒计时更新逻辑
     useEffect(() => {
         const timer = setInterval(() => {
-            const newCountdown: Record<number, string> = {};
+            const newCountdown: Record<string, string> = {};
             activeVouchers.forEach((v) => {
-                const endTime = dayjs(v.end);
+                const endTime = dayjs(v.voucher.endTime);
                 const diff = endTime.diff(dayjs());
 
                 if (diff > 0) {
@@ -210,9 +105,9 @@ const Voucher = () => {
         return () => clearInterval(timer);
     }, [activeVouchers]);
 
-    // 卡片渲染
-    const renderVoucher = (v: Voucher) => {
-        const endTime = dayjs(v.end);
+    // 卡片渲染 - 根据 UserVoucherItem 结构调整
+    const renderVoucher = (v: UserVoucherItem) => {
+        const endTime = dayjs(v.voucher.endTime);
         const isExpired = endTime.isBefore(now);
         const diffDays = endTime.diff(now, "day");
         const isSoonExpire = !isExpired && diffDays <= 3;
@@ -221,17 +116,20 @@ const Voucher = () => {
             <Card
                 key={v.id}
                 hoverable
-                className="relative shadow-md rounded-sm transition-all duration-200 "
+                className="relative shadow-md rounded-sm transition-all duration-200 select-none"
             >
                 <div className="flex flex-col gap-1">
                     {/* 金额 + 标题 */}
                     <div className="flex justify-between items-start">
-                        <span className="text-2xl font-bold text-red-600 ">
-                            ¥{v.remain} <span className="text-xs text-gray-500">(剩余)</span>
-                        </span>
+                        <div>
+                            <span className="text-2xl font-bold text-red-600 ">
+                                ¥{v.remainAmount} <span className="text-xs text-gray-500">(剩余)</span>
+                            </span>
+                            <div className="text-sm text-gray-600 mt-1">{v.voucher.title}</div>
+                        </div>
                         <span className="flex gap-1">
-                            <Tag color={v.stackable ? "green" : "red"}>
-                                {v.stackable ? "可叠加" : "不可叠加"}
+                            <Tag color={v.status ? "green" : "red"}>
+                                {v.status ? "有效" : "失效"}
                             </Tag>
                             {isSoonExpire && (
                                 <Tag color="orange">即将过期</Tag>
@@ -239,12 +137,20 @@ const Voucher = () => {
                         </span>
                     </div>
 
-                    <div className="text-sm text-gray-600">{v.title}</div>
+                    {/* 描述信息 */}
+                    {v.voucher.description && (
+                        <div className="text-xs text-gray-500 mt-1">
+                            {v.voucher.description}
+                        </div>
+                    )}
 
                     {/* 时间 */}
-                    <div className="text-xs text-gray-500 mt-1">
-                        <div>获取时间：{dayjs(v.start).format("YYYY-MM-DD")}</div>
-                        <div>到期时间：{endTime.format("YYYY-MM-DD HH:mm")}</div>
+                    <div className="text-xs text-gray-500 mt-2">
+                        <div>获取时间：{dayjs(v.getTime).format("YYYY-MM-DD HH:mm")}</div>
+                        <div>有效期：{dayjs(v.voucher.startTime).format("YYYY-MM-DD")} 至 {endTime.format("YYYY-MM-DD HH:mm")}</div>
+                        {v.useUpTime && (
+                            <div>使用时间：{dayjs(v.useUpTime).format("YYYY-MM-DD HH:mm")}</div>
+                        )}
                     </div>
 
                     {/* 状态和倒计时 */}
@@ -259,23 +165,30 @@ const Voucher = () => {
 
                     {/* 原始金额显示在右下 */}
                     <div className="absolute right-4 bottom-4 text-4xl text-gray-400 opacity-70">
-                        ¥{v.amount}
+                        ¥{v.voucher.originalAmount}
                     </div>
+                    
+                    {/* 已使用金额显示 */}
+                    {v.usedAmount > 0 && (
+                        <div className="absolute left-4 bottom-4 text-xs text-gray-500">
+                            已使用: ¥{v.usedAmount}
+                        </div>
+                    )}
                 </div>
             </Card>
         );
     };
 
-    // 已使用金额计算逻辑
+    // 已使用金额计算逻辑 - 根据 UserVoucherItem 结构调整
     const usedAmount = useMemo(() => {
         return vouchers.reduce((sum, v) => {
-            return sum + (v.amount - v.remain);
+            return sum + v.usedAmount;
         }, 0);
     }, [vouchers]);
 
-    // 可用总金额
+    // 可用总金额 - 根据 UserVoucherItem 结构调整
     const availableAmount = useMemo(() => {
-        return activeVouchers.reduce((sum, v) => sum + v.remain, 0);
+        return activeVouchers.reduce((sum, v) => sum + v.remainAmount, 0);
     }, [activeVouchers]);
 
     // 空状态渲染组件
@@ -298,12 +211,9 @@ const Voucher = () => {
 
     if (loading) {
         return (
-            <div className="py-40 w-full flex items-center justify-center">
-                <Spin  />
-            </div>
-        )
+            <Loading/>
+        );
     }
-
     return (
         <div className="p-6 w-full mx-auto">
             {/* Header */}
@@ -312,19 +222,32 @@ const Voucher = () => {
                     代金券总览
                 </h1>
 
-                <span className="text-gray-500 text-sm ">
-                    共可用金额：{" "}
-                    <span className="font-semibold text-red-600">
-                        ¥{availableAmount}
+                <div className="flex flex-wrap gap-6 text-sm text-gray-500">
+                    <span>
+                        共可用金额：{" "}
+                        <span className="font-semibold text-red-600">
+                            ¥{availableAmount}
+                        </span>
                     </span>
-                </span>
-                <span className="px-10 text-sm text-gray-500">
-                    已使用：{" "}
-                    <span className="font-semibold text-red-600">
-                        ¥{usedAmount}
+                    <span>
+                        已使用金额：{" "}
+                        <span className="font-semibold text-red-600">
+                            ¥{usedAmount}
+                        </span>
                     </span>
-                </span>
-
+                    <span>
+                        有效代金券：{" "}
+                        <span className="font-semibold text-red-600">
+                            {activeVouchers.length}
+                        </span> 张
+                    </span>
+                    <span>
+                        失效代金券：{" "}
+                        <span className="font-semibold text-gray-500">
+                            {expiredVouchers.length}
+                        </span> 张
+                    </span>
+                </div>
             </div>
 
             <div className="flex items-center mb-3">
@@ -335,11 +258,11 @@ const Voucher = () => {
                     items={[
                         {
                             key: "active",
-                            label: `未过期 (${activeVouchers.length})`,
+                            label: `有效 (${activeVouchers.length})`,
                         },
                         {
                             key: "expired",
-                            label: `已过期 (${expiredVouchers.length})`,
+                            label: `失效 (${expiredVouchers.length})`,
                         },
                     ]}
                 />
@@ -363,11 +286,11 @@ const Voucher = () => {
                     </button>
 
                     <button
-                        onClick={() => setSortBy("stack")}
+                        onClick={() => setSortBy("status")}
                         className={`px-4 py-1 transition-colors duration-200
-              ${sortBy === "stack" ? "bg-slate-400 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+              ${sortBy === "status" ? "bg-slate-400 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
                     >
-                        可叠加否
+                        状态排序
                     </button>
                     <button
                         onClick={() => setSortBy(null)}

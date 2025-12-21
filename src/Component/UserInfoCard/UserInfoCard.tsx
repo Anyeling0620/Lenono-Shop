@@ -32,8 +32,9 @@ const functionButtons: fbItem[] = [
   {
     icon: <MdOutlineEditLocation size={40} />,
     text: '地址管理',
-    to: '',
-    hasBadge: false,
+    to: '/user-center',
+    selectedKey:'9',
+    hasBadge: true,
   },
   {
     icon: <RiMessageLine size={40} />,
