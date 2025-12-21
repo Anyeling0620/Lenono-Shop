@@ -152,10 +152,10 @@ const NewProductRelease = () => {
                 {currentProducts.items.length > 0 ? (
                     <ul className="grid grid-cols-3 gap-2 py-4">
                         {currentProducts.items.filter((_, index) => index < 3).map((product) => (
-                            <li key={product.shelfProduct.id} className="bg-white p-4 transition-shadow hover:shadow-xl group cursor-pointer border border-transparent hover:border-[#eee]">
+                            <li key={product.product.id} className="bg-white p-4 transition-shadow hover:shadow-xl group cursor-pointer border border-transparent hover:border-[#eee]">
                                 <Link
-                                to={`/product/${product.shelfProduct.id}`}
-                                target={product.shelfProduct.id}
+                                to={`/product/${product.product.id}`}
+                                target={product.product.id}
                                 >
 
                                     <div className="w-full h-[220px] flex items-center justify-center overflow-hidden mb-4">

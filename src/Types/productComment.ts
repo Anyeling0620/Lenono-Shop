@@ -78,7 +78,8 @@ export interface ShelfProductDetailResponse {
     id: string;
     name: string;
     priority: number;
-  }[]
+  }[];
+  hasShopCart:boolean;
 }
 
 export interface SeckillRoundBriefVO {

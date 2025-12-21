@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 
 interface ProductDetailInfoProps {
@@ -21,7 +22,6 @@ const ProductDetailInfo: React.FC<ProductDetailInfoProps> = ({
   seckill,
   productData,
   tags,
-  activeImage,
 }) => {
   return (
     <div className="bg-white">
@@ -104,11 +104,6 @@ const ProductDetailInfo: React.FC<ProductDetailInfoProps> = ({
           </div>
         ) : (
           <div className="text-center p-20 bg-gray-50 rounded-lg">
-            <img
-              src={activeImage}
-              alt="产品展示"
-              className="mx-auto w-[600px] shadow-lg rounded-lg mb-4"
-            />
             <p className="text-gray-500">更多产品细节图即将上线</p>
           </div>
         )}

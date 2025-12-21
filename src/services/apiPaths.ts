@@ -26,6 +26,9 @@ export const API_PATHS = {
     GET_PRODUCT_DETAIL_BY_SECKILL: (params: { id: string; seckillId:string }) => `/products/seckill-products/${params.seckillId}/${params.id}/detail`,
     EVALUATION_LIKE:(id:string)=>`/products/evaluations/${id}/like`,
 
+    ADD_SHOPPING_CART:'/user/add-shopping-card',
+    GET_SHOPPING_CART:'/user/shopping-cards',
+
     ROAST_LIST: '/user/roast/list',
 
 } as const;
