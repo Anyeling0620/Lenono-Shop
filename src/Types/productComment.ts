@@ -74,6 +74,11 @@ export interface ShelfProductDetailResponse {
   configs: ProductConfigVO[]; // 上架配置（来自上架项关联的配置）
   shelfItems: ShelfItemVO[]; // 每个配置的上架数量/锁定数量
   coupons: CouponItem[]; // 可用优惠券
+  tags: {
+    id: string;
+    name: string;
+    priority: number;
+  }[]
 }
 
 export interface SeckillRoundBriefVO {
@@ -91,7 +96,7 @@ export interface SeckillConfigDetailVO {
   remainNum: number;
   lockNum: number;
   seckillPrice: number;
-  status:  "售罄" | "正常";
+  status: "售罄" | "正常";
   createdAt: string; // YYYY-MM-DD HH:mm:ss
   updatedAt: string; // YYYY-MM-DD HH:mm:ss
   config: ProductConfigVO; // 对应的商品原始配置
@@ -101,7 +106,7 @@ export interface SeckillProductDetailResponse {
   seckill: {
     id: string;
     productId: string;
-    type:  "立减" | "打折";
+    type: "立减" | "打折";
     reduceAmount: number;
     discount: number;
   };
@@ -111,4 +116,9 @@ export interface SeckillProductDetailResponse {
   banners: BannerImageVO[];
   appearances: AppearanceImageVO[];
   seckillConfigs: SeckillConfigDetailVO[]; // 秒杀配置
+  tags: {
+    id: string;
+    name: string;
+    priority: number;
+  }[]
 }

@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import ProductComments from "../component/ProductComments/ProductComments";
 import ShareButtons from "../component/ShareButtons/ShareButtons";
 import RecentProducts from "../component/RecentProducts/RecentProducts";
 import ImageModal from "../component/ImageModal/ImageModal";
@@ -10,34 +9,48 @@ import toast from "react-hot-toast";
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import isBetween from 'dayjs/plugin/isBetween'; // 导入isBetween插件
 import type { SeckillConfigDetailVO, SeckillProductDetailResponse, ShelfItemVO, ShelfProductDetailResponse } from "../types/productComment";
 import type { ProductConfigVO } from "../types/flashSale";
 import type { CouponItem } from "../types/product";
+import ProductDetailInfo from "../component/ProductInfo/ProductDetailInfo";
+import ProductSpecs from "../component/ProductInfo/ProductSpecs";
+import ProductComments from "../component/ProductInfo/ProductComments";
 
-// 统一导入类型（解决类型重复定义问题，建议将所有类型抽离到单独的 types 目录）
-
-
+// 注册dayjs插件
 dayjs.locale('zh-cn');
 dayjs.extend(relativeTime);
+dayjs.extend(isBetween); // 注册isBetween插件
 
 const formatToLocalTime = (utcTime: string): string => {
   return dayjs(utcTime).format('YYYY-MM-DD HH:mm');
 };
 
-// 规格选项类型
+// 规格选项类型（包含配置ID关联）
 interface SpecOption {
   label: string;
-  values: string[];
+  values: Array<{
+    value: string;
+    configIds: string[]; // 关联的配置ID列表
+  }>;
+  allValues: string[]; // 所有规格值的去重列表
 }
 
-// 选中规格类型
-type SelectedSpecs = Record<string, string>;
+// 秒杀状态类型
+type SeckillStatus = 'wait' | 'ongoing' | 'ended';
+
+// 标签类型（与接口定义一致）
+export interface ProductTag { // 改为export，供子组件使用
+  id: string;
+  name: string;
+  priority: number;
+}
 
 const ProductDetail: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const seckillParam = searchParams.get('seckill');
-  const seckill: boolean = seckillParam === 'true';
+  const seckillId = searchParams.get('seckillId');
+  const seckill: boolean = seckillId !== null;
   const { id } = useParams<{ id: string }>();
 
   // 状态管理
@@ -47,10 +60,16 @@ const ProductDetail: React.FC = () => {
   const [activeImage, setActiveImage] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalImage, setModalImage] = useState<string>("");
-  const [selectedSpecs, setSelectedSpecs] = useState<SelectedSpecs>({});
+  const [selectedConfigId, setSelectedConfigId] = useState<string | null>(null); // 选中的配置ID（核心）
+  const [selectedSpecs, setSelectedSpecs] = useState<Record<string, string>>({}); // 选中的规格值（辅助）
   const [quantity, setQuantity] = useState<number>(1);
   const [activeTab, setActiveTab] = useState<"detail" | "specs" | "comments">("detail");
   const [couponExpanded, setCouponExpanded] = useState<number | null>(null);
+  // 秒杀相关状态
+  const [seckillStatus, setSeckillStatus] = useState<SeckillStatus>('wait');
+  const [countdown, setCountdown] = useState<string>(""); // 秒杀倒计时
+  // 修复：规格选项改为响应式状态
+  const [specOptions, setSpecOptions] = useState<SpecOption[]>([]);
 
   // 统一数据获取
   const productData = seckill ? seckillProductData : shelfProductData;
@@ -58,6 +77,8 @@ const ProductDetail: React.FC = () => {
   const brand = productData?.brand;
   const banners = productData?.banners || [];
   const appearances = productData?.appearances || [];
+  // 处理标签数据
+  const tags = (productData?.tags || []) as ProductTag[];
   // 区分秒杀和货架的配置数据
   const seckillConfigs = seckillProductData?.seckillConfigs || [];
   const shelfConfigs = shelfProductData?.configs || [];
@@ -65,74 +86,133 @@ const ProductDetail: React.FC = () => {
   const coupons = shelfProductData?.coupons || [];
   // 货架商品的库存项
   const shelfItems = shelfProductData?.shelfItems || [];
+  // 秒杀轮次信息
+  const seckillRound = seckillProductData?.round;
 
-  // 处理规格数据
-  const specOptions: SpecOption[] = [];
-  const allConfigValues = new Map<string, Set<string>>();
+  // ========== 核心：重构配置和规格逻辑 ==========
+  // 整合所有配置项（秒杀/货架）
+  const allConfigs = seckill 
+    ? seckillConfigs.map(item => ({ ...item, id: item.configId, config: item.config })) 
+    : shelfConfigs.map(item => ({ ...item, id: item.id }));
 
-  // 提取所有配置的规格项（区分秒杀/货架）
-  const extractConfigValues = () => {
-    if (seckill) {
-      seckillConfigs.forEach((item: SeckillConfigDetailVO) => {
-        const config = item.config;
-        if (config?.config1) {
-          if (!allConfigValues.has('config1')) allConfigValues.set('config1', new Set());
-          allConfigValues.get('config1')!.add(config.config1);
+  // 提取规格选项（关联配置ID）
+  useEffect(() => {
+    if (allConfigs.length === 0) {
+      setSpecOptions([]); // 无配置时清空规格选项
+      return;
+    }
+
+    // 1. 收集所有规格键（config1/config2/config3）和对应的值及配置ID
+    const specMap: Record<string, Record<string, string[]>> = {
+      config1: {},
+      config2: {},
+      config3: {},
+    };
+
+    allConfigs.forEach(config => {
+      const cfg = seckill ? (config as SeckillConfigDetailVO).config : (config as ProductConfigVO);
+      // 处理config1
+      if (cfg.config1) {
+        if (!specMap.config1[cfg.config1]) {
+          specMap.config1[cfg.config1] = [];
         }
-        if (config?.config2) {
-          if (!allConfigValues.has('config2')) allConfigValues.set('config2', new Set());
-          allConfigValues.get('config2')!.add(config.config2);
+        specMap.config1[cfg.config1].push(config.id);
+      }
+      // 处理config2
+      if (cfg.config2) {
+        if (!specMap.config2[cfg.config2]) {
+          specMap.config2[cfg.config2] = [];
         }
-        if (config?.config3) {
-          if (!allConfigValues.has('config3')) allConfigValues.set('config3', new Set());
-          allConfigValues.get('config3')!.add(config.config3);
+        specMap.config2[cfg.config2].push(config.id);
+      }
+      // 处理config3
+      if (cfg.config3) {
+        if (!specMap.config3[cfg.config3]) {
+          specMap.config3[cfg.config3] = [];
         }
+        specMap.config3[cfg.config3].push(config.id);
+      }
+    });
+
+    // 2. 构建规格选项（映射为友好标签：颜色/内存/尺寸）
+    const specLabelMap: Record<string, string> = {
+      config1: '颜色',
+      config2: '内存',
+      config3: '尺寸',
+    };
+
+    const newSpecOptions: SpecOption[] = [];
+    Object.entries(specMap).forEach(([key, valueMap]) => {
+      if (Object.keys(valueMap).length === 0) return;
+
+      const values = Object.entries(valueMap).map(([value, configIds]) => ({
+        value,
+        configIds: Array.from(new Set(configIds)), // 去重配置ID
+      }));
+
+      newSpecOptions.push({
+        label: specLabelMap[key],
+        values,
+        allValues: Object.keys(valueMap),
       });
+    });
+
+    // 3. 更新响应式的规格选项
+    setSpecOptions(newSpecOptions);
+
+    // 4. 初始化选中第一个配置（默认选中）
+    if (allConfigs.length > 0 && !selectedConfigId) {
+      setSelectedConfigId(allConfigs[0].id);
+      // 初始化选中的规格值
+      const firstConfig = allConfigs[0];
+      const cfg = seckill ? (firstConfig as SeckillConfigDetailVO).config : (firstConfig as ProductConfigVO);
+      const initSpecs: Record<string, string> = {};
+      if (cfg.config1) initSpecs[specLabelMap.config1] = cfg.config1;
+      if (cfg.config2) initSpecs[specLabelMap.config2] = cfg.config2;
+      if (cfg.config3) initSpecs[specLabelMap.config3] = cfg.config3;
+      setSelectedSpecs(initSpecs);
+    }
+  }, [allConfigs, selectedConfigId, seckill]);
+
+  // ========== 秒杀时间处理 ==========
+  const calculateSeckillStatus = useCallback(() => {
+    if (!seckill || !seckillRound) return;
+
+    const now = dayjs();
+    const startTime = dayjs(seckillRound.startTime);
+    const endTime = dayjs(seckillRound.endTime);
+
+    if (now.isBefore(startTime)) {
+      // 未开始：计算倒计时
+      setSeckillStatus('wait');
+      const diff = startTime.diff(now);
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      setCountdown(`${days > 0 ? `${days}天` : ''}${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+    } else if (now.isBetween(startTime, endTime)) { // 现在使用已注册的isBetween方法
+      // 进行中
+      setSeckillStatus('ongoing');
+      setCountdown('');
     } else {
-      shelfConfigs.forEach((config: ProductConfigVO) => {
-        if (config?.config1) {
-          if (!allConfigValues.has('config1')) allConfigValues.set('config1', new Set());
-          allConfigValues.get('config1')!.add(config.config1);
-        }
-        if (config?.config2) {
-          if (!allConfigValues.has('config2')) allConfigValues.set('config2', new Set());
-          allConfigValues.get('config2')!.add(config.config2);
-        }
-        if (config?.config3) {
-          if (!allConfigValues.has('config3')) allConfigValues.set('config3', new Set());
-          allConfigValues.get('config3')!.add(config.config3);
-        }
-      });
+      // 已结束
+      setSeckillStatus('ended');
+      setCountdown('');
     }
-  };
+  }, [seckill, seckillRound]);
 
-  // 构建规格选项
-  const buildSpecOptions = () => {
-    if (allConfigValues.has('config1')) {
-      specOptions.push({
-        label: '颜色', // 实际项目中可从后端获取标签
-        values: Array.from(allConfigValues.get('config1')!)
-      });
-    }
-    if (allConfigValues.has('config2')) {
-      specOptions.push({
-        label: '内存',
-        values: Array.from(allConfigValues.get('config2')!)
-      });
-    }
-    if (allConfigValues.has('config3')) {
-      specOptions.push({
-        label: '尺寸',
-        values: Array.from(allConfigValues.get('config3')!)
-      });
-    }
-  };
+  // 秒杀倒计时定时器
+  useEffect(() => {
+    if (!seckill || !seckillRound) return;
 
-  // 执行规格提取和构建
-  extractConfigValues();
-  buildSpecOptions();
+    calculateSeckillStatus();
+    const timer = setInterval(calculateSeckillStatus, 1000);
 
-  // 初始化数据加载
+    return () => clearInterval(timer);
+  }, [seckill, seckillRound, calculateSeckillStatus]);
+
+  // ========== 数据获取逻辑 ==========
   useEffect(() => {
     async function fetchData(id: string | null | undefined, seckill: boolean) {
       if (!id) {
@@ -142,17 +222,17 @@ const ProductDetail: React.FC = () => {
       }
       try {
         if (seckill) {
-          const data = await getSeckillProductDetail(id);
+          const data = await getSeckillProductDetail(id, seckillId!);
           setSeckillProductData(data);
           // 初始化缩略图
-          if (data.appearances.length > 0) {
+          if (data?.appearances.length > 0) {
             setActiveImage(data.appearances[0].image);
           }
         } else {
           const data = await getShelfProductDetail(id);
           setShelfProductData(data);
           // 初始化缩略图
-          if (data.appearances.length > 0) {
+          if (data?.appearances.length > 0) {
             setActiveImage(data.appearances[0].image);
           }
         }
@@ -164,81 +244,71 @@ const ProductDetail: React.FC = () => {
     }
 
     fetchData(id, seckill);
-  }, [id, seckill]);
+  }, [id, seckill, seckillId]);
 
-  // 根据选中规格获取对应配置（区分秒杀/货架）
-  const getSelectedConfig = (): SeckillConfigDetailVO | ProductConfigVO | null => {
-    // 秒杀商品配置
+  // ========== 辅助函数：根据配置ID获取对应配置 ==========
+  const getConfigById = (): SeckillConfigDetailVO | ProductConfigVO | null => {
+    if (!selectedConfigId) return null;
+
     if (seckill) {
-      if (seckillConfigs.length === 0) return null;
-      // 未选择规格，返回第一个
-      if (Object.keys(selectedSpecs).length === 0) {
-        return seckillConfigs[0];
-      }
-      // 匹配选中规格
-      return seckillConfigs.find((item: SeckillConfigDetailVO) => {
-        const config = item.config;
-        const config1Match = selectedSpecs['颜色'] ? config.config1 === selectedSpecs['颜色'] : true;
-        const config2Match = selectedSpecs['内存'] ? config.config2 === selectedSpecs['内存'] : true;
-        const config3Match = selectedSpecs['尺寸'] ? config.config3 === selectedSpecs['尺寸'] : true;
-        return config1Match && config2Match && config3Match;
-      }) || seckillConfigs[0];
+      return seckillConfigs.find(item => item.configId === selectedConfigId) || null;
     } else {
-      // 货架商品配置
-      if (shelfConfigs.length === 0) return null;
-      // 未选择规格，返回第一个
-      if (Object.keys(selectedSpecs).length === 0) {
-        return shelfConfigs[0];
-      }
-      // 匹配选中规格
-      return shelfConfigs.find((config: ProductConfigVO) => {
-        const config1Match = selectedSpecs['颜色'] ? config.config1 === selectedSpecs['颜色'] : true;
-        const config2Match = selectedSpecs['内存'] ? config.config2 === selectedSpecs['内存'] : true;
-        const config3Match = selectedSpecs['尺寸'] ? config.config3 === selectedSpecs['尺寸'] : true;
-        return config1Match && config2Match && config3Match;
-      }) || shelfConfigs[0];
+      return shelfConfigs.find(item => item.id === selectedConfigId) || null;
     }
   };
 
+  // ========== 价格、库存计算 ==========
   // 获取选中配置的价格（区分秒杀/货架）
   const getSelectedPrice = (): number => {
-    const selectedConfig = getSelectedConfig();
-    if (!selectedConfig) return 0;
+    const config = getConfigById();
+    if (!config) return 0;
 
     if (seckill) {
-      return (selectedConfig as SeckillConfigDetailVO).seckillPrice;
+      return (config as SeckillConfigDetailVO).seckillPrice;
     } else {
-      return Number((selectedConfig as ProductConfigVO).salePrice);
+      return Number((config as ProductConfigVO).salePrice);
     }
   };
 
   // 获取库存数量（区分秒杀/货架）
   const getStockCount = (): number => {
-    const selectedConfig = getSelectedConfig();
-    if (!selectedConfig) return 0;
+    const config = getConfigById();
+    if (!config) return 0;
 
     if (seckill) {
       // 秒杀商品库存：选中配置的剩余数量
-      return (selectedConfig as SeckillConfigDetailVO).remainNum;
+      return (config as SeckillConfigDetailVO).remainNum;
     } else {
       // 货架商品库存：shelfItems 中的可用数量（总库存-锁定库存）
       if (shelfItems.length === 0) return 0;
-      // 若配置与shelfItem关联，需根据configId匹配，此处简化为第一个shelfItem
-      const shelfItem = shelfItems.find((item: ShelfItemVO) => item.configId === selectedConfig.id) || shelfItems[0];
-      return shelfItem.shelfNum - shelfItem.lockNum;
+      const shelfItem = shelfItems.find((item: ShelfItemVO) => item.configId === selectedConfigId);
+      return shelfItem ? (shelfItem.shelfNum - shelfItem.lockNum) : 0;
     }
   };
 
   // 获取选中配置的原价
   const getOriginalPrice = (): number => {
-    const selectedConfig = getSelectedConfig();
-    if (!selectedConfig) return 0;
+    const config = getConfigById();
+    if (!config) return 0;
 
     if (seckill) {
-      return Number((selectedConfig as SeckillConfigDetailVO).config.originalPrice);
+      return Number((config as SeckillConfigDetailVO).config.originalPrice);
     } else {
-      return Number((selectedConfig as ProductConfigVO).originalPrice);
+      return Number((config as ProductConfigVO).originalPrice);
     }
+  };
+
+  // 获取选中配置的规格值
+  const getSelectedSpecValues = (): Record<string, string> => {
+    const config = getConfigById();
+    if (!config) return {};
+
+    const cfg = seckill ? (config as SeckillConfigDetailVO).config : (config as ProductConfigVO);
+    const specValues: Record<string, string> = {};
+    if (cfg.config1) specValues['颜色'] = cfg.config1;
+    if (cfg.config2) specValues['内存'] = cfg.config2;
+    if (cfg.config3) specValues['尺寸'] = cfg.config3;
+    return specValues;
   };
 
   // 计算最终价格、原价、库存
@@ -246,8 +316,53 @@ const ProductDetail: React.FC = () => {
   const originalPrice = getOriginalPrice();
   const stockCount = getStockCount();
   const hasStock = stockCount > 0;
-  const selectedConfig = getSelectedConfig();
+  const selectedConfig = getConfigById();
+  const selectedSpecValues = getSelectedSpecValues();
 
+  // ========== 规格选择事件处理 ==========
+  // 处理规格值选择（更新选中的规格和配置ID）
+  const handleSpecSelect = (specLabel: string, value: string) => {
+    // 1. 更新选中的规格值
+    const newSelectedSpecs = {
+      ...selectedSpecs,
+      [specLabel]: value,
+    };
+
+    // 2. 筛选符合所有已选规格的配置ID
+    let matchedConfigIds: string[] = allConfigs.map(config => config.id);
+
+    // 遍历所有已选规格，过滤配置ID
+    Object.entries(newSelectedSpecs).forEach(([label, val]) => {
+      // 找到对应的规格键（颜色→config1，内存→config2，尺寸→config3）
+      const specKey = Object.entries({
+        '颜色': 'config1',
+        '内存': 'config2',
+        '尺寸': 'config3',
+      }).find(([_, key]) => label === _)?.[1];
+
+      if (!specKey) return;
+
+      // 过滤出包含该规格值的配置ID
+      const filteredIds = allConfigs.filter(config => {
+        const cfg = seckill ? (config as SeckillConfigDetailVO).config : (config as ProductConfigVO);
+        return cfg[specKey as 'config1' | 'config2' | 'config3'] === val;
+      }).map(config => config.id);
+
+      // 交集：保留同时符合所有规格的配置ID
+      matchedConfigIds = matchedConfigIds.filter(id => filteredIds.includes(id));
+    });
+
+    // 3. 更新选中的配置ID（取第一个匹配的）
+    if (matchedConfigIds.length > 0) {
+      setSelectedConfigId(matchedConfigIds[0]);
+      setSelectedSpecs(newSelectedSpecs);
+    } else {
+      // 无匹配配置时，提示用户
+      toast.warning('当前规格组合暂无配置，请更换选择');
+    }
+  };
+
+  // ========== 购买逻辑处理 ==========
   // 加入购物车处理
   const handleAddToCart = async () => {
     if (!product || !selectedConfig) return;
@@ -255,13 +370,23 @@ const ProductDetail: React.FC = () => {
     navigate("/shopping-cart");
   };
 
-  // 立即购买处理
+  // 立即购买/抢购处理
   const handleBuyNow = () => {
     if (!product || !selectedConfig) return;
+    // 秒杀未开始时，提示用户
+    if (seckill && seckillStatus === 'wait') {
+      toast.warning('秒杀尚未开始，请等待');
+      return;
+    }
+    // 秒杀已结束时，提示用户
+    if (seckill && seckillStatus === 'ended') {
+      toast.warning('秒杀已结束，无法购买');
+      return;
+    }
     navigate("/checkout");
   };
 
-  // 加载中状态
+  // ========== 加载中和空数据处理 ==========
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -270,7 +395,6 @@ const ProductDetail: React.FC = () => {
     );
   }
 
-  // 数据为空时的兜底
   if (!product) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -345,8 +469,18 @@ const ProductDetail: React.FC = () => {
             {product.subTitle || "爆款直降，限时抢购！"}
           </p>
 
-          {/* 商品标签 / 特性 */}
+          {/* 商品标签 / 特性 + 秒杀状态标签 + 产品标签 */}
           <div className="flex items-center flex-wrap gap-2 mb-4 text-xs">
+            {/* 产品标签（按priority排序展示） */}
+            {tags.sort((a, b) => b.priority - a.priority).map((tag) => (
+              <span
+                key={tag.id}
+                className="px-2 py-0.5 bg-[#f0f8ff] text-[#4299e1] rounded-sm border border-[#dbeafe]"
+              >
+                {tag.name}
+              </span>
+            ))}
+
             {!seckill && productData?.shelf?.isSelfOperated && (
               <span className="px-2 py-0.5 bg-[#f5f9ff] text-[#3677ff] rounded-sm border border-[#d0e0ff]">
                 自营商品
@@ -358,9 +492,23 @@ const ProductDetail: React.FC = () => {
               </span>
             )}
             {seckill && (
-              <span className="px-2 py-0.5 bg-[#fff2ed] text-[#e1140a] rounded-sm border border-[#ffd4c2]">
-                秒杀商品
-              </span>
+              <>
+                {seckillStatus === 'wait' && (
+                  <span className="px-2 py-0.5 bg-[#fff7e6] text-[#ff8800] rounded-sm border border-[#ffe1b8]">
+                    秒杀未开始
+                  </span>
+                )}
+                {seckillStatus === 'ongoing' && (
+                  <span className="px-2 py-0.5 bg-[#fff2ed] text-[#e1140a] rounded-sm border border-[#ffd4c2]">
+                    秒杀进行中
+                  </span>
+                )}
+                {seckillStatus === 'ended' && (
+                  <span className="px-2 py-0.5 bg-[#f5f5f5] text-[#999] rounded-sm border border-[#e5e5e5]">
+                    秒杀已结束
+                  </span>
+                )}
+              </>
             )}
             {!seckill && productData?.shelf?.installment > 0 && (
               <span className="px-2 py-0.5 bg-[#fff7e6] text-[#ff8800] rounded-sm border border-[#ffe1b8]">
@@ -368,6 +516,31 @@ const ProductDetail: React.FC = () => {
               </span>
             )}
           </div>
+
+          {/* 秒杀倒计时（仅秒杀商品显示） */}
+          {seckill && seckillStatus === 'wait' && (
+            <div className="mb-4 p-3 bg-[#fff7e6] border border-[#ffe1b8] rounded-sm">
+              <div className="flex items-center text-[#ff8800]">
+                <span className="font-bold mr-2">秒杀开始倒计时：</span>
+                <span className="font-mono text-lg">{countdown}</span>
+                <span className="ml-2 text-xs">
+                  开始时间：{formatToLocalTime(seckillRound?.startTime || '')}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* 秒杀轮次信息（进行中/已结束） */}
+          {seckill && (seckillStatus === 'ongoing' || seckillStatus === 'ended') && (
+            <div className="mb-4 p-3 bg-[#f8f8f8] border border-[#e5e5e5] rounded-sm text-xs text-gray-600">
+              <div className="flex justify-between">
+                <span>秒杀轮次：{seckillRound?.title || '未知轮次'}</span>
+                <span>
+                  {seckillStatus === 'ongoing' ? '结束时间' : '开始时间'}：{formatToLocalTime(seckillStatus === 'ongoing' ? seckillRound?.endTime : seckillRound?.startTime || '')}
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* 价格面板 */}
           <div className="bg-[#f3f5f7] p-4 rounded-sm mb-4">
@@ -467,7 +640,7 @@ const ProductDetail: React.FC = () => {
 
           <div className="w-full h-[1px] bg-gray-200 my-4"></div>
 
-          {/* 规格选择 */}
+          {/* 规格选择（修复后：响应式状态渲染） */}
           {specOptions.length > 0 && (
             <div className="space-y-4 mb-8">
               {specOptions.map((spec, specIdx) => (
@@ -476,25 +649,20 @@ const ProductDetail: React.FC = () => {
                     {spec.label}
                   </span>
                   <div className="flex flex-wrap gap-3 flex-1">
-                    {spec.values.map((value, valIdx) => (
+                    {spec.allValues.map((value, valIdx) => (
                       <button
                         key={`spec-${specIdx}-val-${valIdx}`}
-                        onClick={() =>
-                          setSelectedSpecs({
-                            ...selectedSpecs,
-                            [spec.label]: value,
-                          })
-                        }
+                        onClick={() => handleSpecSelect(spec.label, value)}
                         className={`
                           px-4 py-1.5 text-sm border 
-                          ${selectedSpecs[spec.label] === value
+                          ${selectedSpecValues[spec.label] === value
                             ? "border-[#e1140a] text-[#e1140a] relative"
                             : "border-gray-300 text-[#333] hover:border-[#e1140a]"
                           }
                         `}
                       >
                         {value}
-                        {selectedSpecs[spec.label] === value && (
+                        {selectedSpecValues[spec.label] === value && (
                           <i className="absolute right-0 bottom-0 w-0 h-0 border-b-[10px] border-b-[#e1140a] border-l-[10px] border-l-transparent"></i>
                         )}
                       </button>
@@ -524,7 +692,7 @@ const ProductDetail: React.FC = () => {
               />
               <button
                 className="w-[30px] h-[30px] bg-[#f8f8f8] text-gray-500 disabled:opacity-50"
-                disabled={!hasStock || quantity >= stockCount}
+                disabled={!hasStock || quantity >= stockCount || (seckill && seckillStatus !== 'ongoing')}
                 onClick={() => setQuantity(quantity + 1)}
               >
                 +
@@ -538,19 +706,25 @@ const ProductDetail: React.FC = () => {
           {/* 按钮组 */}
           <div className="flex gap-4">
             <button
-              className={`w-[160px] h-[50px] text-white text-[18px] font-bold rounded-sm transition-colors ${hasStock ? "bg-[#e1140a] hover:bg-[#c91008]" : "bg-gray-400 cursor-not-allowed"
+              className={`w-[160px] h-[50px] text-white text-[18px] font-bold rounded-sm transition-colors 
+                ${
+                  hasStock && (seckill ? seckillStatus === 'ongoing' : true)
+                    ? "bg-[#e1140a] hover:bg-[#c91008]"
+                    : "bg-gray-400 cursor-not-allowed"
                 }`}
-              disabled={!hasStock || !selectedConfig}
+              disabled={!hasStock || !selectedConfig || (seckill && seckillStatus !== 'ongoing')}
               onClick={handleBuyNow}
             >
-              {hasStock ? seckill ? "立即抢购" : "立即购买" : "缺货"}
+              {seckill ? (
+                seckillStatus === 'ongoing' ? (hasStock ? "立即抢购" : "缺货") : (seckillStatus === 'wait' ? "等待秒杀" : "秒杀结束")
+              ) : (
+                hasStock ? "立即购买" : "缺货"
+              )}
             </button>
             {!seckill && (
               <button
-                className={`w-[160px] h-[50px] text-[18px] font-bold rounded-sm transition-colors ${hasStock
-                  ? "bg-[#ffeded] border border-[#e1140a] text-[#e1140a] hover:bg-[#ffdcdc]"
-                  : "bg-gray-100 border border-gray-300 text-gray-400 cursor-not-allowed"
-                }`}
+                className={`w-[160px] h-[50px] text-[18px] font-bold rounded-sm transition-colors 
+                  ${hasStock ? "bg-[#ffeded] border border-[#e1140a] text-[#e1140a] hover:bg-[#ffdcdc]" : "bg-gray-100 border border-gray-300 text-gray-400 cursor-not-allowed"}`}
                 disabled={!hasStock || !selectedConfig}
                 onClick={handleAddToCart}
               >
@@ -609,234 +783,33 @@ const ProductDetail: React.FC = () => {
 
         {/* Tab Content */}
         <div className="w-[1200px] mx-auto mt-8 border-none">
-          {/* 商品详情Tab */}
+          {/* 商品详情Tab：使用封装的组件 */}
           {activeTab === "detail" && (
-            <div className="bg-white">
-              {/* 详细参数说明 */}
-              <div className="p-8 border-b border-gray-200">
-                <h3 className="text-xl font-bold mb-6 text-[#333]">详细参数</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div>
-                    <h4 className="font-bold mb-4 text-[#333]">基本信息</h4>
-                    <div className="space-y-3 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">商品名称：</span>
-                        <span className="text-[#333]">{product.name}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">商品编号：</span>
-                        <span className="text-[#333]">{product.id.padStart(8, "0")}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">品牌：</span>
-                        <span className="text-[#e1140a]">{brand?.name || "未知品牌"}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">品类：</span>
-                        <span className="text-[#333]">{product.category?.name || "未知品类"}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-bold mb-4 text-[#333]">价格信息</h4>
-                    <div className="space-y-3 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">销售价格：</span>
-                        <span className="text-[#333]">¥{finalPrice.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">原价：</span>
-                        <span className="text-[#333]">¥{originalPrice.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">优惠类型：</span>
-                        <span className="text-[#333]">{seckill ? "秒杀优惠" : "常规优惠"}</span>
-                      </div>
-                      {!seckill && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">分期支持：</span>
-                          <span className="text-[#333]">
-                            {productData?.shelf?.installment > 0
-                              ? `${productData.shelf.installment}期分期`
-                              : "不支持分期"}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 产品图片展示 */}
-              <div className="py-8">
-                <h3 className="text-xl font-bold mb-6 text-[#333]">产品展示</h3>
-                {banners.length > 0 ? (
-                  <div className="space-y-1">
-                    {banners.map((banner, idx) => (
-                      <div key={`detail-banner-${idx}`} className="relative">
-                        <img
-                          src={banner.image}
-                          alt={`产品详情宣传图${idx + 1}`}
-                          className="mx-auto block w-full shadow-lg "
-                        />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center p-20 bg-gray-50 rounded-lg">
-                    <img
-                      src={activeImage}
-                      alt="产品展示"
-                      className="mx-auto w-[600px] shadow-lg rounded-lg mb-4"
-                    />
-                    <p className="text-gray-500">更多产品细节图即将上线</p>
-                  </div>
-                )}
-              </div>
-            </div>
+            <ProductDetailInfo
+              product={product}
+              brand={brand}
+              banners={banners}
+              finalPrice={finalPrice}
+              originalPrice={originalPrice}
+              seckill={seckill}
+              productData={productData}
+              tags={tags}
+              activeImage={activeImage}
+            />
           )}
 
-          {/* 配置参数Tab */}
+          {/* 配置参数Tab：使用封装的组件 */}
           {activeTab === "specs" && (
-            <div className="bg-white">
-              {/* 页面标题 */}
-              <div className="p-6 border-b border-gray-200">
-                <h3 className="text-xl font-bold text-[#333]">配置参数</h3>
-                <p className="text-sm text-gray-600 mt-1">以下是该商品的详细技术规格参数</p>
-              </div>
-
-              {/* 规格参数表格 */}
-              <div className="p-6">
-                <table className="w-full text-sm border-collapse border border-gray-200">
-                  <tbody>
-                    {/* 基本信息 */}
-                    <tr className="bg-gray-50">
-                      <td colSpan={2} className="py-3 px-4 font-bold text-[#333] border-b border-gray-200">
-                        基本信息
-                      </td>
-                    </tr>
-                    <tr className="border-b border-gray-200">
-                      <td className="py-3 px-4 text-gray-600 w-[200px] bg-gray-50 font-medium">商品名称</td>
-                      <td className="py-3 px-4 text-[#333]">{product.name}</td>
-                    </tr>
-                    <tr className="border-b border-gray-200">
-                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">商品编号</td>
-                      <td className="py-3 px-4 text-[#333]">{product.id.padStart(8, "0")}</td>
-                    </tr>
-                    <tr className="border-b border-gray-200">
-                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">品牌</td>
-                      <td className="py-3 px-4 text-[#e1140a] font-medium">{brand?.name || "未知品牌"}</td>
-                    </tr>
-                    <tr className="border-b border-gray-200">
-                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">品类</td>
-                      <td className="py-3 px-4 text-[#333]">{product.category?.name || "未知品类"}</td>
-                    </tr>
-
-                    {/* 价格信息 */}
-                    <tr className="bg-gray-50">
-                      <td colSpan={2} className="py-3 px-4 font-bold text-[#333] border-b border-gray-200">
-                        价格信息
-                      </td>
-                    </tr>
-                    <tr className="border-b border-gray-200">
-                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">销售价格</td>
-                      <td className="py-3 px-4 text-[#333]">¥{finalPrice.toFixed(2)}</td>
-                    </tr>
-                    <tr className="border-b border-gray-200">
-                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">原价</td>
-                      <td className="py-3 px-4 text-[#333]">¥{originalPrice.toFixed(2)}</td>
-                    </tr>
-                    {seckill && (
-                      <tr className="border-b border-gray-200">
-                        <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">秒杀价格</td>
-                        <td className="py-3 px-4 text-[#e1140a]">¥{finalPrice.toFixed(2)}</td>
-                      </tr>
-                    )}
-
-                    {/* 规格配置 */}
-                    {selectedConfig && (
-                      <>
-                        <tr className="bg-gray-50">
-                          <td colSpan={2} className="py-3 px-4 font-bold text-[#333] border-b border-gray-200">
-                            规格配置
-                          </td>
-                        </tr>
-                        {seckill ? (
-                          <>
-                            {(selectedConfig as SeckillConfigDetailVO).config.config1 && (
-                              <tr className="border-b border-gray-200">
-                                <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">颜色</td>
-                                <td className="py-3 px-4 text-[#333]">{(selectedConfig as SeckillConfigDetailVO).config.config1}</td>
-                              </tr>
-                            )}
-                            {(selectedConfig as SeckillConfigDetailVO).config.config2 && (
-                              <tr className="border-b border-gray-200">
-                                <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">内存</td>
-                                <td className="py-3 px-4 text-[#333]">{(selectedConfig as SeckillConfigDetailVO).config.config2}</td>
-                              </tr>
-                            )}
-                            {(selectedConfig as SeckillConfigDetailVO).config.config3 && (
-                              <tr className="border-b border-gray-200">
-                                <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">尺寸</td>
-                                <td className="py-3 px-4 text-[#333]">{(selectedConfig as SeckillConfigDetailVO).config.config3}</td>
-                              </tr>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            {(selectedConfig as ProductConfigVO).config1 && (
-                              <tr className="border-b border-gray-200">
-                                <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">颜色</td>
-                                <td className="py-3 px-4 text-[#333]">{(selectedConfig as ProductConfigVO).config1}</td>
-                              </tr>
-                            )}
-                            {(selectedConfig as ProductConfigVO).config2 && (
-                              <tr className="border-b border-gray-200">
-                                <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">内存</td>
-                                <td className="py-3 px-4 text-[#333]">{(selectedConfig as ProductConfigVO).config2}</td>
-                              </tr>
-                            )}
-                            {(selectedConfig as ProductConfigVO).config3 && (
-                              <tr className="border-b border-gray-200">
-                                <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">尺寸</td>
-                                <td className="py-3 px-4 text-[#333]">{(selectedConfig as ProductConfigVO).config3}</td>
-                              </tr>
-                            )}
-                          </>
-                        )}
-                      </>
-                    )}
-
-                    {/* 库存信息 */}
-                    <tr className="bg-gray-50">
-                      <td colSpan={2} className="py-3 px-4 font-bold text-[#333] border-b border-gray-200">
-                        库存信息
-                      </td>
-                    </tr>
-                    <tr className="border-b border-gray-200">
-                      <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">可用库存</td>
-                      <td className="py-3 px-4 text-[#333]">{stockCount}件</td>
-                    </tr>
-                    {seckill && selectedConfig && (
-                      <tr className="border-b border-gray-200">
-                        <td className="py-3 px-4 text-gray-600 bg-gray-50 font-medium">秒杀剩余</td>
-                        <td className="py-3 px-4 text-[#333]">{(selectedConfig as SeckillConfigDetailVO).remainNum}件</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* 参数说明 */}
-              <div className="p-6 bg-gray-50 border-t border-gray-200">
-                <h4 className="font-bold mb-3 text-[#333]">参数说明</h4>
-                <div className="text-sm text-gray-600 space-y-2">
-                  <p>• 以上参数信息仅供参考，实际配置以商品到货为准。</p>
-                  <p>• 产品外观及规格参数可能因批次不同略有差异，请以实物为准。</p>
-                  <p>• 如有疑问，请联系客服咨询</p>
-                </div>
-              </div>
-            </div>
+            <ProductSpecs
+              product={product}
+              brand={brand}
+              finalPrice={finalPrice}
+              originalPrice={originalPrice}
+              seckill={seckill}
+              selectedConfig={selectedConfig}
+              stockCount={stockCount}
+              tags={tags}
+            />
           )}
 
           {/* 商品评价Tab */}

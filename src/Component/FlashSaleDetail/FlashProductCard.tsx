@@ -21,7 +21,7 @@ const FlashProductCard: React.FC<Props> = ({ product, status }) => {
   const image = configBase.configImage || productBase.mainImage || `https://via.placeholder.com/160?text=Seckill-${product.id}`;
   const currentPrice = mainConfig.seckillPrice; // 秒杀价
   const originalPrice = configBase.originalPrice || configBase.salePrice; // 原价
-  const link = `/product/${productBase.id}?seckill=true`; // 商品链接
+  const link = `/product/${productBase.id}?seckillId=${product.roundId}`; // 商品链接
   const desc = productBase.subTitle || '爆款特惠，限时抢购'; // 商品副标题
 
   // 已售/总数量计算

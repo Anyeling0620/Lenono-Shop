@@ -42,9 +42,9 @@ export async function getShelfProductDetail(id: string): Promise<ShelfProductDet
 }
 
 
-export async function getSeckillProductDetail(id: string): Promise<SeckillProductDetailResponse> {
+export async function getSeckillProductDetail(id: string, seckillId:string): Promise<SeckillProductDetailResponse> {
   const res = await axiosInstance.get<ApiResponse<SeckillProductDetailResponse>>(
-    API_PATHS.GET_PRODUCT_DETAIL_BY_SECKILL({ id })
+    API_PATHS.GET_PRODUCT_DETAIL_BY_SECKILL({ id,seckillId })
   );
   return res.data.data;
 }

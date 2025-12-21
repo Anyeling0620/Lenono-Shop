@@ -23,7 +23,7 @@ export const API_PATHS = {
     
     GET_PRODUCT_EVALATIONS: (params: { productId: string }) => `/products/${params.productId}/evaluations`,
     GET_PRODUCT_DETAIL_BY_SHELF: (params: { id: string }) => `/products/shelf-products/${params.id}/detail`,
-    GET_PRODUCT_DETAIL_BY_SECKILL: (params: { id: string }) => `/products/seckill-products/${params.id}/detail`,
+    GET_PRODUCT_DETAIL_BY_SECKILL: (params: { id: string; seckillId:string }) => `/products/seckill-products/${params.seckillId}/${params.id}/detail`,
     EVALUATION_LIKE:(id:string)=>`/products/evaluations/${id}/like`,
 
     ROAST_LIST: '/user/roast/list',
