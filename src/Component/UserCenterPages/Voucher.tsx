@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Tabs, Card, Row, Col, Tag, Empty } from "antd";
+import { Tabs,  Row, Col,  Empty } from "antd";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import duration from "dayjs/plugin/duration";
@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { getVouchersService } from "../../services/coupon";
 import type { UserVoucherItem } from "../../types/coupon";
 import { Loading } from "../LoadingFallback";
+import { CalendarOutlined, CheckCircleFilled, CheckCircleOutlined, ClockCircleOutlined, CloseCircleFilled, FireFilled, InfoCircleOutlined } from "@ant-design/icons";
 dayjs.extend(relativeTime);
 dayjs.extend(duration);
 
@@ -106,78 +107,189 @@ const Voucher = () => {
     }, [activeVouchers]);
 
     // 卡片渲染 - 根据 UserVoucherItem 结构调整
-    const renderVoucher = (v: UserVoucherItem) => {
-        const endTime = dayjs(v.voucher.endTime);
-        const isExpired = endTime.isBefore(now);
-        const diffDays = endTime.diff(now, "day");
-        const isSoonExpire = !isExpired && diffDays <= 3;
+// 卡片渲染 - 根据 UserVoucherItem 结构调整
+const renderVoucher = (v: UserVoucherItem) => {
+    const endTime = dayjs(v.voucher.endTime);
+    const isExpired = endTime.isBefore(now);
+    const diffDays = endTime.diff(now, "day");
+    const isSoonExpire = !isExpired && diffDays <= 3;
+    
+    // 计算使用进度
+    const usedPercentage = (v.usedAmount / v.voucher.originalAmount) * 100;
 
-        return (
-            <Card
-                key={v.id}
-                hoverable
-                className="relative shadow-md rounded-sm transition-all duration-200 select-none"
-            >
-                <div className="flex flex-col gap-1">
-                    {/* 金额 + 标题 */}
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <span className="text-2xl font-bold text-red-600 ">
-                                ¥{v.remainAmount} <span className="text-xs text-gray-500">(剩余)</span>
+    // 根据状态确定卡片样式
+    const getCardStyle = () => {
+        if (isExpired || !v.status) {
+            return {
+                bg: "bg-gradient-to-br from-gray-100 to-gray-200",
+                border: "border-gray-300/50",
+                text: "text-gray-500",
+                accent: "text-gray-400"
+            };
+        }
+        if (isSoonExpire) {
+            return {
+                bg: "bg-gradient-to-br from-amber-50 to-red-50",
+                border: "border-amber-200",
+                text: "text-amber-700",
+                accent: "text-amber-500"
+            };
+        }
+        return {
+            bg: "bg-gradient-to-br from-green-50 to-emerald-50",
+            border: "border-green-200",
+            text: "text-green-700",
+            accent: "text-green-500"
+        };
+    };
+
+    const style = getCardStyle();
+
+    return (
+        <div
+            key={v.id}
+            className={`relative rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 
+                ${style.bg} border ${style.border} overflow-hidden
+                ${isExpired || !v.status ? "opacity-80" : ""}`}
+        >
+            {/* 顶部装饰条 */}
+            <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-green-400 via-emerald-400 to-green-400"></div>
+            
+            {/* 左侧打孔装饰 */}
+            <div className="absolute left-0 top-[52%] -translate-y-1/2 w-6 h-16 bg-white rounded-r-full border-r-2 border-dashed border-gray-300"></div>
+            <div className="absolute right-0 top-[52%] -translate-y-1/2 w-6 h-16 bg-white rounded-l-full border-l-2 border-dashed border-gray-300"></div>
+
+            {/* 代金券内容 */}
+            <div className="p-4 relative z-10">
+                {/* 状态角标 */}
+                <div className="absolute top-3 right-3">
+                    {isExpired || !v.status ? (
+                        <CloseCircleFilled className="text-gray-400 text-lg" />
+                    ) : isSoonExpire ? (
+                        <FireFilled className="text-amber-500 text-lg animate-pulse" />
+                    ) : (
+                        <CheckCircleFilled className="text-green-500 text-lg" />
+                    )}
+                </div>
+
+                {/* 金额和标题区域 */}
+                <div className="flex items-start justify-between mb-2">
+                    <div>
+                        {/* 剩余金额 - 突出显示 */}
+                        <div className="flex items-baseline gap-2 mb-1">
+                            <span className="text-4xl font-bold text-red-600 leading-none">
+                                ¥{v.remainAmount}
                             </span>
-                            <div className="text-sm text-gray-600 mt-1">{v.voucher.title}</div>
+                            <span className="text-sm text-gray-500 font-medium">
+                                (剩余金额)
+                            </span>
                         </div>
-                        <span className="flex gap-1">
-                            <Tag color={v.status ? "green" : "red"}>
-                                {v.status ? "有效" : "失效"}
-                            </Tag>
-                            {isSoonExpire && (
-                                <Tag color="orange">即将过期</Tag>
-                            )}
-                        </span>
+                        
+                        {/* 代金券标题 */}
+                        <h3 className="text-lg font-bold text-gray-800">
+                            {v.voucher.title}
+                        </h3>
                     </div>
 
-                    {/* 描述信息 */}
-                    {v.voucher.description && (
-                        <div className="text-xs text-gray-500 mt-1">
-                            {v.voucher.description}
-                        </div>
-                    )}
-
-                    {/* 时间 */}
-                    <div className="text-xs text-gray-500 mt-2">
-                        <div>获取时间：{dayjs(v.getTime).format("YYYY-MM-DD HH:mm")}</div>
-                        <div>有效期：{dayjs(v.voucher.startTime).format("YYYY-MM-DD")} 至 {endTime.format("YYYY-MM-DD HH:mm")}</div>
-                        {v.useUpTime && (
-                            <div>使用时间：{dayjs(v.useUpTime).format("YYYY-MM-DD HH:mm")}</div>
+                    {/* 状态标签 */}
+                    <div className="flex flex-col items-end gap-1">
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${v.status ? "bg-green-100 text-green-700 border-green-200" : "bg-red-100 text-red-700 border-red-200"}`}>
+                            {v.status ? "有效" : "失效"}
+                        </span>
+                        {isSoonExpire && (
+                            <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-semibold rounded-full border border-amber-200 animate-pulse">
+                                即将过期
+                            </span>
                         )}
                     </div>
+                </div>
 
-                    {/* 状态和倒计时 */}
-                    <div
-                        className={`mt-1 text-xs ${isExpired ? "text-red-500" : isSoonExpire ? "text-red-500 font-medium" : "text-blue-500 font-medium"
-                            }`}
-                    >
-                        {isExpired
-                            ? "已过期"
-                            : `剩余时间：${countdown[v.id] || now.to(endTime)}`}
+                {/* 使用进度条 */}
+                <div className="mb-2">
+                    <div className="flex justify-between text-xs text-gray-600 mb-1">
+                        <span>已使用: ¥{v.usedAmount}</span>
+                        <span>剩余: ¥{v.remainAmount}</span>
                     </div>
+                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div 
+                            className="h-full bg-gradient-to-r from-green-400 to-emerald-500 rounded-full transition-all duration-500"
+                            style={{ width: `${usedPercentage}%` }}
+                        ></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>0%</span>
+                        <span>{Math.round(usedPercentage)}%</span>
+                        <span>100%</span>
+                    </div>
+                </div>
 
-                    {/* 原始金额显示在右下 */}
-                    <div className="absolute right-4 bottom-4 text-4xl text-gray-400 opacity-70">
-                        ¥{v.voucher.originalAmount}
+                {/* 描述信息 */}
+                {v.voucher.description && (
+                    <div className="mb-2 p-3 bg-white/50 rounded-lg border border-gray-200/50">
+                        <div className="text-sm text-gray-600">
+                            <InfoCircleOutlined className="mr-2 text-blue-400" />
+                            {v.voucher.description}
+                        </div>
                     </div>
-                    
-                    {/* 已使用金额显示 */}
-                    {v.usedAmount > 0 && (
-                        <div className="absolute left-4 bottom-4 text-xs text-gray-500">
-                            已使用: ¥{v.usedAmount}
+                )}
+
+                {/* 时间信息 */}
+                <div className="space-y-1 text-sm mb-2">
+                    <div className="flex items-center gap-2 text-gray-600">
+                        <CalendarOutlined className="text-gray-400" />
+                        <span>获取时间：{dayjs(v.getTime).format("YYYY.MM.DD HH:mm")}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                        <ClockCircleOutlined className="text-gray-400" />
+                        <span>有效期：{dayjs(v.voucher.startTime).format("YYYY.MM.DD")} - {endTime.format("YYYY.MM.DD")}</span>
+                    </div>
+                    {v.useUpTime && (
+                        <div className="flex items-center gap-2 text-gray-600">
+                            <CheckCircleOutlined className="text-green-400" />
+                            <span>使用时间：{dayjs(v.useUpTime).format("YYYY.MM.DD HH:mm")}</span>
                         </div>
                     )}
                 </div>
-            </Card>
-        );
-    };
+
+                {/* 倒计时和操作区域 */}
+                <div className="flex justify-between items-center pt-2 border-t border-gray-200/50">
+                    <div className="text-xs">
+                        <div className={`font-medium ${isExpired ? "text-red-500" : isSoonExpire ? "text-amber-500" : "text-green-500"}`}>
+                            {isExpired
+                                ? "⏰ 已过期"
+                                : `⏳ 剩余时间：${countdown[v.id] || now.to(endTime)}`}
+                        </div>
+                    </div>
+
+                    {/* 原始金额显示 */}
+                    <div className="text-right">
+                        <div className="text-xs text-gray-500 mb-1">原始金额</div>
+                        <div className="text-2xl font-bold text-gray-400 line-through">
+                            ¥{v.voucher.originalAmount}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* 底部装饰 */}
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-green-200/50 to-transparent"></div>
+            
+            {/* 代金券编号 */}
+            <div className="absolute bottom-2 left-4 text-[10px] text-gray-400 opacity-50">
+                VOUCHER-{v.id.slice(0, 8).toUpperCase()}
+            </div>
+            
+            {/* 使用状态徽章 */}
+            {v.usedAmount > 0 && (
+                <div className="absolute top-2 left-2">
+                    <div className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full border border-blue-200">
+                        已使用 ¥{v.usedAmount}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
 
     // 已使用金额计算逻辑 - 根据 UserVoucherItem 结构调整
     const usedAmount = useMemo(() => {
