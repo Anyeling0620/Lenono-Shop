@@ -34,4 +34,11 @@ export const API_PATHS = {
     GET_USER_COUPONS:'/user/coupons',
     GET_USER_VOUCHERS:'/user/vouchers',
 
+
+    // 地址管理相关路由
+    ADD_ADDRESS: '/user/add-address',
+    UPDATE_ADDRESS: (addressId: string) => `/user/update-address/${addressId}`,
+    REMOVE_ADDRESS: (addressId: string) => `/user/remove-address/${addressId}`,
+    GET_ADDRESS_LIST: '/user/address-list',
+    SET_DEFAULT_ADDRESS: (addressId: string) => `/user/set-default/${addressId}`,
 } as const;

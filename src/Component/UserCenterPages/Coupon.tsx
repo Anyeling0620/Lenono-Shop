@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { getUserCouponsService } from "../../services/coupon";
 import type { UserCouponItem } from "../../types/coupon";
 import { Loading } from "../LoadingFallback";
+import { CalendarOutlined, CheckCircleFilled, ClockCircleOutlined, FireFilled, GiftFilled, RocketOutlined } from "@ant-design/icons";
 dayjs.extend(relativeTime);
 dayjs.extend(duration);
 
@@ -18,7 +19,7 @@ const Coupon = () => {
     const [sortBy, setSortBy] = useState<"expire" | "value" | "condition" | null>(null);
     const [countdown, setCountdown] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);
-    
+
     const now = dayjs();
 
     // 获取优惠券数据
@@ -38,7 +39,7 @@ const Coupon = () => {
 
     // 分类筛选优惠券 - 根据 UserCouponItem 的 status 字段
     const activeCoupons = useMemo(() => {
-        return coupons.filter(c => 
+        return coupons.filter(c =>
             c.status === "未使用" && dayjs(c.coupon.expireTime).isAfter(now)
         );
     }, [coupons, now]);
@@ -48,7 +49,7 @@ const Coupon = () => {
     }, [coupons]);
 
     const expiredCoupons = useMemo(() => {
-        return coupons.filter(c => 
+        return coupons.filter(c =>
             c.status === "已过期" || (c.status === "未使用" && dayjs(c.coupon.expireTime).isBefore(now))
         );
     }, [coupons, now]);
@@ -74,7 +75,7 @@ const Coupon = () => {
         switch (sortBy) {
             case "expire":
                 // 按过期时间升序（快过期的在前）
-                arr.sort((a, b) => 
+                arr.sort((a, b) =>
                     dayjs(a.coupon.expireTime).valueOf() - dayjs(b.coupon.expireTime).valueOf()
                 );
                 break;
@@ -99,7 +100,7 @@ const Coupon = () => {
                 break;
             default:
                 // 默认按过期时间排序
-                arr.sort((a, b) => 
+                arr.sort((a, b) =>
                     dayjs(a.coupon.expireTime).valueOf() - dayjs(b.coupon.expireTime).valueOf()
                 );
         }
@@ -150,7 +151,7 @@ const Coupon = () => {
         const getCouponValueText = () => {
             if (c.coupon.type === "折扣") {
                 const discount = Math.max(0.1, Math.min(9.9, c.coupon.discount));
-                return discount % 1 === 0 ? `${discount*100}折` : `${discount*100}折`;
+                return discount % 1 === 0 ? `${discount * 100}折` : `${discount * 100}折`;
             } else {
                 return `¥${c.coupon.amount}`;
             }
@@ -170,105 +171,182 @@ const Coupon = () => {
             return c.coupon.threshold > 0 ? `满¥${c.coupon.threshold}可用` : "无使用门槛";
         };
 
+        // 根据状态确定卡片背景色
+        const getCardBgColor = () => {
+            if (isExpired || c.status === "已使用" || c.status === "已过期") {
+                return "bg-gradient-to-br from-gray-100 to-gray-200";
+            }
+            if (isSoonExpire) {
+                return "bg-gradient-to-br from-amber-50 to-red-50";
+            }
+            return "bg-gradient-to-br from-red-50 to-amber-50";
+        };
+
+        // 根据状态确定主色调
+        const getMainColor = () => {
+            if (isExpired || c.status === "已使用" || c.status === "已过期") {
+                return "text-gray-400";
+            }
+            if (isSoonExpire) {
+                return "text-amber-600";
+            }
+            return "text-red-600";
+        };
+
+        // 获取装饰图标
+        const getDecorationIcon = () => {
+            if (isExpired || c.status === "已过期") {
+                return <ClockCircleOutlined className="text-gray-400" />;
+            }
+            if (c.status === "已使用") {
+                return <CheckCircleFilled className="text-green-500" />;
+            }
+            if (isSoonExpire) {
+                return <FireFilled className="text-amber-500" />;
+            }
+            return <GiftFilled className="text-red-500" />;
+        };
+
         return (
-            <Card
+            <div
                 key={c.id}
-                hoverable
-                className={`relative shadow-md rounded-sm transition-all duration-200 bg-white
-                    ${isExpired || c.status === "已使用" ? "opacity-70" : ""}`}
+                className={`relative rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 
+                ${getCardBgColor()} 
+                ${isExpired || c.status === "已使用" || c.status === "已过期" ? "opacity-80" : ""}
+                border border-gray-200/50 overflow-hidden`}
             >
-                <div className="flex flex-col gap-2">
-                    {/* 优惠券头部：面值 + 标题 + 状态标签 */}
-                    <div className="flex justify-between items-start">
+                {/* 优惠券顶部装饰 */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-amber-500 to-red-500"></div>
+
+                {/* 左侧打孔装饰 */}
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-12 bg-white rounded-r-full border-r border-dashed border-gray-300"></div>
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-12 bg-white rounded-l-full border-l border-dashed border-gray-300"></div>
+
+                {/* 优惠券内容 */}
+                <div className="p-4 relative z-10">
+                    {/* 状态角标 */}
+                    <div className="absolute top-3 right-3">
+                        {getDecorationIcon()}
+                    </div>
+
+                    {/* 优惠券头部：面值 + 标题 */}
+                    <div className="flex items-start gap-4 mb-2">
+                        {/* 面值区域 - 喜庆大字体 */}
+                        <div className={`text-4xl font-bold ${getMainColor()} leading-none`}>
+                            {getCouponValueText()}
+                        </div>
+
+                        <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                                <h3 className="text-lg font-bold text-gray-800">{c.coupon.name}</h3>
+                                {/* 状态标签 */}
+                                <div className="flex gap-1">
+                                    {c.status === "未使用" && !isExpired && (
+                                        <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full border border-green-200">
+                                            未使用
+                                        </span>
+                                    )}
+                                    {c.status === "已使用" && (
+                                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full border border-blue-200">
+                                            已使用
+                                        </span>
+                                    )}
+                                    {(isExpired || c.status === "已过期") && (
+                                        <span className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full border border-gray-200">
+                                            已过期
+                                        </span>
+                                    )}
+                                    {isSoonExpire && (
+                                        <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-semibold rounded-full border border-amber-200 animate-pulse">
+                                            即将过期
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* 价值描述 */}
+                            <div className="text-sm text-gray-600">
+                                <span className="font-medium">{getDiscountValueDesc()}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 使用条件 */}
+                    <div className="mb-2 px-3 py-2 bg-white/50 rounded-lg border border-gray-200/50">
+                        <div className="flex items-center gap-2 text-sm">
+                            <span className="text-gray-500">使用条件：</span>
+                            <span className={`font-semibold ${getMainColor()}`}>
+                                {getConditionText()}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* 详细信息 */}
+                    <div className="space-y-1 text-sm text-gray-600 mb-2">
+                        <div className="flex items-center gap-2">
+                            <span className="text-gray-500">适用范围：</span>
+                            <span className="font-medium">{c.coupon.scope || "全品类通用"}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-gray-500">使用条件：</span>
+                            <span>{c.coupon.condition || "无特殊限制"}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-gray-500">叠加规则：</span>
+                            <span className={c.coupon.isStackable ? "text-green-600 font-medium" : "text-gray-500"}>
+                                {c.coupon.isStackable ? "✓ 可与其他优惠叠加" : "✗ 不可与其他优惠叠加"}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* 时间信息和操作按钮 */}
+                    <div className="flex justify-between items-center pt-2 pb-2 border-t border-gray-200/50">
+                        <div className="text-xs text-gray-500">
+                            <div className="mb-1">
+                                <CalendarOutlined className="mr-1" />
+                                有效期：{dayjs(c.coupon.startTime).format("YYYY.MM.DD")} - {endTime.format("YYYY.MM.DD")}
+                            </div>
+                            <div className={`font-medium ${isExpired ? "text-red-500" : isSoonExpire ? "text-amber-500" : "text-green-500"}`}>
+                                {isExpired
+                                    ? "⏰已过期"
+                                    : c.status === "已使用"
+                                        ? "✅已使用"
+                                        : `⏳剩余时间：${countdown[c.id] || now.to(endTime)}`}
+                            </div>
+                        </div>
+
+                        {/* 操作按钮 */}
                         <div>
-                            <span className="text-2xl font-bold text-red-600">
-                                {getCouponValueText()}
-                            </span>
-                            <span className="ml-2 text-base font-medium text-gray-700">
-                                {c.coupon.name}
-                            </span>
+                            {c.status === "未使用" && !isExpired ? (
+                                <Link to={'/index'}>
+                                    <Button
+                                        type="primary"
+                                        className="rounded-lg bg-gradient-to-r from-red-500 to-amber-500 hover:from-red-600 hover:to-amber-600 border-0 shadow-md hover:shadow-lg transition-all duration-300 font-semibold h-9 px-6"
+                                        icon={<RocketOutlined />}
+                                    >
+                                        立即使用
+                                    </Button>
+                                </Link>
+                            ) : (
+                                <div className={`text-2xl font-bold ${getMainColor()} opacity-50`}>
+                                    {getCouponValueText()}
+                                </div>
+                            )}
                         </div>
-                        <div className="flex gap-1 flex-wrap">
-                            {/* 状态标签 */}
-                            {c.status === "未使用" && !isExpired && (
-                                <Tag color="green">未使用</Tag>
-                            )}
-                            {c.status === "已使用" && (
-                                <Tag color="blue">已使用</Tag>
-                            )}
-                            {(isExpired || c.status === "已过期") && (
-                                <Tag color="gray">已过期</Tag>
-                            )}
-                            {/* 即将过期标签 */}
-                            {isSoonExpire && (
-                                <Tag color="orange">即将过期</Tag>
-                            )}
-                            {/* 可叠加标签 */}
-                            <Tag color={c.coupon.isStackable ? "purple" : "gray"}>
-                                {c.coupon.isStackable ? "可叠加" : "不可叠加"}
-                            </Tag>
-                        </div>
-                    </div>
-
-                    <Divider className="my-1" />
-
-                    {/* 使用条件和价值描述 */}
-                    <div className="text-sm text-gray-600">
-                        <div>{getConditionText()} · {getDiscountValueDesc()}</div>
-                    </div>
-
-                    {/* 使用限制详情 */}
-                    <Descriptions
-                        column={1}
-                        size="small"
-                        className="text-xs"
-                        labelStyle={{ fontWeight: 600, color: "#666", width: "80px" }}
-                        contentStyle={{ color: "#888" }}
-                    >
-                        <Descriptions.Item label="适用范围">
-                            {c.coupon.scope || "无限制"}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="使用条件">
-                            {c.coupon.condition || "无特殊条件"}
-                        </Descriptions.Item>
-                    </Descriptions>
-
-                    {/* 时间信息 */}
-                    <div className="text-xs text-gray-500 mt-1">
-                        <div>有效期：{dayjs(c.coupon.startTime).format("YYYY-MM-DD")} 至 {endTime.format("YYYY-MM-DD HH:mm")}</div>
-                        <div
-                            className={`mt-1 ${isExpired ? "text-red-500" : isSoonExpire ? "text-red-500 font-medium" : "text-blue-500 font-medium"}`}
-                        >
-                            {isExpired
-                                ? "已过期"
-                                : c.status === "已使用"
-                                    ? "已使用"
-                                    : `剩余时间：${countdown[c.id] || now.to(endTime)}`}
-                        </div>
-                    </div>
-
-                    {/* 操作按钮 */}
-                    <div className="absolute right-6 bottom-4 flex gap-2">
-                        {c.status === "未使用" && !isExpired ? (
-                            <Link to={'/index'}>
-                                <Button
-                                    size="small"
-                                    type="primary"
-                                    className="bg-blue-400 hover:bg-blue-500"
-                                >
-                                    立即使用
-                                </Button>
-                            </Link>
-                        ) : (
-                            <span className="text-3xl text-gray-300 opacity-70">
-                                {getCouponValueText()}
-                            </span>
-                        )}
                     </div>
                 </div>
-            </Card>
+
+                {/* 底部装饰花纹 */}
+                <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-transparent via-red-200/50 to-transparent"></div>
+
+                {/* 优惠券编号（小字） */}
+                <div className="absolute bottom-2 left-4 text-[10px] text-gray-400 opacity-50">
+                    NO.{c.id.slice(0, 8)}
+                </div>
+            </div>
         );
     };
+
 
     // 统计信息优化：根据 UserCouponItem 结构调整
     const [totalActiveCash] = useMemo(() => {
@@ -295,7 +373,7 @@ const Coupon = () => {
     }, [activeCoupons]);
 
     if (loading) {
-        return (<Loading/>)
+        return (<Loading />)
     }
 
     return (
