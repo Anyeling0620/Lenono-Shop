@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useCart } from "../context/CartContext";
-import { productCategories } from "../assets/data/mockProducts";
+
 
 const ShoppingCart: React.FC = () => {
   const { items, totalCount, updateCount, removeItem } = useCart();

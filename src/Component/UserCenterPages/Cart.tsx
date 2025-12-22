@@ -14,7 +14,7 @@ const Cart: React.FC = () => {
     const fetchCart = async () => {
       setLoading(true);
       // 暂时使用模拟数据，待API可用后切换
-      const useMock = true; // 设置为 false 以使用真实API
+      const useMock = false; // 设置为 false 以使用真实API
       if (useMock) {
         // 模拟数据用于测试（超过3个种类）
         const mockItems: CartListItemVO[] = [
@@ -247,7 +247,7 @@ const Cart: React.FC = () => {
                       <div className="mr-3 mt-0.5">
                         <input
                           type="checkbox"
-                          className="h-4 w-4 accent-[#e1140a] rounded"
+                          className="h-4 w-4  mt-5 accent-[#e1140a] rounded"
                           checked={isSelected}
                           onChange={() => handleToggleItem(item.cartId)}
                         />
@@ -273,10 +273,10 @@ const Cart: React.FC = () => {
                         >
                           {item.name}
                         </Link>
+                        <div className="text-gray-500 text-xs mt-1 truncate">{item.subTitle}</div>
                         <div className="text-gray-400 text-xs mt-1 bg-gray-50 inline-block px-1.5 py-0.5 rounded">
                           规格：{item.config1} / {item.config2} {item.config3 ? `/ ${item.config3}` : ''}
                         </div>
-                        <div className="text-gray-500 text-xs mt-1 truncate">{item.subTitle}</div>
                       </div>
                     </div>
 
@@ -334,7 +334,7 @@ const Cart: React.FC = () => {
       </div>
 
       {/* 底部操作栏 */}
-      <div className="mt-6 bg-white border border-gray-200 rounded-lg px-6 py-4 flex items-center justify-between">
+      <div className="mt-3 bg-white border border-gray-200 rounded-sm px-6 py-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <label className="flex items-center text-gray-700 cursor-pointer">
             <input
@@ -374,9 +374,9 @@ const Cart: React.FC = () => {
       </div>
 
       {/* 温馨提示 */}
-      <div className="mt-8 p-4 bg-[#f5f5f5] border border-gray-300 rounded-md">
+      <div className="mt-4 px-4 py-2 bg-[#f5f5f5] border border-gray-300 rounded-md">
         <div className="flex items-start">
-          <div className="text-gray-500 mr-3 text-lg">ℹ️</div>
+          <div className="text-gray-500 mr-3 text-sm">ℹ️</div>
           <div className="text-sm text-gray-700">
             <div className="font-medium mb-1 text-gray-800">温馨提示</div>
             <div className="mb-1">1. 商品价格可能随活动变化，请以结算时价格为准。</div>
