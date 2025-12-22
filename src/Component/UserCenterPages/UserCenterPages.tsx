@@ -13,8 +13,7 @@ import AfterSale from './AfterSale';
 import Complaint from './Complaint';
 import Orders from './Orders';
 import Address from './Address';
-
-const Cart = () => <div>我的购物车</div>;
+import Cart from './Cart';
 
 /* ------------ 用 Record 构建 key → 组件 的映射表 ------------ */
 
