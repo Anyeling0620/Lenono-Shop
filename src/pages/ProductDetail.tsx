@@ -15,6 +15,9 @@ import type { CouponItem } from "../types/product";
 import ProductDetailInfo from "../component/ProductInfo/ProductDetailInfo";
 import ProductSpecs from "../component/ProductInfo/ProductSpecs";
 import ProductComments from "../component/ProductInfo/ProductComments";
+import { Loading } from "../component/LoadingFallback";
+import type { OrderState } from "../types/order";
+import useAuthStore from "../store/authStore";
 
 dayjs.locale('zh-cn');
 dayjs.extend(relativeTime);
@@ -69,8 +72,8 @@ const ProductDetail: React.FC = () => {
   const banners = productData?.banners || [];
   const appearances = productData?.appearances || [];
   const tags = (productData?.tags || []) as ProductTag[];
-const seckillConfigs = useMemo(() => seckillProductData?.seckillConfigs || [], [seckillProductData]);
-const shelfConfigs = useMemo(() => shelfProductData?.configs || [], [shelfProductData]);
+  const seckillConfigs = useMemo(() => seckillProductData?.seckillConfigs || [], [seckillProductData]);
+  const shelfConfigs = useMemo(() => shelfProductData?.configs || [], [shelfProductData]);
   const coupons = shelfProductData?.coupons || [];
   const shelfItems = shelfProductData?.shelfItems || [];
   const seckillRound = seckillProductData?.round;
@@ -238,7 +241,14 @@ const shelfConfigs = useMemo(() => shelfProductData?.configs || [], [shelfProduc
     setSelectedConfigId(targetConfig.id);
   };
 
+  const isLogin = useAuthStore(state => state.isAuthenticated)
   const handleAddToCart = async () => {
+
+    if (!isLogin) {
+      const currentPath = window.location.pathname + window.location.search;
+      navigate(`/login?redirect=${encodeURIComponent(currentPath)}`);
+      return
+    }
     if (!product || !selectedConfig || !selectedConfigId) return;
     try {
       await addToShoppingCartService(selectedConfigId);
@@ -249,13 +259,39 @@ const shelfConfigs = useMemo(() => shelfProductData?.configs || [], [shelfProduc
   };
 
   const handleBuyNow = () => {
+    if (!isLogin) {
+      const currentPath = window.location.pathname + window.location.search;
+      navigate(`/login?redirect=${encodeURIComponent(currentPath)}`);
+      return
+    }
     if (!product || !selectedConfig) return;
     if (seckill && seckillStatus === 'wait') { toast('秒杀尚未开始，请等待'); return; }
     if (seckill && seckillStatus === 'ended') { toast('秒杀已结束，无法购买'); return; }
-    navigate("/checkout");
+
+    const orderState: OrderState[] = [{
+      brandId: brand?.id,
+      brandName: brand?.name,
+
+      productId: product.id,
+      productName: product.name,
+      productImage: product.mainImage,
+      configId: selectedConfigId!,
+      configContent: getSelectedSpecValues(),
+
+      quantity: quantity, // 购买数量
+      unitPrice: finalPrice,
+      originalPrice: originalPrice,
+
+      isSeckill: seckill,
+      seckillId: seckill ? seckillId : null,
+      seckillRoundId: seckill ? seckillRound!.id : null,
+
+      stockCount: stockCount,
+    }]
+    navigate("/checkout", { state: orderState });
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen bg-gray-100"><div className="text-xl text-gray-600">商品数据加载中...</div></div>;
+  if (loading) return <Loading />
   if (!product) return <div className="flex items-center justify-center min-h-screen bg-gray-100"><div className="text-xl text-red-600">商品数据加载失败</div></div>;
 
 
@@ -551,11 +587,14 @@ const shelfConfigs = useMemo(() => shelfProductData?.configs || [], [shelfProduc
               <button
                 className="w-[30px] h-[30px] bg-[#f8f8f8] text-gray-500 disabled:opacity-50"
                 disabled={!hasStock || quantity >= stockCount || (seckill && seckillStatus !== 'ongoing')}
-                onClick={() => setQuantity(quantity + 1)}
+                onClick={() => seckill ? setQuantity(1) : setQuantity(quantity + 1)}
               >
                 +
               </button>
             </div>
+            <span className="text-xs text-gray-500 ml-2">
+              {seckill && "限购1件"}
+            </span>
             <span className="text-xs text-gray-500 ml-2">
               库存：{stockCount}件
             </span>

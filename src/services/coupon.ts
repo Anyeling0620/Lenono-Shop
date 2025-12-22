@@ -18,3 +18,7 @@ export async function getUserCouponsService(): Promise<UserCouponListResponse> {
 export async function getVouchersService(): Promise<UserVoucherListResponse> {
     return (await axiosInstance.get<ApiResponse<UserVoucherListResponse>>(API_PATHS.GET_USER_VOUCHERS)).data.data
 }
+
+export async function getCouponsByProductService(productId:string):Promise<UserCouponListResponse> {
+    return (await axiosInstance.get<ApiResponse<UserCouponListResponse>>(`${API_PATHS.GET_USER_COUPONS_BY_PRODUCTID}${productId}`)).data.data
+}

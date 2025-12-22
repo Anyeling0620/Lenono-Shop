@@ -12,7 +12,7 @@ const MoreProducts = () => {
 
     React.useEffect(() => {
         // 回到页面顶部
-        window.scrollTo(10, 0)
+        window.scrollTo(0, 0)
         const Timer = setTimeout(() => {
             setLoading(false)
         }, 200)

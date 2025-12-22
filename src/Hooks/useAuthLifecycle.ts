@@ -34,7 +34,7 @@ const useAuthLifecycle = () => {
             useUserInfoStore.getState().clearUserInfo(); // 清空用户信息
             // 延迟导航，避免立即跳转
             setTimeout(() => {
-                nav('/login')
+                nav('/')
             }, 50);
         }
         

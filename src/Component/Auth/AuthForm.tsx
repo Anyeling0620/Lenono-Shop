@@ -13,6 +13,7 @@ import { axiosInstance, axiosService } from "../../services/AxiosService";
 import toast from "react-hot-toast";
 import globalErrorHandler from "../../utils/globalAxiosErrorHandler";
 import { API_PATHS } from "../../services/apiPaths";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 // 组件属性类型
 interface AuthFormProps {
@@ -73,8 +74,8 @@ type LoginQuickErrors = FieldErrors<LoginQuickValues>;
 type LoginPasswordErrors = FieldErrors<LoginPasswordValues>;
 
 // ========== 条件类型：根据mode限定允许的字段 ==========
-type LoginFieldKeys<T extends Mode> = T extends 'quick' 
-  ? keyof LoginQuickValues 
+type LoginFieldKeys<T extends Mode> = T extends 'quick'
+  ? keyof LoginQuickValues
   : keyof LoginPasswordValues;
 
 
@@ -87,13 +88,17 @@ type LoginFieldKeys<T extends Mode> = T extends 'quick'
  * @returns {JSX.Element} 认证表单组件
  */
 const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
+
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+   const redirectPath = searchParams.get('redirect') || '/';
   /**
    * 基础UI状态
    */
   const [mode, setMode] = useState<Mode>('quick');
   const [agreed, setAgreed] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
+
   /**
    * 邮箱输入框ref，用于聚焦
    */
@@ -117,8 +122,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
     setError: setLoginError,
   } = useForm<LoginQuickValues | LoginPasswordValues>({
     resolver: zodResolver(mode === 'quick' ? loginQuickSchema : loginPasswordSchema),
-    defaultValues: mode === 'quick' 
-      ? { email: '', verificationCode: '' } 
+    defaultValues: mode === 'quick'
+      ? { email: '', verificationCode: '' }
       : { email: '', password: '' },
   });
 
@@ -167,7 +172,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
    * 包含邮箱格式验证和API调用
    */
   const handleSendCode = async () => {
-    const emailResult = z.string().min(1, '邮箱不能为空').email( '请输入有效的邮箱地址').safeParse(email);
+    const emailResult = z.string().min(1, '邮箱不能为空').email('请输入有效的邮箱地址').safeParse(email);
     if (!emailResult.success) {
       const errorMessage = emailResult.error.issues[0].message;
       if (type === 'login') {
@@ -180,7 +185,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
     }
 
     try {
-      await axiosInstance.post(API_PATHS.SEND_VERIFICATION_CODE, { email:email });
+      await axiosInstance.post(API_PATHS.SEND_VERIFICATION_CODE, { email: email });
       startCountdown();
     } catch (error) {
       globalErrorHandler.handle(error, toast.error);
@@ -193,13 +198,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
    */
   const onLoginSubmit = async (data: LoginQuickValues | LoginPasswordValues) => {
     try {
-      const payload = mode === 'quick' 
-        ? { ...data, mode: 'quick' } 
+      const payload = mode === 'quick'
+        ? { ...data, mode: 'quick' }
         : { ...data, mode: 'password' };
       await axiosService.login(payload);
       toast.success('登录成功！');
       resetLogin();
       setAgreed(false);
+      navigate(redirectPath)
     } catch (error) {
       globalErrorHandler.handle(error, toast.error);
     }
@@ -216,6 +222,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
       resetRegister();
       setAgreed(false);
       setShowPassword(false);
+      navigate(redirectPath)
     } catch (error) {
       globalErrorHandler.handle(error, toast.error);
     }
@@ -261,8 +268,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ type, onSwitchAuth }) => {
               error={type === 'login' ? getLoginError(mode, 'email')?.message : registerErrors.email?.message}
               ref={(el) => {
                 emailInputRef.current = el;
-                const registerRef = type === 'login' 
-                  ? loginRegister('email').ref 
+                const registerRef = type === 'login'
+                  ? loginRegister('email').ref
                   : registerRegister('email').ref;
                 if (typeof registerRef === 'function') {
                   registerRef(el);

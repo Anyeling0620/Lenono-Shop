@@ -33,6 +33,7 @@ export const API_PATHS = {
     RECEIVE_COUPON:'/user/coupon-center/claim',
     GET_USER_COUPONS:'/user/coupons',
     GET_USER_VOUCHERS:'/user/vouchers',
+    GET_USER_COUPONS_BY_PRODUCTID:'/user/coupons/',
 
 
     // 地址管理相关路由

@@ -5,6 +5,8 @@ import type { CouponItem } from "../types/coupon";
 import { Loading } from "../component/LoadingFallback";
 import toast from "react-hot-toast";
 import globalErrorHandler from "../utils/globalAxiosErrorHandler";
+import { useNavigate } from "react-router-dom";
+import useAuthStore from "../store/authStore";
 
 
 function formatSeconds(seconds: number) {
@@ -82,15 +84,21 @@ const CouponCenter: React.FC = () => {
         }
     };
 
-
+    const navigate = useNavigate();
+    const isLogin = useAuthStore(s=>s.isAuthenticated)
     async function handleReceiveCoupon(couponId: string) {
+        if(!isLogin){
+            const currentPath = window.location.pathname + window.location.search;
+            navigate(`/login?redirect=${encodeURIComponent(currentPath)}`);
+            return;
+        }
         if (receivingId) return;
 
         setReceivingId(couponId);
         try {
             await receiveCouponService(couponId);
 
-            toast.success("领取成功");
+
 
             // 立即更新当前券为已领取
             setList((prev) =>
