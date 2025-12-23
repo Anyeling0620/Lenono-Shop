@@ -4,7 +4,6 @@ import { UserOutlined, MessageOutlined, DeleteOutlined } from '@ant-design/icons
 import { Link, useNavigate } from 'react-router-dom'; 
 import { Popover, message } from 'antd';
 import CancelOrderModal from './CancelOrderModal';
-import { useCart } from '../../context/CartContext'; 
 
 interface OrderItemProps {
   order: any;
@@ -20,7 +19,6 @@ const OrderItem: React.FC<OrderItemProps> = ({ order, onCancelSuccess, onTimeout
   // const [isExpired, setIsExpired] = useState(false); 
 
   const navigate = useNavigate();
-  const { addToCart } = useCart();
 
   // 倒计时逻辑
   useEffect(() => {

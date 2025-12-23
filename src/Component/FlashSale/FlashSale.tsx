@@ -43,6 +43,7 @@ const FlashSale: React.FC = () => {
                     <SessionInfo
                         startTime={activeSession.startTime}
                         endTime={activeSession.endTime}
+                        data={sessions} 
                     />
 
                     {/* 中间商品区域 */}
@@ -67,8 +68,8 @@ const FlashSale: React.FC = () => {
 };
 
 // 时间信息组件 - 直接接收源数据的开始/结束时间
-const SessionInfo: React.FC<{ startTime: string; endTime: string }> = ({ startTime, endTime }) => (
-    <Link to="/flash-sale">
+const SessionInfo: React.FC<{ startTime: string; endTime: string;data:UnfinishedSeckillRoundVO[] }> = ({ startTime, endTime,data }) => (
+    <Link to="/flash-sale" state={data}>
         <div className="absolute left-0 w-[230px] h-[340px] bg-[url(https://p2.lefile.cn/product/adminweb/2019/11/26/2b4b9fee-84ee-4fb1-9891-3b3390fb5fd5.png)] bg-[length:230px_340px]">
             <div className="mt-[44px] text-center">
                 <i className="inline-block w-[120px] h-[27px] bg-[url(https://p1.lefile.cn/product/adminweb/2019/11/26/72f84116-d80c-4fb3-a39e-ae16271f6c76.png)] bg-[length:120px_27px]"></i>

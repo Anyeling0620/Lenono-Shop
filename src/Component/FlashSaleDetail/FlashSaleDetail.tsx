@@ -7,6 +7,7 @@ import { getSessionStatus } from '../../utils/timeCalculator';
 
 // 移除 MOCK_SESSIONS，直接使用传入的 scekillData
 const FlashSaleDetail: React.FC<{ scekillData: UnfinishedSeckillRoundVO[] }> = ({ scekillData }) => {
+  
   // 初始化选中第一个可用场次（启用状态）
   const initialSession = scekillData.find(round => round.status === '启用') || scekillData[0];
   const [activeSession, setActiveSession] = useState<UnfinishedSeckillRoundVO>(initialSession);

@@ -1,9 +1,13 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { getShopCardsService } from '../../services/products';
+import { Link, useNavigate } from 'react-router-dom';
+import { deleteShopCardsService, getShopCardsService } from '../../services/products';
 import type { CartListItemVO } from '../../types/shopCard';
+import globalErrorHandler from '../../utils/globalAxiosErrorHandler';
+import toast from 'react-hot-toast';
+import type { OrderState } from '../../types/order'; // 根据实际路径调整
 
 const Cart: React.FC = () => {
+  const navigate = useNavigate();
   const [cartItems, setCartItems] = useState<CartListItemVO[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -13,127 +17,20 @@ const Cart: React.FC = () => {
   useEffect(() => {
     const fetchCart = async () => {
       setLoading(true);
-      // 暂时使用模拟数据，待API可用后切换
-      const useMock = false; // 设置为 false 以使用真实API
-      if (useMock) {
-        // 模拟数据用于测试（超过3个种类）
-        const mockItems: CartListItemVO[] = [
-          {
-            cartId: 'cart-1',
-            productId: 'product-1',
-            configId: 'config-1',
-            quantity: 1,
-            name: '联想拯救者 Y9000P 2025',
-            subTitle: '高性能游戏本',
-            image: 'https://via.placeholder.com/80',
-            config1: '黑色',
-            config2: '16GB',
-            config3: '512GB',
-            salePrice: 8999,
-            originalPrice: 9999,
-            availableConfigs: [],
-          },
-          {
-            cartId: 'cart-2',
-            productId: 'product-2',
-            configId: 'config-2',
-            quantity: 2,
-            name: '联想小新 Pro 16 2025',
-            subTitle: '轻薄办公本',
-            image: 'https://via.placeholder.com/80',
-            config1: '银色',
-            config2: '32GB',
-            config3: '1TB',
-            salePrice: 6999,
-            originalPrice: 7999,
-            availableConfigs: [],
-          },
-          {
-            cartId: 'cart-3',
-            productId: 'product-3',
-            configId: 'config-3',
-            quantity: 1,
-            name: '联想ThinkPad X1 Carbon 2025',
-            subTitle: '商务旗舰本',
-            image: 'https://via.placeholder.com/80',
-            config1: '深空灰',
-            config2: '16GB',
-            config3: '512GB',
-            salePrice: 12999,
-            originalPrice: 13999,
-            availableConfigs: [],
-          },
-          {
-            cartId: 'cart-4',
-            productId: 'product-4',
-            configId: 'config-4',
-            quantity: 3,
-            name: '联想YOGA Pro 14s 2025',
-            subTitle: '创意设计本',
-            image: 'https://via.placeholder.com/80',
-            config1: '墨绿色',
-            config2: '24GB',
-            config3: '2TB',
-            salePrice: 10999,
-            originalPrice: 11999,
-            availableConfigs: [],
-          },
-          {
-            cartId: 'cart-5',
-            productId: 'product-5',
-            configId: 'config-5',
-            quantity: 1,
-            name: '联想Legion 7i 2025',
-            subTitle: '顶级电竞本',
-            image: 'https://via.placeholder.com/80',
-            config1: '灰色',
-            config2: '64GB',
-            config3: '4TB',
-            salePrice: 19999,
-            originalPrice: 21999,
-            availableConfigs: [],
-          },
-          {
-            cartId: 'cart-6',
-            productId: 'product-6',
-            configId: 'config-6',
-            quantity: 2,
-            name: '联想IdeaPad 5 2025',
-            subTitle: '学生入门本',
-            image: 'https://via.placeholder.com/80',
-            config1: '白色',
-            config2: '8GB',
-            config3: '256GB',
-            salePrice: 4999,
-            originalPrice: 5499,
-            availableConfigs: [],
-          },
-        ];
-        setCartItems(mockItems);
+      try {
+        const response = await getShopCardsService();
+        setCartItems(response.items || []);
+        // 初始化选中状态和数量
         const initialQuantities: Record<string, number> = {};
-        mockItems.forEach(item => {
+        response.items.forEach(item => {
           initialQuantities[item.cartId] = item.quantity;
         });
         setItemQuantities(initialQuantities);
-        setSelectedIds(mockItems.map(item => item.cartId));
+        setSelectedIds(response.items.map(item => item.cartId)); // 默认全选
+      } catch (error) {
+        globalErrorHandler.handle(error, toast.error)
+      } finally {
         setLoading(false);
-      } else {
-        try {
-          const response = await getShopCardsService();
-          setCartItems(response.items || []);
-          // 初始化选中状态和数量
-          const initialQuantities: Record<string, number> = {};
-          response.items.forEach(item => {
-            initialQuantities[item.cartId] = item.quantity;
-          });
-          setItemQuantities(initialQuantities);
-          setSelectedIds(response.items.map(item => item.cartId)); // 默认全选
-        } catch (error) {
-          console.error('获取购物车数据失败:', error);
-          // 如果API失败，可以显示错误信息
-        } finally {
-          setLoading(false);
-        }
       }
     };
     fetchCart();
@@ -172,6 +69,67 @@ const Cart: React.FC = () => {
     // 这里可以调用API删除购物车商品
   };
 
+  // 处理删除选中商品
+  const handleRemoveSelected = async() => {
+    if (selectedIds.length === 0) {
+      toast.error('请选择要删除的商品');
+      return;
+    }
+    try{
+      const {count} = await deleteShopCardsService(selectedIds);
+      toast.success(`删除${count}条购物车记录`)
+      setCartItems((await getShopCardsService()).items) 
+    }catch(err){
+      globalErrorHandler.handle(err,toast.error)
+    }
+    
+    
+  };
+
+  /**
+   * 处理去结算按钮点击
+   */
+  const handleCheckout = () => {
+    if (selectedIds.length === 0) {
+      toast.error('请选择要结算的商品');
+      return;
+    }
+
+    // 获取选中的商品
+    const selectedItems = cartItems.filter(item => selectedIds.includes(item.cartId));
+    
+    // 转换为 OrderState 格式
+    const orderState = selectedItems.map(item => {
+      const quantity = itemQuantities[item.cartId] || item.quantity;
+      
+      return {
+        cartId: item.cartId, // 重要：带上购物车ID
+        productId: item.productId,
+        productName: item.name,
+        productImage: item.image,
+        configId: item.configId,
+        configContent: {
+          config1: item.config1,
+          config2: item.config2,
+          config3: item.config3 || ''
+        },
+        quantity: quantity,
+        unitPrice: item.salePrice,
+        originalPrice: item.originalPrice,
+        isSeckill: false, // 购物车商品都不是秒杀商品
+        seckillId: null,
+        seckillRoundId: null,
+        
+        stockCount: 100, // 这里需要根据实际情况获取库存
+      } as OrderState;
+    });
+
+    console.log('跳转到结算页，携带数据:', orderState);
+    
+    // 跳转到结算页，携带订单数据
+    navigate('/checkout', { state: orderState });
+  };
+
   // 计算选中商品的总价和数量
   const { selectedCount, selectedTotal } = useMemo(() => {
     const selectedItems = cartItems.filter(item => selectedIds.includes(item.cartId));
@@ -202,7 +160,7 @@ const Cart: React.FC = () => {
         <div className="text-gray-400 text-4xl mb-4">🛒</div>
         <div className="text-gray-500 text-lg mb-2">购物车还是空的</div>
         <div className="text-gray-400 text-sm">
-          去<Link to="/" className="text-[#e1140a] mx-1">首页</Link>逛逛吧~
+          去<Link to="/index" className="text-[#e1140a] mx-1">首页</Link>逛逛吧~
         </div>
       </div>
     );
@@ -220,7 +178,7 @@ const Cart: React.FC = () => {
         </div>
       </div>
 
-      {/* 商品卡片列表容器（固定高度，内部滚动） */}
+      {/* 商品卡片列表容器 */}
       <div className={`h-[400px] overflow-y-auto pr-[6px] pb-2 mb-4
           [&::-webkit-scrollbar]:w-1
           [&::-webkit-scrollbar-track]:rounded-xl
@@ -254,7 +212,7 @@ const Cart: React.FC = () => {
                       </div>
 
                       {/* 商品图片 */}
-                      <Link to={`/product/${item.productId}`} className="block flex-shrink-0">
+                      <Link to={`/product/${item.productId}`} target={item.productId} className="block flex-shrink-0">
                         <div className="w-16 h-16 border border-gray-200 rounded-sm overflow-hidden bg-gray-100 hover:border-red-400 transition-colors">
                           <img
                             src={item.image || 'https://via.placeholder.com/80'}
@@ -347,14 +305,10 @@ const Cart: React.FC = () => {
           </label>
           <button
             className="text-xs text-gray-600 hover:text-[#e1140a] whitespace-nowrap"
-            onClick={() => {
-              selectedIds.forEach(id => handleRemoveItem(id));
-            }}
+            onClick={handleRemoveSelected}
           >
             删除选中
           </button>
-          <button className="text-xs text-gray-600 hover:text-[#e1140a] whitespace-nowrap">移入收藏夹</button>
-          <button className="text-xs text-gray-600 hover:text-[#e1140a] whitespace-nowrap">清空失效商品</button>
         </div>
 
         <div className="flex items-center space-x-6">
@@ -367,6 +321,7 @@ const Cart: React.FC = () => {
           <button
             className="bg-[#e1140a] text-white px-8 py-2 rounded-sm font-bold hover:bg-[#c91008] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed text-xs whitespace-nowrap"
             disabled={selectedCount === 0}
+            onClick={handleCheckout}
           >
             去结算 ({selectedCount})
           </button>
@@ -374,10 +329,10 @@ const Cart: React.FC = () => {
       </div>
 
       {/* 温馨提示 */}
-      <div className="mt-4 px-4 py-2 bg-[#f5f5f5] border border-gray-300 rounded-md">
+      <div className="mt-4 px-4 py-2 bg-[#f8f8f8] border border-gray-300 rounded-md">
         <div className="flex items-start">
           <div className="text-gray-500 mr-3 text-sm">ℹ️</div>
-          <div className="text-sm text-gray-700">
+          <div className="text-[10px] text-gray-700">
             <div className="font-medium mb-1 text-gray-800">温馨提示</div>
             <div className="mb-1">1. 商品价格可能随活动变化，请以结算时价格为准。</div>
             <div className="mb-1">2. 库存有限，请尽快下单。</div>

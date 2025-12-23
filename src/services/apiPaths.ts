@@ -36,6 +36,10 @@ export const API_PATHS = {
     GET_USER_VOUCHERS:'/user/vouchers',
     GET_USER_COUPONS_BY_PRODUCTID:'/user/coupons/',
 
+    CREATE_ORDER:'/order/create',
+    CANCEL_ORDER:'/order/cancel',
+    ORDER_PAY_VOUCHER:'/order/pay/voucher',
+
 
     // 地址管理相关路由
     ADD_ADDRESS: '/user/add-address',

@@ -14,11 +14,13 @@ import type { UserCouponItem } from '../types/coupon'; // 假设你将优惠券�
 
 // 引入组件和服务
 import AddressModal from '../component/UserCenterPages/AddressModal';
-import type { OrderState } from '../types/order';
+import type { CreateOrderInput, OrderItemInput, OrderState } from '../types/order';
 import { addAddress, getUserAddressList, removeAddress, setDefaultAddress, updateAddress } from '../services/address';
 import { getCouponsByProductService } from '../services/coupon';
 import globalErrorHandler from '../utils/globalAxiosErrorHandler';
 import toast from 'react-hot-toast';
+import { createOrder } from '../services/order';
+import { deleteShopCardsService } from '../services/products';
 
 
 
@@ -35,7 +37,7 @@ const Checkout: React.FC = () => {
   const [loading, setLoading] = useState(false); // 全局加载状态
   const [couponLoading, setCouponLoading] = useState(false); // 优惠券加载状态
   const [couponList, setCouponList] = useState<UserCouponItem[]>([]); // 优惠券列表（使用你定义的类型）
-  const [selectedCouponId, setSelectedCouponId] = useState<string | null>(null); // 选中的优惠券ID
+  const [selectedCouponIds, setSelectedCouponIds] = useState<string[]>([]); // 选中的优惠券ID数组
 
   // 弹窗控制
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
@@ -61,34 +63,96 @@ const Checkout: React.FC = () => {
   const hasSeckillItem = orderState.some(item => item.isSeckill);
 
   // 计算优惠券折扣金额
+  // 计算多个优惠券的总折扣金额
   const calculateDiscount = () => {
-    if (hasSeckillItem) return 0;
+    if (hasSeckillItem || selectedCouponIds.length === 0) return 0;
 
-    if (!selectedCouponId) return 0;
+    let totalDiscount = 0;
+    let remainingPrice = totalPrice;
 
-    const selectedCoupon = couponList.find(coupon => coupon.id === selectedCouponId);
-    if (!selectedCoupon) return 0;
+    // 获取选中的优惠券
+    const selectedCoupons = couponList.filter(coupon =>
+      selectedCouponIds.includes(coupon.id)
+    );
 
-    const { coupon } = selectedCoupon;
-    const { type, amount, discount, threshold } = coupon;
-
-    // 检查是否满足使用门槛
-    if (totalPrice < threshold) return 0;
-
-    // 根据优惠券类型计算折扣
-    if (type === '满减') {
-      return amount;
-    } else if (type === '折扣') {
-      // 折扣券：计算折扣后的金额减少
-      const discountedPrice = totalPrice * (discount);
-      return totalPrice - discountedPrice;
+    // 检查优惠券组合是否有效
+    if (!isCouponCombinationValid(selectedCoupons)) {
+      return 0;
     }
 
-    return 0;
+    // 按类型分组
+    const fullReductionCoupons = selectedCoupons.filter(c => c.coupon.type === '满减');
+    const discountCoupons = selectedCoupons.filter(c => c.coupon.type === '折扣');
+
+    // 先应用满减券
+    for (const coupon of fullReductionCoupons) {
+      const { threshold, amount } = coupon.coupon;
+      if (remainingPrice >= threshold) {
+        totalDiscount += amount;
+        remainingPrice -= amount;
+      }
+    }
+
+    // 再应用折扣券（最多一张）
+    if (discountCoupons.length > 0) {
+      const discountCoupon = discountCoupons[0]; // 只取第一张折扣券
+      const { threshold, discount } = discountCoupon.coupon;
+      if (remainingPrice >= threshold) {
+        const discountAmount = remainingPrice * (1 - discount);
+        totalDiscount += discountAmount;
+      }
+    }
+
+    return totalDiscount;
   };
 
+  // 检查优惠券组合是否有效的辅助函数
+  const isCouponCombinationValid = (coupons: UserCouponItem[]): boolean => {
+    if (coupons.length === 0) return true;
+
+    // 检查是否同时包含满减券和折扣券
+    const hasFullReduction = coupons.some(c => c.coupon.type === '满减');
+    const hasDiscount = coupons.some(c => c.coupon.type === '折扣');
+
+    if (hasFullReduction && hasDiscount) {
+      return false; // 满减券和折扣券不能同时使用
+    }
+
+    // 检查折扣券数量（最多一张）
+    const discountCount = coupons.filter(c => c.coupon.type === '折扣').length;
+    if (discountCount > 1) {
+      return false;
+    }
+
+    // 检查是否所有优惠券都可叠加
+    const allStackable = coupons.every(c => c.coupon.isStackable);
+    if (coupons.length > 1 && !allStackable) {
+      return false; // 选择多个优惠券时，必须所有都可叠加
+    }
+
+    return true;
+  };
+
+  // 计算秒杀商品直降金额
+  const calculateSeckillDiscount = () => {
+    let totalSeckillDiscount = 0;
+
+    orderState.forEach(item => {
+      if (item.isSeckill) {
+        // 计算单个商品的秒杀优惠：(原价 - 当前价) × 数量
+        const itemDiscount = (item.originalPrice - item.unitPrice) * item.quantity;
+        totalSeckillDiscount += itemDiscount;
+      }
+    });
+
+    return totalSeckillDiscount;
+  };
+
+  const seckillDiscount = calculateSeckillDiscount();
+
   const discount = calculateDiscount();
-  const finalPrice = totalPrice + shippingFee - discount;
+
+  const finalPrice = totalPrice + shippingFee - discount - seckillDiscount;
 
   // 筛选优惠券：根据useOK属性
   const availableCoupons = couponList.filter(coupon => coupon.useOK && coupon.status === '未使用');
@@ -133,34 +197,50 @@ const Checkout: React.FC = () => {
   };
 
   // 加载优惠券列表（根据第一个商品的productId）
+  // 修改加载优惠券列表的逻辑，获取所有商品的优惠券
   const fetchCouponList = async () => {
     if (orderState.length === 0) return;
+
     // 检查订单中是否有秒杀商品
     const hasSeckillItem = orderState.some(item => item.isSeckill);
 
     // 如果有秒杀商品，直接清空优惠券列表
     if (hasSeckillItem) {
       setCouponList([]);
-      setSelectedCouponId(null);
+      setSelectedCouponIds([]);
       setCouponLoading(false);
       return;
     }
+
     setCouponLoading(true);
     try {
-      const firstProductId = orderState[0].productId;
-      const res = await getCouponsByProductService(firstProductId); // 调用你定义的服务函数
-      setCouponList(res.items);
-      // 自动选中第一个可用优惠券
-      const firstAvailableCoupon = res.items.find(coupon => coupon.useOK);
-      if (firstAvailableCoupon && !hasSeckillItem) {
-        setSelectedCouponId(firstAvailableCoupon.id);
+      // 获取所有商品的productId
+      const productIds = orderState.map(item => item.productId);
+
+      // 获取所有商品的优惠券并合并去重
+      const allCoupons: UserCouponItem[] = [];
+      const seenCouponIds = new Set<string>();
+
+      for (const productId of productIds) {
+        const res = await getCouponsByProductService(productId);
+        for (const coupon of res.items) {
+          if (!seenCouponIds.has(coupon.id)) {
+            seenCouponIds.add(coupon.id);
+            allCoupons.push(coupon);
+          }
+        }
       }
+
+      setCouponList(allCoupons);
+      // 不再自动选中优惠券
+      setSelectedCouponIds([]);
     } catch (error) {
-      globalErrorHandler.handle(error, toast.error)
+      globalErrorHandler.handle(error, toast.error);
     } finally {
       setCouponLoading(false);
     }
   };
+
 
   // 处理地址弹窗打开（新增/编辑）
   const handleAddressModalOpen = (addr?: UserAddressItem) => {
@@ -258,37 +338,132 @@ const Checkout: React.FC = () => {
     }
   };
 
-  // 处理订单提交
-  const handleSubmitOrder = async () => {
-    if (orderState.length === 0) {
-      message.error('订单商品为空');
+const deleteShoppingCartItems = async (orderItems: OrderState[]) => {
+  try {
+    // 过滤出非秒杀商品且有购物车ID的商品
+    const itemsToDelete = orderItems.filter(item => 
+      !item.isSeckill && item.cartId
+    );
+    
+    if (itemsToDelete.length === 0) {
       return;
     }
-    if (!selectedAddressId) {
-      message.error('请选择收货地址');
-      return;
+    
+    // 提取购物车ID数组
+    const cartIds = itemsToDelete
+      .map(item => item.cartId!)
+      .filter((id): id is string => id !== undefined && id !== null);
+    
+    if (cartIds.length > 0) {
+      const result = await deleteShopCardsService(cartIds);
+      console.log(`成功删除 ${result.count} 个购物车商品`);
     }
+    
+  } catch (error) {
+   globalErrorHandler.handle(error,toast.error)
+  
+  }
+};
 
-    setLoading(true);
-    try {
-      // 此处替换为真实的提交订单API调用
-      // 示例：await submitOrder({ addressId: selectedAddressId, orderState, couponId: selectedCouponId, remark });
-      await new Promise(resolve => setTimeout(resolve, 1500)); // 模拟API请求
-      message.success('订单提交成功！');
-      // 跳转到支付页面或订单详情页
-      navigate('/order/success', {
-        state: {
-          orderId: `ORDER_${Date.now()}`,
-          finalPrice
-        }
-      });
-    } catch (error) {
-      console.error('提交订单失败:', error);
-      message.error('订单提交失败，请稍后重试');
-    } finally {
-      setLoading(false);
+const clearOrderState = () => {
+  setSelectedCouponIds([]);
+  setCouponList([]);
+  setSelectedAddressId('');
+};
+
+
+
+  // 处理订单提交
+ const handleSubmitOrder = async () => {
+  // 验证订单数据
+  if (orderState.length === 0) {
+    message.error('订单商品为空');
+    return;
+  }
+  
+  if (!selectedAddressId) {
+    message.error('请选择收货地址');
+    return;
+  }
+  
+  // 验证库存
+  const outOfStockItems = orderState.filter(item => item.quantity > item.stockCount);
+  if (outOfStockItems.length > 0) {
+    const productNames = outOfStockItems.map(item => item.productName).join('、');
+    message.error(`${productNames} 库存不足，请调整数量`);
+    return;
+  }
+  
+  // 验证优惠券组合（如果有选中的优惠券）
+  if (selectedCouponIds.length > 0) {
+    const selectedCoupons = couponList.filter(coupon => 
+      selectedCouponIds.includes(coupon.id)
+    );
+    
+    if (!isCouponCombinationValid(selectedCoupons)) {
+      message.error('优惠券组合无效，请重新选择');
+      return;
     }
-  };
+  }
+  
+  setLoading(true);
+  try {
+    // 构建订单项数据
+    const orderItems: OrderItemInput[] = orderState.map(item => {
+      const itemData: OrderItemInput = {
+        productId: item.productId,
+        configId: item.configId,
+        quantity: item.quantity
+      };
+      
+      // 如果是秒杀商品，添加秒杀轮次ID
+      if (item.isSeckill && item.seckillRoundId) {
+        itemData.seckillRoundId = item.seckillRoundId;
+      }
+      
+      return itemData;
+    });
+
+    // 构建订单参数
+    const orderParams: CreateOrderInput = {
+      seckill: orderState.some(item => item.isSeckill),
+      addressId: selectedAddressId,
+      items: orderItems,
+      couponIds: selectedCouponIds,
+    };
+
+    console.log('提交订单参数:', orderParams); // 调试用
+    
+    // 调用真实API创建订单
+    const orderResponse = await createOrder(orderParams);
+    
+    message.success('订单创建成功！');
+    await deleteShoppingCartItems(orderState);
+    
+     clearOrderState();
+    
+    // 跳转到支付页面
+    navigate('/order/payment', {
+      replace: true,
+      state: {
+        orderId: orderResponse.orderId,
+        orderNo: orderResponse.orderNo,
+        payAmount: orderResponse.payAmount,
+        actualPayAmount: orderResponse.actualPayAmount,
+        payLimitTime: orderResponse.payLimitTime,
+        status: orderResponse.status,
+        items: orderResponse.items,
+        createdAt: orderResponse.createdAt
+      }
+    });
+    
+  } catch (error) {
+    globalErrorHandler.handle(error,toast.error)
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // 辅助函数：拼接地区名称（省市区街道）
   const getRegionName = (addr: UserAddressItem) => {
@@ -310,22 +485,7 @@ const Checkout: React.FC = () => {
     fetchCouponList();
   }, []);
 
-  // 计算秒杀商品直降金额
-  const calculateSeckillDiscount = () => {
-    let totalSeckillDiscount = 0;
 
-    orderState.forEach(item => {
-      if (item.isSeckill) {
-        // 计算单个商品的秒杀优惠：(原价 - 当前价) × 数量
-        const itemDiscount = (item.originalPrice - item.unitPrice) * item.quantity;
-        totalSeckillDiscount += itemDiscount;
-      }
-    });
-
-    return totalSeckillDiscount;
-  };
-
-  const seckillDiscount = calculateSeckillDiscount();
 
 
 
@@ -356,7 +516,7 @@ const Checkout: React.FC = () => {
                     {addr.province.name} ({addr.receiver})
                   </span>
                   {addr.isDefault && (
-                    <span className="text-xs bg-[#999] absolute top-0  left-0 text-white px-1">默认</span>
+                    <span className="text-xs bg-[#c11717bc] absolute top-0  left-0 text-white px-1">默认</span>
                   )}
                 </div>
                 <div className="text-xs text-[#666] space-y-1">
@@ -536,21 +696,51 @@ const Checkout: React.FC = () => {
                     <div
                       key={coupon.id}
                       className={`relative cursor-pointer transition-all duration-200
-                         ${selectedCouponId === coupon.id && isCouponAvailable
+  ${selectedCouponIds.includes(coupon.id) && isCouponAvailable
                           ? 'scale-[1.02]'
                           : ''}`}
+
+                      // 在优惠券点击事件中修改
                       onClick={() => {
                         // 如果有秒杀商品，不允许选择优惠券
                         const hasSeckillItem = orderState.some(item => item.isSeckill);
-                        if (!hasSeckillItem && isCouponAvailable) {
-                          setSelectedCouponId(coupon.id);
+                        if (hasSeckillItem || !isCouponAvailable) return;
+
+                        const isSelected = selectedCouponIds.includes(coupon.id);
+
+                        if (isSelected) {
+                          // 取消选中
+                          setSelectedCouponIds(prev => prev.filter(id => id !== coupon.id));
+                        } else {
+                          // 尝试添加新优惠券
+                          const newSelectedCoupons = [
+                            ...selectedCouponIds.map(id => couponList.find(c => c.id === id)).filter(Boolean) as UserCouponItem[],
+                            coupon
+                          ];
+
+                          // 检查组合是否有效
+                          if (isCouponCombinationValid(newSelectedCoupons)) {
+                            setSelectedCouponIds(prev => [...prev, coupon.id]);
+                          } else {
+                            // 显示错误提示
+                            if (newSelectedCoupons.some(c => c.coupon.type === '满减') &&
+                              newSelectedCoupons.some(c => c.coupon.type === '折扣')) {
+                              message.error('满减券和折扣券不能同时使用');
+                            } else if (newSelectedCoupons.filter(c => c.coupon.type === '折扣').length > 1) {
+                              message.error('最多只能选择一张折扣券');
+                            } else if (newSelectedCoupons.length > 1 && !newSelectedCoupons.every(c => c.coupon.isStackable)) {
+                              message.error('选择的优惠券中有不可叠加的券');
+                            }
+                          }
                         }
                       }}
+
                     >
 
                       {/* 优惠券主体 */}
                       <div className={`relative overflow-hidden border-2
-                             ${selectedCouponId === coupon.id && isCouponAvailable
+                              ${selectedCouponIds.includes(coupon.id) && isCouponAvailable
+
                           ? 'border-[#e1140a]'
                           : isCouponAvailable
                             ? 'border-[#e1140e]/20 hover:border-[#e1140a]/40'
@@ -608,11 +798,12 @@ const Checkout: React.FC = () => {
                       </div>
 
                       {/* 选中标记 */}
-                      {selectedCouponId === coupon.id && isCouponAvailable && (
+                      {selectedCouponIds.includes(coupon.id) && isCouponAvailable && (
                         <div className="absolute -top-2 -right-2 w-6 h-6 bg-[#e1140a] rounded-full flex items-center justify-center shadow-lg z-10">
                           <CheckOutlined className="text-white text-xs" />
                         </div>
                       )}
+
                     </div>
                   );
                 })}
@@ -623,6 +814,19 @@ const Checkout: React.FC = () => {
               </div>
             )}
           </div>
+          <div className="mb-4 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <InfoCircleOutlined />
+              <span>优惠券使用规则：</span>
+            </div>
+            <ul className="ml-6 mt-1 text-xs text-gray-500 space-y-1">
+              <li>• 满减券和折扣券不能同时使用</li>
+              <li>• 折扣券最多选择一张</li>
+              <li>• 选择多个优惠券时，所有优惠券必须可叠加</li>
+              <li>• 订单包含秒杀商品时不能使用优惠券</li>
+            </ul>
+          </div>
+
         </section>
 
         {/* 5. 订单备注 */}
@@ -662,21 +866,23 @@ const Checkout: React.FC = () => {
                 </span>
               </div>
             )}
-            {selectedCouponId && (
+            {selectedCouponIds.length > 0 && (
               <div className="flex justify-between text-xs text-gray-500">
                 <span>使用优惠券：</span>
                 <span>
                   {(() => {
-                    const selectedCoupon = couponList.find(c => c.id === selectedCouponId);
-                    if (!selectedCoupon) return '';
-                    const { coupon } = selectedCoupon;
-                    return coupon.type === '满减'
-                      ? `满${coupon.threshold}减${coupon.amount}`
-                      : `满${coupon.threshold}打${coupon.discount * 100}折`;
+                    const selectedCoupons = couponList.filter(c => selectedCouponIds.includes(c.id));
+                    return selectedCoupons.map(coupon => {
+                      const { coupon: couponDetail } = coupon;
+                      return couponDetail.type === '满减'
+                        ? `满${couponDetail.threshold}减${couponDetail.amount}`
+                        : `满${couponDetail.threshold}打${couponDetail.discount * 100}折`;
+                    }).join(' + ');
                   })()}
                 </span>
               </div>
             )}
+
           </div>
           <div className="bg-[#f9f9f9] w-full h-[1px] mb-6"></div>
           <div className="flex items-center gap-4 text-xl justify-end w-full">
