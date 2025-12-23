@@ -28,6 +28,7 @@ export const API_PATHS = {
 
     ADD_SHOPPING_CART: '/user/add-shopping-card',
     GET_SHOPPING_CART: '/user/shopping-cards',
+    DELETE_SHOPPING_CARDS: '/user/delete-shop-cards',
 
     GET_COUPONS: '/products/coupon-center/coupons',
     RECEIVE_COUPON:'/user/coupon-center/claim',

@@ -1,3 +1,4 @@
+
 import type { ProductEvaluationListResponse } from "../types/evaluation";
 import type { SeckillRoundListResponse } from "../types/flashSale";
 import type { SingleProductCardResponse, ProductType, ProductCardNewResponse, ProductCardIndexResponse } from "../types/product";
@@ -62,3 +63,8 @@ export async function getShopCardsService(): Promise<CartListResponse> {
   return (await axiosInstance.get<ApiResponse<CartListResponse>>(API_PATHS.GET_SHOPPING_CART)).data.data
 }
 
+export async function deleteShopCardsService(card_ids:string[]) :Promise<{count:number}>{
+  return (await axiosInstance.delete<ApiResponse<{count:number}>>(API_PATHS.DELETE_SHOPPING_CARDS,{
+    data:card_ids
+  })).data.data
+}
