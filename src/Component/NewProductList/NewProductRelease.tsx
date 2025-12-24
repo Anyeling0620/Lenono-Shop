@@ -151,7 +151,10 @@ const NewProductRelease = () => {
             <div className="px-8 h-[400px]">
                 {currentProducts.items.length > 0 ? (
                     <ul className="grid grid-cols-3 gap-2 py-4">
-                        {currentProducts.items.filter((_, index) => index < 3).map((product) => (
+                        {currentProducts.items.filter((_, index) => index < 3).map((product) => {
+                            const price = product.minPriceConfig?.salePrice ?? (product.product as any).price ?? 0;
+                            const image = product.product.mainImage || (product.product as any).image;
+                            return (
                             <li key={product.product.id} className="bg-white p-4 transition-shadow hover:shadow-xl group cursor-pointer border border-transparent hover:border-[#eee]">
                                 <Link
                                 to={`/product/${product.product.id}`}
@@ -160,7 +163,7 @@ const NewProductRelease = () => {
 
                                     <div className="w-full h-[220px] flex items-center justify-center overflow-hidden mb-4">
                                         <img
-                                            src={product.product.mainImage}
+                                            src={image}
                                             alt={product.product.name}
                                             className="w-full object-contain transition-transform duration-300 group-hover:scale-105"
                                         />
@@ -173,14 +176,14 @@ const NewProductRelease = () => {
                                             {product.product.description}
                                         </p>
                                         <div className="text-[18px] text-red-500 font-bold">
-                                            ¥ {product?.minPriceConfig.salePrice}
+                                            ¥ {price}
                                         </div>
 
                                     </div>
                                 </Link>
 
                             </li>
-                        ))}
+                        )})}
                     </ul>
                 ) : (
                     <div className="text-center py-[180px] text-gray-400">
