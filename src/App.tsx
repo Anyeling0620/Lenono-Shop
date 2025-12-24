@@ -8,6 +8,8 @@ import ProtectedRoute, { HavingLoginRoute } from "./component/ProtectedRoute"
 import useAuthLifecycle from "./hooks/useAuthLifecycle"
 import { WebSocketProvider } from "./services/ws/WebSocketProvider"
 import { LoadingFallback } from "./component/LoadingFallback"
+import CouponCenter from "./pages/CouponCenter"
+import PayPage from "./pages/PayPage"
 
 // 懒加载页面组件
 const Login = lazy(() => import("./pages/Auth/Login"))
@@ -50,10 +52,12 @@ function App() {
                 <Route path="search" element={<Search />} />
                 <Route path="flash-sale" element={<FlashSalePage />} />
                 <Route path="product/:id" element={<ProductDetail />} />
-                <Route path="shopping-cart" element={<ShoppingCart />} />
-                <Route path="checkout" element={<Checkout />} />
-                <Route path="my-consult/:customerId" element={<MyConsult />} />
+                <Route path="shopping-cart" element={<ProtectedRoute redirectTo={"/login"}><ShoppingCart /></ProtectedRoute>} />
+                <Route path="checkout" element={<ProtectedRoute redirectTo={"/login"}><Checkout /></ProtectedRoute>} />
+                <Route path="my-consult/:customerId" element={<ProtectedRoute redirectTo={"/login"}><MyConsult /></ProtectedRoute>} />
                 <Route path="my-order" element={<ProtectedRoute redirectTo={"/login"}><MyOrder /></ProtectedRoute>} />
+                <Route path="coupon-center" element={<CouponCenter/>}></Route>
+                <Route path='order/payment' element={<ProtectedRoute redirectTo={"/login"}><PayPage /></ProtectedRoute>}/>
               </Route>
               <Route element={<UserLayout />}>
                 <Route path="user-center" element={<ProtectedRoute redirectTo={"/index"} ><UserCenter /></ProtectedRoute>} />

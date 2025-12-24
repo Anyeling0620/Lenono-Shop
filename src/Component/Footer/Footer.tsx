@@ -81,7 +81,7 @@ const Footer: React.FC = () => {
 
     return (
         <div className='w-full mx-auto relative'>
-            <FooterBanner
+            {/* <FooterBanner
                 imageUrl="https://p3.lefile.cn/fes/cms/2023/08/18/jpjvfnpt30mzh348l8j7nqh4py7buw745316.png"
                 altText="Footer Banner"
             />
@@ -91,7 +91,7 @@ const Footer: React.FC = () => {
             <FooterLinksSection
                 linkColumns={linkColumns}
                 contactInfo={contactInfo}
-            />
+            /> */}
         </div>
     );
 };

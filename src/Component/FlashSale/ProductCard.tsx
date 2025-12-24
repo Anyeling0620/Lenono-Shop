@@ -104,7 +104,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <li className="w-[195px] inline-block mr-[23px] mt-[17px] border-r border-[#e8e8e8] pr-[10px] list-none">
-      <Link to={`/product/${productBase.id}?seckill=true`} className="inline-block no-underline">
+      <Link to={`/product/${productBase.id}?seckillId=${product.roundId}`} target={product.product.id} className="inline-block no-underline">
         {/* 商品图片 */}
         <div className="w-[160px] h-[160px] leading-[160px] text-center mx-auto">
           <img 

@@ -7,9 +7,10 @@ import type { UnfinishedSeckillRoundVO } from '../types/flashSale';
 const FlashSalePage: React.FC = () => {
   const location = useLocation();
   const data = location.state as  UnfinishedSeckillRoundVO[];
+
   useEffect(() => {
     window.scrollTo(0, 0)
-    if(!data){
+    if(!data || data?.length === 0){
       window.location.href = '/'
     }
   },[data])

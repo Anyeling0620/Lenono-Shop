@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import type { MainProduct } from "../../types/mainProduct";
-import { findProductById } from "../../assets/data/mockProducts";
 
 interface RecentProductsProps {
   currentProductId: string;

@@ -1,45 +1,57 @@
-import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
-import { Modal, Form, Input, Checkbox, message, Spin } from 'antd';
-import { EditOutlined, CloseOutlined } from '@ant-design/icons';
-
-// 延迟加载 AddressSelector 组件，避免阻塞页面加载
-const AddressSelector = lazy(() => import('../AddressSelector'));
-
-// 定义地址类型
-interface Address {
-  id: string;
-  name: string;
-  phone: string;
-  fixedPhone?: string;
-  region: string[]; // 存代码
-  regionLabels?: string[]; // 存中文名称 (用于展示)
-  detail: string;
-  email?: string;
-  isDefault: boolean;
-}
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState, useRef, useEffect } from 'react';
+import { Form, message, Pagination, Popconfirm, Tag } from 'antd';
+import { EditOutlined, CloseOutlined, CheckCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import {
+  getUserAddressList,
+  addAddress,
+  updateAddress,
+  removeAddress,
+  setDefaultAddress,
+} from '../../services/address';
+import type { AddressPayload, UserAddressItem } from '../../types/address';
+import globalErrorHandler from '../../utils/globalAxiosErrorHandler';
+import toast from 'react-hot-toast';
+import AddressModal from './AddressModal';
+import { Loading } from '../LoadingFallback';
 
 const Address: React.FC = () => {
-  const [addressList, setAddressList] = useState<Address[]>([]);
-
+  const [addressList, setAddressList] = useState<UserAddressItem[]>([]);
+  const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
+  const [editingAddress, setEditingAddress] = useState<UserAddressItem | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageInputValue, setPageInputValue] = useState<string>('1');
-  const pageSize = 5; // 每页显示5条
+  const pageSize = 3; // 每页显示5条
 
   const [form] = Form.useForm();
   const tempRegionLabels = useRef<string[]>([]);
 
+  // 确保 addressList 是数组
+  const safeAddressList = Array.isArray(addressList) ? addressList : [];
+
   // 计算分页数据
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const currentAddressList = addressList.slice(startIndex, endIndex);
-  const totalPages = Math.ceil(addressList.length / pageSize);
+  const currentAddressList = safeAddressList.slice(startIndex, endIndex);
 
-  // 同步页码输入框的值
+  // 加载地址列表
+  const loadAddressList = async () => {
+    setLoading(true);
+    try {
+      const data = await getUserAddressList();
+      setAddressList(data.list);
+    } catch (error) {
+      globalErrorHandler.handle(error, toast.error)
+      setAddressList([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 初始化加载地址列表
   useEffect(() => {
-    setPageInputValue(currentPage.toString());
-  }, [currentPage]);
+    loadAddressList();
+  }, []);
 
   // 打开新增地址模态框
   const handleAddAddress = () => {
@@ -49,423 +61,297 @@ const Address: React.FC = () => {
     tempRegionLabels.current = [];
   };
 
-  // 打开编辑地址模态框
-  const handleEditAddress = (address: Address) => {
+  // 打开编辑地址模态框 - 修复地址选择器回显问题
+  const handleEditAddress = (address: UserAddressItem) => {
     setEditingAddress(address);
     setIsModalOpen(true);
-    form.setFieldsValue({
-      name: address.name,
-      phone: address.phone,
-      fixedPhone: address.fixedPhone || '',
-      region: address.region,
-      detail: address.detail,
-      email: address.email || '',
-      isDefault: address.isDefault,
-    });
-    tempRegionLabels.current = address.regionLabels || [];
+
+    // 使用 setTimeout 确保在模态框打开后设置表单值
+    setTimeout(() => {
+      form.setFieldsValue({
+        name: address.receiver,
+        phone: address.phone,
+        region: [
+          address.province?.code || '',
+          address.city?.code || '',
+          address.area?.code || '',
+          address.street?.code || ''
+        ],
+        detail: address.address,
+        isDefault: address.isDefault,
+      });
+
+      // 设置临时标签，用于地址选择器的显示
+      tempRegionLabels.current = [
+        address.province?.name || '',
+        address.city?.name || '',
+        address.area?.name || '',
+        address.street?.name || ''
+      ];
+
+      // 如果 AddressSelector 支持 labelInValue 模式，可以这样设置
+      // 假设 AddressSelector 支持 value 为对象数组 [{value: code, label: name}, ...]
+      const regionValue = [
+        { value: address.province?.code || '', label: address.province?.name || '' },
+        { value: address.city?.code || '', label: address.city?.name || '' },
+        { value: address.area?.code || '', label: address.area?.name || '' },
+        { value: address.street?.code || '', label: address.street?.name || '' }
+      ];
+
+      // 尝试设置对象格式的值
+      form.setFieldsValue({ region: regionValue });
+    }, 100);
   };
 
   // 删除地址
-  const handleDeleteAddress = (id: string) => {
-    Modal.confirm({
-      title: '确认删除',
-      content: '确定要删除该收货地址吗？',
-      okText: '确定',
-      cancelText: '取消',
-      onOk: () => {
-        const newList = addressList.filter(addr => addr.id !== id);
-        setAddressList(newList);
-        // 如果删除后当前页没有数据，跳转到上一页
-        if (currentAddressList.length === 1 && currentPage > 1) {
-          setCurrentPage(currentPage - 1);
-        }
-        message.success('删除成功');
-      },
-    });
+  const handleDeleteAddress = async (id: string) => {
+    try {
+      await removeAddress(id);
+      await loadAddressList();
+      // 如果删除后当前页没有数据，跳转到上一页
+      if (currentAddressList.length === 1 && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      }
+      message.success('删除成功');
+    } catch (error) {
+      globalErrorHandler.handle(error,toast.error)
+    }
   };
 
   // 设为默认地址
-  const handleSetDefault = (id: string) => {
-    const newList = addressList.map(addr => ({
-      ...addr,
-      isDefault: addr.id === id,
-    }));
-    setAddressList(newList);
-    message.success('设置默认地址成功');
+  const handleSetDefault = async (id: string) => {
+    try {
+      await setDefaultAddress(id);
+      await loadAddressList();
+      message.success('设置默认地址成功');
+    } catch (error) {
+      globalErrorHandler.handle(error,toast.error)
+    }
   };
 
   // 保存地址（新增或编辑）
-  const handleSaveAddress = () => {
-    form.validateFields().then((values) => {
-      const labels = tempRegionLabels.current.length > 0 ? tempRegionLabels.current : values.region;
+  const handleSaveAddress = async () => {
+    try {
+      await form.validateFields();
+      const values = form.getFieldsValue();
+
+      // 处理 region 值，可能是对象数组或字符串数组
+      let regionValues = values.region;
+      if (Array.isArray(regionValues) && regionValues.length > 0) {
+        // 如果是对象数组，提取 value
+        if (typeof regionValues[0] === 'object' && regionValues[0].value) {
+          regionValues = regionValues.map((item: any) => item.value || '');
+        }
+      }
+
+      // 构建 API 请求参数
+      const addressPayload: AddressPayload = {
+        provinceCode: regionValues[0] || '',
+        cityCode: regionValues[1] || '',
+        areaCode: regionValues[2] || '',
+        streetCode: regionValues[3] || '',
+        address: values.detail,
+        receiver: values.name,
+        phone: values.phone,
+        isDefault: values.isDefault || false
+      };
 
       if (editingAddress) {
         // 编辑模式
-        const newList = addressList.map(addr =>
-          addr.id === editingAddress.id
-            ? {
-                ...addr,
-                name: values.name,
-                phone: values.phone,
-                fixedPhone: values.fixedPhone || undefined,
-                region: values.region,
-                regionLabels: labels,
-                detail: values.detail,
-                email: values.email || undefined,
-                isDefault: values.isDefault || false,
-              }
-            : {
-                ...addr,
-                // 如果设置为默认，其他地址取消默认
-                isDefault: values.isDefault ? false : addr.isDefault,
-              }
-        );
-        setAddressList(newList);
-        message.success('地址修改成功');
+        await updateAddress(editingAddress.id, addressPayload);
       } else {
         // 新增模式
-        const newAddress: Address = {
-          id: Date.now().toString(),
-          name: values.name,
-          phone: values.phone,
-          fixedPhone: values.fixedPhone || undefined,
-          region: values.region,
-          regionLabels: labels,
-          detail: values.detail,
-          email: values.email || undefined,
-          isDefault: values.isDefault || false,
-        };
-
-        // 如果设置为默认，其他地址取消默认
-        const newList = addressList.map(addr => ({
-          ...addr,
-          isDefault: values.isDefault ? false : addr.isDefault,
-        }));
-        newList.push(newAddress);
-        setAddressList(newList);
-        message.success('地址添加成功');
+        await addAddress(addressPayload);
       }
 
+      // 重新加载地址列表
+      await loadAddressList();
       setIsModalOpen(false);
       form.resetFields();
       tempRegionLabels.current = [];
-    }).catch(errorInfo => {
-      console.log('Failed:', errorInfo);
-    });
+    } catch (errorInfo) {
+      globalErrorHandler.handle(errorInfo, toast.error)
+    }
   };
 
+  // 关闭模态框
+  const handleModalCancel = () => {
+    setIsModalOpen(false);
+    form.resetFields();
+    tempRegionLabels.current = [];
+  };
 
   // 获取显示用的地址字符串
-  const getDisplayRegion = (addr: Address) => {
-    const parts = addr.regionLabels || addr.region;
-    return parts.join('');
+  const getDisplayRegion = (addr: UserAddressItem) => {
+    const provinceName = addr.province?.name || '';
+    const cityName = addr.city?.name || '';
+    const areaName = addr.area?.name || '';
+    const streetName = addr.street?.name || '';
+    return `${provinceName}${cityName}${areaName}${streetName}`;
   };
 
-  // 跳转到指定页
+  // 分页变化处理
   const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-      setPageInputValue(page.toString());
-    }
-  };
-
-  // 确认跳转到输入框指定的页面
-  const handleConfirmPageJump = () => {
-    const page = parseInt(pageInputValue);
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    } else {
-      setPageInputValue(currentPage.toString());
-      message.warning(`请输入1-${totalPages}之间的页码`);
-    }
+    setCurrentPage(page);
   };
 
   return (
     <div className="bg-white min-h-[600px]">
-      {/* 页面标题 */}
-      <div className="border-b border-gray-200 pb-4 mb-6">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-2">我的收货地址</h2>
-        <p className="text-sm text-gray-500">
-          设置便捷的购物信息，您可以在商品页直接下单，让购物简单快乐！
-        </p>
-      </div>
+      <div className="border-b border-gray-200 pb-4 mb-6 flex justify-between items-start">
+        <div>
+          <h2 className="text-2xl font-semibold text-gray-800 mb-2">我的收货地址</h2>
+          <p className="text-sm text-gray-500">
+            设置便捷的购物信息，您可以在商品页直接下单，让购物简单快乐！
+          </p>
+        </div>
 
-      {/* 新增地址按钮 */}
-      <div className="mb-6">
+        {/* 新增地址按钮 - 移到右上角 */}
         <button
           onClick={handleAddAddress}
-          className="px-6 py-2 bg-[#e1140a] text-white hover:bg-[#c91008] transition-colors text-sm"
+          className="px-6 py-2 bg-[#e1140a] mt-6 text-white hover:bg-[#c91008] transition-colors text-sm flex items-center gap-2"
         >
+          <PlusOutlined />
           新增收货地址
         </button>
       </div>
 
+      {/* 加载状态 */}
+      {loading && (
+        <Loading />
+      )}
+
       {/* 地址列表 */}
-      <div className="space-y-4">
-        {currentAddressList.length === 0 ? (
-          <div className="text-center py-20 text-gray-400">
-            <p>暂无收货地址，请添加</p>
-          </div>
-        ) : (
-          currentAddressList.map((address) => (
-            <div
-              key={address.id}
-              className="border border-gray-200 bg-white p-5 relative hover:shadow-md transition-shadow"
-            >
-              {/* 删除按钮 */}
-              <button
-                onClick={() => handleDeleteAddress(address.id)}
-                className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors"
+      {!loading && (
+        <div className="h-[580px] space-y-4  overflow-y-auto pb-2 pr-[6px] 
+    [&::-webkit-scrollbar]:w-1
+    [&::-webkit-scrollbar-track]:rounded-xl
+    [&::-webkit-scrollbar-track]:bg-gray-100
+    [&::-webkit-scrollbar-thumb]:rounded-xl
+    [&::-webkit-scrollbar-thumb]:bg-gray-300
+    [&::-webkit-scrollbar-thumb:hover]:bg-gray-400
+    [&::-webkit-scrollbar-button]:hidden
+">
+          {currentAddressList.length === 0 ? (
+            <div className="text-center py-20 text-gray-400">
+              <p>暂无收货地址，请添加</p>
+            </div>
+          ) : (
+            currentAddressList.map((address) => (
+              <div
+                key={address.id}
+                className={`border border-gray-200 bg-white p-5 relative hover:shadow-md transition-shadow ${address.isDefault ? 'border-l-4 border-l-[#e1140a]' : ''}`}
               >
-                <CloseOutlined />
-              </button>
-
-              {/* 地址信息 */}
-              <div className="pr-8">
-                {/* 第一行：地址摘要 */}
-                <div className="mb-4 text-gray-700">
-                  {address.name} {getDisplayRegion(address)} {address.detail}
-                </div>
-
-                {/* 详细信息 */}
-                <div className="space-y-2 text-sm text-gray-600">
-                  <div>
-                    <span className="text-gray-500">收货人：</span>
-                    <span>{address.name}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">所在地区：</span>
-                    <span>{getDisplayRegion(address)}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">地址：</span>
-                    <span>{address.detail}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">手机：</span>
-                    <span>{address.phone}</span>
-                  </div>
-                  {address.email && (
-                    <div>
-                      <span className="text-gray-500">邮箱：</span>
-                      <span>{address.email}</span>
-                    </div>
-                  )}
-                  <div>
-                    <span className="text-gray-500">是否默认：</span>
-                    <span>{address.isDefault ? '是' : '否'}</span>
-                  </div>
-                </div>
-
-                {/* 操作按钮 */}
-                <div className="mt-4 flex gap-4">
-                  <button
-                    onClick={() => handleEditAddress(address)}
-                    className="text-blue-500 hover:text-blue-600 flex items-center gap-1 text-sm"
-                  >
-                    <EditOutlined />
-                    编辑
-                  </button>
-                  {!address.isDefault && (
-                    <button
-                      onClick={() => handleSetDefault(address.id)}
-                      className="text-blue-500 hover:text-blue-600 text-sm"
+                {/* 默认地址角标 */}
+                {address.isDefault && (
+                  <div className="absolute top-0 left-0">
+                    <Tag
+                      color="#e1140a"
+                      className="rounded-none text-white text-xs font-medium px-2 py-1"
+                      style={{ borderTopLeftRadius: '0', borderBottomRightRadius: '4px' }}
                     >
-                      设为默认地址
-                    </button>
-                  )}
+                      <CheckCircleOutlined className="mr-1" />
+                      默认地址
+                    </Tag>
+                  </div>
+                )}
+
+                {/* 删除按钮 - 使用 Popconfirm */}
+                <Popconfirm
+                  title="确认删除"
+                  description="确定要删除该收货地址吗？"
+                  onConfirm={() => handleDeleteAddress(address.id)}
+                  okText="确定"
+                  cancelText="取消"
+                  placement="topRight"
+                >
+                  <button
+                    className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors"
+                  >
+                    <CloseOutlined />
+                  </button>
+                </Popconfirm>
+
+                {/* 地址信息 */}
+                <div className={`pr-8 ${address.isDefault ? 'pt-3' : ''}`}>
+                  {/* 第一行：地址摘要 */}
+                  <div className="mb-2 text-gray-700">
+                    {address.receiver} {getDisplayRegion(address)} {address.address}
+                  </div>
+
+                  <div className="flex justify-between relative">
+                    <div className="space-y-1 text-sm text-gray-600">
+                      <div>
+                        <span className="text-gray-500">收货人：</span>
+                        <span>{address.receiver}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">所在地区：</span>
+                        <span>{getDisplayRegion(address)}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">详细地址：</span>
+                        <span>{address.address}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">手机：</span>
+                        <span>{address.phone}</span>
+                      </div>
+                    </div>
+                    <div className="absolute bottom-0 right-0">
+                      <div className="flex gap-4">
+                        <button
+                          onClick={() => handleEditAddress(address)}
+                          className="text-blue-500 hover:text-blue-600 flex items-center gap-1 text-sm"
+                        >
+                          <EditOutlined />
+                          编辑
+                        </button>
+                        {!address.isDefault && (
+                          <button
+                            onClick={() => handleSetDefault(address.id)}
+                            className="text-blue-500 hover:text-blue-600 text-sm"
+                          >
+                            设为默认地址
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+
+
                 </div>
               </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* 分页 */}
-      {addressList.length > 0 && (
-        <div className="mt-8 flex items-center justify-center gap-4">
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className={`px-4 py-1 border ${
-              currentPage === 1
-                ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                : 'border-gray-300 hover:border-blue-500 hover:text-blue-500'
-            } transition-colors`}
-          >
-            上一页
-          </button>
-          <span className="text-gray-600">{currentPage}</span>
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={`px-4 py-1 border ${
-              currentPage === totalPages
-                ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                : 'border-gray-300 hover:border-blue-500 hover:text-blue-500'
-            } transition-colors`}
-          >
-            下一页
-          </button>
-          <span className="text-gray-500 text-sm">共{totalPages}页</span>
-          <div className="flex items-center gap-2">
-            <span className="text-gray-500 text-sm">到第</span>
-            <Input
-              type="number"
-              min={1}
-              max={totalPages}
-              value={pageInputValue}
-              onChange={(e) => {
-                setPageInputValue(e.target.value);
-              }}
-              onPressEnter={handleConfirmPageJump}
-              className="w-16 text-center"
-            />
-            <span className="text-gray-500 text-sm">页</span>
-            <button
-              onClick={handleConfirmPageJump}
-              className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-sm transition-colors"
-            >
-              确定
-            </button>
-          </div>
+            ))
+          )}
         </div>
       )}
 
-      {/* 编辑/新增地址模态框 */}
-      <Modal
-        title={
-          <div className="text-base font-normal pb-2 border-b border-[#eee] text-blue-500 underline">
-            {editingAddress ? '编辑收货地址' : '新增收货地址'}
-          </div>
-        }
+      {/* 分页 - 使用 Ant Design Pagination */}
+      {!loading && safeAddressList.length > 0 && (
+        <div className="mt-8 flex justify-center">
+          <Pagination
+            current={currentPage}
+            total={safeAddressList.length}
+            pageSize={pageSize}
+            onChange={handlePageChange}
+            showSizeChanger={false}
+            // showQuickJumper
+            showTotal={(total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条`}
+            className="custom-pagination"
+          />
+        </div>
+      )}
+
+      {/* 使用封装的模态框组件 */}
+      <AddressModal
         open={isModalOpen}
-        onCancel={() => {
-          setIsModalOpen(false);
-          form.resetFields();
-          tempRegionLabels.current = [];
-        }}
-        footer={null}
-        width={600}
-        centered
-        className="custom-modal"
-        closeIcon={<CloseOutlined className="text-gray-400" />}
-      >
-        <Form form={form} layout="vertical" className="pt-6 px-4">
-          <Form.Item
-            name="name"
-            label={
-              <span>
-                <span className="text-red-500">*</span> 收货人:
-              </span>
-            }
-            rules={[{ required: true, message: '请输入收货人姓名' }]}
-          >
-            <Input placeholder="收货人" size="large" className="rounded-none hover:border-[#e1140a] focus:border-[#e1140a]" />
-          </Form.Item>
-
-          <Form.Item
-            name="phone"
-            label={
-              <span>
-                <span className="text-red-500">*</span> 手机号:
-              </span>
-            }
-            rules={[
-              { required: true, message: '请输入手机号' },
-              { pattern: /^1[3-9]\d{9}$/, message: '手机号格式错误' },
-            ]}
-          >
-            <Input placeholder="手机号" size="large" maxLength={11} className="rounded-none hover:border-[#e1140a] focus:border-[#e1140a]" />
-          </Form.Item>
-
-          <Form.Item
-            name="fixedPhone"
-            label="或固定电话:"
-          >
-            <Input placeholder="固定电话（选填）" size="large" className="rounded-none hover:border-[#e1140a] focus:border-[#e1140a]" />
-          </Form.Item>
-
-          <Form.Item
-            name="region"
-            label={
-              <span>
-                <span className="text-red-500">*</span> 地址:
-              </span>
-            }
-            rules={[{ required: true, message: "请选择地址" }]}
-          >
-            {/* 延迟加载 AddressSelector，避免阻塞页面 */}
-            <Suspense fallback={<Spin size="small" />}>
-              <AddressSelector
-                placeholder="请选择省/市/区/街道"
-                onChange={(value, selectedOptions) => {
-                  if (selectedOptions && selectedOptions.length > 0) {
-                    tempRegionLabels.current = selectedOptions.map(
-                      (opt: any) => opt.label as string
-                    );
-                  } else {
-                    // 兜底：直接使用编码数组
-                    tempRegionLabels.current = value;
-                  }
-                }}
-              />
-            </Suspense>
-          </Form.Item>
-
-          <Form.Item
-            name="detail"
-            label={
-              <span>
-                <span className="text-red-500">*</span> 详细地址:
-              </span>
-            }
-            rules={[{ required: true, message: '请输入详细地址' }]}
-          >
-            <Input.TextArea
-              placeholder="详细地址"
-              className="rounded-none hover:border-[#e1140a] focus:border-[#e1140a] resize-none"
-              rows={2}
-            />
-          </Form.Item>
-
-          <Form.Item name="email" label="邮箱:">
-            <Input placeholder="邮箱（选填）" size="large" className="rounded-none hover:border-[#e1140a] focus:border-[#e1140a]" />
-          </Form.Item>
-
-          <Form.Item name="isDefault" valuePropName="checked">
-            <Checkbox className="text-gray-500">设为默认地址</Checkbox>
-          </Form.Item>
-
-          <div className="flex justify-center gap-4 mt-6 pb-2">
-            <button
-              type="button"
-              onClick={() => {
-                setIsModalOpen(false);
-                form.resetFields();
-                tempRegionLabels.current = [];
-              }}
-              className="w-[120px] h-[40px] bg-[#f2f2f2] text-[#666] hover:bg-[#e0e0e0] transition-colors"
-            >
-              取消
-            </button>
-            <button
-              type="button"
-              onClick={handleSaveAddress}
-              className="w-[120px] h-[40px] bg-[#e1140a] text-white hover:bg-[#c91008] transition-colors"
-            >
-              保存收货地址
-            </button>
-          </div>
-        </Form>
-      </Modal>
-
-      <style>{`
-        .custom-modal .ant-modal-content { padding: 0; border-radius: 0; }
-        .custom-modal .ant-modal-header { margin-bottom: 0; border-radius: 0; }
-        .ant-form-item-label > label { color: #666; }
-        .address-selector-container { width: 100% !important; max-width: none !important; }
-      `}</style>
+        editingAddress={editingAddress}
+        onCancel={handleModalCancel}
+        onSave={handleSaveAddress}
+        form={form}
+        tempRegionLabelsRef={tempRegionLabels}
+      />
     </div>
   );
 };

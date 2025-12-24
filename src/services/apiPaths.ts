@@ -20,12 +20,31 @@ export const API_PATHS = {
     GET_INDEX_PRODUCT: '/products/index-product-cards',
     GET_SECKILL_PRODUCT: '/products/seckill-product-cards',
     GET_SEARCH_PRODUCT: '/products/search-product-cards',
-    
+
     GET_PRODUCT_EVALATIONS: (params: { productId: string }) => `/products/${params.productId}/evaluations`,
     GET_PRODUCT_DETAIL_BY_SHELF: (params: { id: string }) => `/products/shelf-products/${params.id}/detail`,
-    GET_PRODUCT_DETAIL_BY_SECKILL: (params: { id: string }) => `/products/seckill-products/${params.id}/detail`,
-    EVALUATION_LIKE:(id:string)=>`/products/evaluations/${id}/like`,
+    GET_PRODUCT_DETAIL_BY_SECKILL: (params: { id: string; seckillId: string }) => `/products/seckill-products/${params.seckillId}/${params.id}/detail`,
+    EVALUATION_LIKE: (id: string) => `/products/evaluations/${id}/like`,
 
-    ROAST_LIST: '/user/roast/list',
+    ADD_SHOPPING_CART: '/user/add-shopping-card',
+    GET_SHOPPING_CART: '/user/shopping-cards',
+    DELETE_SHOPPING_CARDS: '/user/delete-shop-cards',
 
+    GET_COUPONS: '/products/coupon-center/coupons',
+    RECEIVE_COUPON:'/user/coupon-center/claim',
+    GET_USER_COUPONS:'/user/coupons',
+    GET_USER_VOUCHERS:'/user/vouchers',
+    GET_USER_COUPONS_BY_PRODUCTID:'/user/coupons/',
+
+    CREATE_ORDER:'/order/create',
+    CANCEL_ORDER:'/order/cancel',
+    ORDER_PAY_VOUCHER:'/order/pay/voucher',
+
+
+    // 地址管理相关路由
+    ADD_ADDRESS: '/user/add-address',
+    UPDATE_ADDRESS: (addressId: string) => `/user/update-address/${addressId}`,
+    REMOVE_ADDRESS: (addressId: string) => `/user/remove-address/${addressId}`,
+    GET_ADDRESS_LIST: '/user/address-list',
+    SET_DEFAULT_ADDRESS: (addressId: string) => `/user/set-default/${addressId}`,
 } as const;

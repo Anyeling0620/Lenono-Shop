@@ -3,13 +3,13 @@
 import React, { useState, useMemo } from 'react';
 
 // 导入类型定义
-import type { NewProductTab, SubProductTab } from '../../types/newProductTab'; 
-import type { ProductItem } from '../../types/productItem'; 
+
+import type { ProductItem } from '../../types/product'; 
 
 // --- 静态数据模拟 (实际应来自 API 或配置文件) ---
 
 // 1. 一级 Tab (主分类): 对应截图中的 "主机, 手机, 平板, 配件, 服务"
-const mainTabs: NewProductTab[] = [
+const mainTabs: {name:string; key:string}[] = [
     { name: "主机", key: "host" },
     { name: "手机", key: "phone" },
     { name: "平板", key: "tablet" },
@@ -18,7 +18,7 @@ const mainTabs: NewProductTab[] = [
 ];
 
 // 2. 二级 Tab (子分类): 仅 '主机' 下的子分类，仿照截图中的 "笔记本新品, 台式新品, 显示器新品"
-const hostSubTabs: SubProductTab[] = [
+const hostSubTabs: {name:string;key:string;iconClass:string}[] = [
     { name: "笔记本新品", key: "notebook", iconClass: "icon-laptop" },
     { name: "台式新品", key: "desktop", iconClass: "icon-desktop" },
     { name: "显示器新品", key: "display", iconClass: "icon-monitor" },

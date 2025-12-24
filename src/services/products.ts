@@ -1,30 +1,32 @@
+
 import type { ProductEvaluationListResponse } from "../types/evaluation";
 import type { SeckillRoundListResponse } from "../types/flashSale";
 import type { SingleProductCardResponse, ProductType, ProductCardNewResponse, ProductCardIndexResponse } from "../types/product";
 import type { SeckillProductDetailResponse, ShelfProductDetailResponse } from "../types/productComment";
+import type { CartListResponse } from "../types/shopCard";
 import { API_PATHS } from "./apiPaths";
 import { type ApiResponse, axiosInstance } from "./AxiosService";
 
 export async function getProductList(type: ProductType) {
-    const res = await axiosInstance.get<ApiResponse<SingleProductCardResponse>>(`${API_PATHS.GET_PRODUCT}/${type}`)
-    return res.data.data
+  const res = await axiosInstance.get<ApiResponse<SingleProductCardResponse>>(`${API_PATHS.GET_PRODUCT}/${type}`)
+  return res.data.data
 }
 
 
 export async function getNewProductGroups() {
-    const res = await axiosInstance.get<ApiResponse<ProductCardNewResponse>>(`${API_PATHS.GET_NEW_PRODUCT_GROUPS}`)
-    return res.data.data
+  const res = await axiosInstance.get<ApiResponse<ProductCardNewResponse>>(`${API_PATHS.GET_NEW_PRODUCT_GROUPS}`)
+  return res.data.data
 }
 
 export async function getIndexProductGroups() {
-    const res = await axiosInstance.get<ApiResponse<ProductCardIndexResponse>>(`${API_PATHS.GET_INDEX_PRODUCT}`)
-    return res.data.data
+  const res = await axiosInstance.get<ApiResponse<ProductCardIndexResponse>>(`${API_PATHS.GET_INDEX_PRODUCT}`)
+  return res.data.data
 }
 
 
 export async function getSeckillProductGroups() {
-    const res = await axiosInstance.get<ApiResponse<SeckillRoundListResponse>>(`${API_PATHS.GET_SECKILL_PRODUCT}`)
-    return res.data.data
+  const res = await axiosInstance.get<ApiResponse<SeckillRoundListResponse>>(`${API_PATHS.GET_SECKILL_PRODUCT}`)
+  return res.data.data
 }
 
 export async function getProductEvaluations(productId: string): Promise<ProductEvaluationListResponse> {
@@ -42,15 +44,27 @@ export async function getShelfProductDetail(id: string): Promise<ShelfProductDet
 }
 
 
-export async function getSeckillProductDetail(id: string): Promise<SeckillProductDetailResponse> {
+export async function getSeckillProductDetail(id: string, seckillId: string): Promise<SeckillProductDetailResponse> {
   const res = await axiosInstance.get<ApiResponse<SeckillProductDetailResponse>>(
-    API_PATHS.GET_PRODUCT_DETAIL_BY_SECKILL({ id })
+    API_PATHS.GET_PRODUCT_DETAIL_BY_SECKILL({ id, seckillId })
   );
   return res.data.data;
 }
 
 
+export async function addToShoppingCartService(configId: string) {
+  return await axiosInstance.post<ApiResponse<null>>(API_PATHS.ADD_SHOPPING_CART, {
+    configId
+  });
+}
 
 
+export async function getShopCardsService(): Promise<CartListResponse> {
+  return (await axiosInstance.get<ApiResponse<CartListResponse>>(API_PATHS.GET_SHOPPING_CART)).data.data
+}
 
-
+export async function deleteShopCardsService(card_ids:string[]) :Promise<{count:number}>{
+  return (await axiosInstance.delete<ApiResponse<{count:number}>>(API_PATHS.DELETE_SHOPPING_CARDS,{
+    data:card_ids
+  })).data.data
+}
