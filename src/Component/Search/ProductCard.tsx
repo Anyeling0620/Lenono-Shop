@@ -14,10 +14,17 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  // 1. 获取商品最低配置的售价（转换为数字）
-  const productPrice = toNumber(product.minPriceConfig.salePrice);
+  // 兼容缺少字段的场景
+  const shelfProduct = product.shelfProduct;
+  const minPriceConfig = product.minPriceConfig as any;
+
+  // 1. 获取商品最低配置的售价（转换为数字），无配置时回退到 product.price
+  const productPrice = minPriceConfig
+    ? toNumber(minPriceConfig.salePrice)
+    : toNumber((product.product as any).price || 0);
+
   // 2. 筛选可用优惠券：满足门槛的优惠券
-  const availableCoupons = product.coupons.filter((item) => {
+  const availableCoupons = (product.coupons || []).filter((item) => {
     const threshold = toNumber(item.coupon.threshold);
     // 门槛为0 或 商品价格≥门槛，视为可用
     return threshold === 0 || productPrice >= threshold;
@@ -41,6 +48,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     highestCoupon = discountCoupons[0];
   }
 
+  const originalPrice = minPriceConfig
+    ? toNumber(minPriceConfig.originalPrice)
+    : toNumber((product.product as any).price || 0);
+
   return (
     <li className='w-[290px] h-[385px] bg-white hover:shadow-lg transition-all duration-300'>
       <div className='px-4 py-4'>
@@ -48,7 +59,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className='overflow-hidden w-[250px] h-[180px] mx-auto border-b-[1px] border-[#e0e0e0] flex items-center justify-center'>
             <img
               className='w-[160px] h-[160px] object-contain'
-              src={product.product.mainImage as string}
+              src={(product.product.mainImage || (product.product as any).image) as string}
             />
           </div>
 
@@ -67,18 +78,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* 价格信息 */}
           <div className='flex items-center mt-1 px-1'>
             <div className='font-bold h-[30px] flex text-[14px] text-red-500 items-center'>
-              <span>{highestCoupon && "到手价"}￥{product.minPriceConfig.salePrice}</span>
+              <span>{highestCoupon && "到手价"}￥{minPriceConfig ? minPriceConfig.salePrice : productPrice}</span>
             </div>
             {highestCoupon && (
               <div className='text-[12px] text-[#979797] mt-0.5 ml-[3px] line-through'>
-                <span>￥{product.minPriceConfig.originalPrice}</span>
+                <span>￥{originalPrice}</span>
               </div>
             )}
           </div>
 
           {/* 标签区域 */}
           <div className='min-h-[30px] leading-[30px] overflow-hidden flex items-center flex-wrap'>
-            {product.shelfProduct.isSelfOperated && <Tag type="self" />}
+            {shelfProduct?.isSelfOperated && <Tag type="self" />}
             {/* 只渲染筛选后的最高额优惠券标签 */}
             {highestCoupon && (
               <Tag
@@ -90,9 +101,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 }
               />
             )}
-            {product.shelfProduct.isCustomizable && <Tag type="custom" />}
-            {product.shelfProduct.isSelfOperated && <Tag type="tradeIn" />}
-            {product.shelfProduct.installment > 0 && <Tag type="installment" month={product.shelfProduct.installment} />}
+            {shelfProduct?.isCustomizable && <Tag type="custom" />}
+            {shelfProduct?.isSelfOperated && <Tag type="tradeIn" />}
+            {shelfProduct?.installment && shelfProduct.installment > 0 && (
+              <Tag type="installment" month={shelfProduct.installment} />
+            )}
           </div>
         </Link>
       </div>
