@@ -1,3 +1,99 @@
+<<<<<<< HEAD
+import React, { useEffect, useState } from 'react';
+import type { CommentDetail } from '../../types/afterSale';
+import { getComments } from '../../services/afterSale';
+
+const mockComments: CommentDetail[] = [
+  {
+    id: 'cmt-1',
+    userId: 'user-1',
+    orderId: 'order-1',
+    orderItemId: 'order-item-1',
+    content: '发货速度有点慢，希望改进一下物流服务。',
+    status: '正常',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    images: [],
+    order: {
+      id: 'order-1',
+      orderNo: '#123456',
+      status: '待发货',
+      actualPayAmount: 6999,
+      createdAt: new Date(),
+    },
+    orderItem: {
+      id: 'order-item-1',
+      productName: '联想小新 Pro 14',
+      configName: 'i5/16G/512G 银色',
+      quantity: 1,
+      price: 6999,
+      productId: 'prod-1',
+      configId: 'cfg-1',
+      product: null,
+      config: null,
+    },
+  },
+  {
+    id: 'cmt-2',
+    userId: 'user-1',
+    orderId: 'order-2',
+    orderItemId: 'order-item-2',
+    content: '客服回复有点慢，不过问题解决了，赞一个。',
+    status: '正常',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    images: [
+      {
+        id: 'img-1',
+        image: 'https://via.placeholder.com/150',
+      },
+    ],
+    order: {
+      id: 'order-2',
+      orderNo: '#123457',
+      status: '已发货',
+      actualPayAmount: 8999,
+      createdAt: new Date(),
+    },
+    orderItem: {
+      id: 'order-item-2',
+      productName: 'ThinkPad X1 Carbon',
+      configName: 'i7/16G/1T 黑色',
+      quantity: 1,
+      price: 8999,
+      productId: 'prod-2',
+      configId: 'cfg-2',
+      product: null,
+      config: null,
+    },
+  },
+];
+
+const statusStyleMap: Record<string, string> = {
+  正常: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
+  撤回: 'bg-amber-100 text-amber-800 border border-amber-200',
+  用户删除: 'bg-gray-100 text-gray-800 border border-gray-200',
+};
+
+const statusTextMap: Record<string, string> = {
+  正常: '正常',
+  撤回: '已撤回',
+  用户删除: '已删除',
+};
+
+const getStatusStyle = (status: CommentDetail['status']) => {
+  return statusStyleMap[status] || 'bg-gray-100 text-gray-800 border border-gray-200';
+};
+
+const getStatusText = (status: CommentDetail['status']) => {
+  return statusTextMap[status] || status || '未知';
+};
+
+const formatDate = (value: Date | string) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '未知时间';
+  return date.toLocaleString();
+=======
 import React, { useState } from 'react';
 import {
   Button,
@@ -146,6 +242,7 @@ const STEP_CONFIG: Record<
     { title: '商家审核', icon: <ShopOutlined /> },
     { title: '退款成功', icon: <PayCircleOutlined /> },
   ],
+>>>>>>> 216700b795fd1a029588d05c0920cc00111fa4c6
 };
 
 const STEP_INDEX_MAP: Record<
@@ -177,6 +274,90 @@ const STEP_INDEX_MAP: Record<
 /* ================= 4. 组件主体 ================= */
 
 const AfterSale: React.FC = () => {
+<<<<<<< HEAD
+  const [comments, setComments] = useState<CommentDetail[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        setLoading(true);
+        const data = await getComments();
+        setComments(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '加载失败（已使用模拟数据）');
+        setComments(mockComments);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchComments();
+  }, []);
+
+  return (
+    <div className="p-6 bg-[#f5f5f5] min-h-[calc(90vh-120px)]">
+      <h3 className="text-2xl font-bold mb-6 text-[#333]">我的吐槽</h3>
+
+      {loading && <div className="text-gray-600">加载中...</div>}
+      {error && !loading && <div className="text-red-500">加载失败：{error}</div>}
+      {!loading && !error && comments.length === 0 && (
+        <div className="text-gray-500">暂无吐槽记录</div>
+      )}
+
+      {!loading && !error && comments.length > 0 && (
+        <div className="space-y-4 max-w-4xl mx-auto">
+          {comments.map((comment) => (
+            <details key={comment.id} className="group">
+              <summary className="cursor-pointer list-none p-0">
+                <div className="bg-white shadow-sm rounded-lg p-6 border border-gray-200 hover:shadow-md hover:border-gray-300 transition-all duration-200">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <h4 className="text-xl font-semibold text-[#333] mb-2 leading-tight">
+                        订单 {comment.order.orderNo} - {comment.orderItem.productName}
+                      </h4>
+                      <div className="flex items-center gap-4 mb-2 text-sm text-gray-500">
+                        <span>下单时间：{formatDate(comment.order.createdAt)}</span>
+                        <span>吐槽时间：{formatDate(comment.createdAt)}</span>
+                      </div>
+                      <span
+                        className={`px-3 py-1 rounded-md text-xs font-medium border ${getStatusStyle(comment.status)}`}
+                      >
+                        {getStatusText(comment.status)}
+                      </span>
+                    </div>
+                    <button className="ml-4 p-2 text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 transition-colors [&[open]]:rotate-180">
+                      查看详情
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </summary>
+              <div className="mt-0 pt-4 pb-6 px-6 bg-gray-50 border-t border-gray-200">
+                <p className="text-base text-gray-700 leading-relaxed mb-6">
+                  {comment.content}
+                </p>
+                {comment.images && comment.images.length > 0 && (
+                  <div className="flex flex-wrap gap-3">
+                    {comment.images.map((image) => (
+                      <img
+                        key={image.id}
+                        src={image.image}
+                        alt="吐槽附件"
+                        className="w-24 h-24 object-cover rounded border border-gray-200"
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </details>
+          ))}
+        </div>
+      )}
+=======
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [list, setList] = useState<AfterSaleItem[]>(MOCK_DATA);
@@ -338,6 +519,7 @@ const AfterSale: React.FC = () => {
     <div className="p-4 bg-gray-50 min-h-screen">
       <h3 className="text-xl font-bold mb-4">我的售后</h3>
       {viewMode === 'list' ? renderListView() : renderDetailView()}
+>>>>>>> 216700b795fd1a029588d05c0920cc00111fa4c6
     </div>
   );
 };
