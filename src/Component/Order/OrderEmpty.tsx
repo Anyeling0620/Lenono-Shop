@@ -12,7 +12,7 @@ const OrderEmpty: React.FC = () => {
       </div>
       <p className="text-gray-500 text-sm mb-6">您的订单空空如也，去商城逛逛吧~</p>
       <Link 
-        to="/" 
+        to="/index" 
         className="px-8 py-2 bg-[#e1140a] text-white rounded-sm hover:bg-[#c91008] transition-colors"
       >
         去逛逛

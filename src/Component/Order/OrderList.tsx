@@ -1,316 +1,269 @@
-import React, { useState } from 'react';
-import { Pagination, message, ConfigProvider } from 'antd';
-import zhCN from 'antd/locale/zh_CN';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Pagination, message, Spin, Input, Tabs } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 import OrderItem from './OrderItem';
 import OrderEmpty from './OrderEmpty';
-
-// 模拟数据
-const allOrders = [
-  {
-    id: '1',
-    createTime: '2025-12-16 12:44:33', // 这是一个未来的时间，处于待付款
-    orderNo: '300181180',
-    status: 'pending',
-    statusText: '待付款',
-    product: {
-      id: 'p1',
-      name: '联想拯救者R9000P 2025 AI元启',
-      image: 'https://p3.lefile.cn/product/adminweb/2025/07/31/AdVDQpEwiqWmyKKm6cYfosJjw-7110.jpg',
-      spec: 'AMD Ryzen 9 8945HX/Windows 11 家庭中文版/16英寸/32GB(16+16)/1T SSD/ RTX™ 5060 8GB独显/冰魄白',
-      count: 1,
-      price: 4199,
-    },
-    recipient: {
-      name: 'ouc',
-      phone: '111111111',
-      address: '山东省青岛市黄岛区中国海洋大学西海岸校区',
-    },
-    totalAmount: 4199,
-  },
-  {
-    id: '2',
-    createTime: '2023-12-08 19:44:33', // 这是一个过去的时间，应该会立即超时
-    orderNo: '300181181',
-    status: 'pending',
-    statusText: '待付款',
-    product: {
-      id: 'p1',
-      name: '联想拯救者R9000P 2025 AI元启',
-      image: 'https://p3.lefile.cn/product/adminweb/2025/07/31/AdVDQpEwiqWmyKKm6cYfosJjw-7110.jpg',
-      spec: 'AMD Ryzen 9 8945HX/Windows 11 家庭中文版/16英寸/32GB(16+16)/1T SSD/ RTX™ 5060 8GB独显/冰魄白',
-      count: 1,
-      price: 4199,
-    },
-    recipient: { name: 'ouc', phone: '111111111', address: '山东省青岛市黄岛区中国海洋大学西海岸校区' },
-    totalAmount: 4199,
-  },
-  {
-    id: '3',
-    createTime: '2025-12-08 19:44:33',
-    orderNo: '300181182',
-    status: 'pending',
-    statusText: '待付款',
-    product: {
-      id: 'p1',
-      name: '联想拯救者R9000P 2025 AI元启',
-      image: 'https://p3.lefile.cn/product/adminweb/2025/07/31/AdVDQpEwiqWmyKKm6cYfosJjw-7110.jpg',
-      spec: 'AMD Ryzen 9 8945HX/Windows 11 家庭中文版/16英寸/32GB(16+16)/1T SSD/ RTX™ 5060 8GB独显/冰魄白',
-      count: 1,
-      price: 4199,
-    },
-    recipient: { name: 'ouc', phone: '111111111', address: '山东省青岛市黄岛区中国海洋大学西海岸校区' },
-    totalAmount: 4199,
-  },
-  {
-    id: '4',
-    createTime: '2025-12-08 19:44:33',
-    orderNo: '300181183',
-    status: 'pending',
-    statusText: '待付款',
-    product: {
-      id: 'p1',
-      name: '联想拯救者R9000P 2025 AI元启',
-      image: 'https://p3.lefile.cn/product/adminweb/2025/07/31/AdVDQpEwiqWmyKKm6cYfosJjw-7110.jpg',
-      spec: 'AMD Ryzen 9 8945HX/Windows 11 家庭中文版/16英寸/32GB(16+16)/1T SSD/ RTX™ 5060 8GB独显/冰魄白',
-      count: 1,
-      price: 4199,
-    },
-    recipient: { name: 'ouc', phone: '111111111', address: '山东省青岛市黄岛区中国海洋大学西海岸校区' },
-    totalAmount: 4199,
-  },
-  {
-    id: '5',
-    createTime: '2025-12-08 19:44:33',
-    orderNo: '300181184',
-    status: 'pending',
-    statusText: '待付款',
-    product: {
-      id: 'p1',
-      name: '联想拯救者R9000P 2025 AI元启',
-      image: 'https://p3.lefile.cn/product/adminweb/2025/07/31/AdVDQpEwiqWmyKKm6cYfosJjw-7110.jpg',
-      spec: 'AMD Ryzen 9 8945HX/Windows 11 家庭中文版/16英寸/32GB(16+16)/1T SSD/ RTX™ 5060 8GB独显/冰魄白',
-      count: 1,
-      price: 4199,
-    },
-    recipient: { name: 'ouc', phone: '111111111', address: '山东省青岛市黄岛区中国海洋大学西海岸校区' },
-    totalAmount: 4199,
-  },
-  {
-    id: '6',
-    createTime: '2025-12-08 19:44:33',
-    orderNo: '300181185',
-    status: 'pending',
-    statusText: '待付款',
-    product: {
-      id: 'p1',
-      name: '联想拯救者R9000P 2025 AI元启',
-      image: 'https://p3.lefile.cn/product/adminweb/2025/07/31/AdVDQpEwiqWmyKKm6cYfosJjw-7110.jpg',
-      spec: 'AMD Ryzen 9 8945HX/Windows 11 家庭中文版/16英寸/32GB(16+16)/1T SSD/ RTX™ 5060 8GB独显/冰魄白',
-      count: 1,
-      price: 4199,
-    },
-    recipient: { name: 'ouc', phone: '111111111', address: '山东省青岛市黄岛区中国海洋大学西海岸校区' },
-    totalAmount: 4199,
-  },
-  {
-    id: '7',
-    createTime: '2025-12-08 19:44:33',
-    orderNo: '300181186',
-    status: 'pending',
-    statusText: '待付款',
-    product: {
-      id: 'p1',
-      name: '联想拯救者R9000P 2025 AI元启',
-      image: 'https://p3.lefile.cn/product/adminweb/2025/07/31/AdVDQpEwiqWmyKKm6cYfosJjw-7110.jpg',
-      spec: 'AMD Ryzen 9 8945HX/Windows 11 家庭中文版/16英寸/32GB(16+16)/1T SSD/ RTX™ 5060 8GB独显/冰魄白',
-      count: 1,
-      price: 4199,
-    },
-    recipient: { name: 'ouc', phone: '111111111', address: '山东省青岛市黄岛区中国海洋大学西海岸校区' },
-    totalAmount: 4199,
-  },
-];
+import type { OrderStatus, SimpleOrderItem, OrderListQuery } from '../../types/order';
+import { getOrderList, getOrderStats } from '../../services/order';
 
 const OrderList: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('all'); 
-  const [orders, setOrders] = useState(allOrders); 
-  const [keyword, setKeyword] = useState(''); 
+  const [activeTab, setActiveTab] = useState<string>('all');
+  const [orders, setOrders] = useState<SimpleOrderItem[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<SimpleOrderItem[]>([]);
+  const [keyword, setKeyword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState({
+    totalCount: 0,
+    pendingPaymentCount: 0,
+    pendingShipmentCount: 0,
+    pendingReceiptCount: 0,
+    completedCount: 0,
+    cancelledCount: 0
+  });
 
   // 分页状态
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5;
+  const [total, setTotal] = useState(0);
+  const pageSize = 10;
 
-  // --- 逻辑修改：取消订单 ---
-  // 不直接删除数据，而是将状态改为 cancelled。
-  // 这样 activeTab === 'pending' 时，它会被 filteredOrders 过滤掉，从而从“待付款”列表消失。
-  const handleCancelOrder = (id: string) => {
-    setOrders(prev => prev.map(item => {
-      if (item.id === id) {
-        return { ...item, status: 'cancelled', statusText: '已取消' };
+  // 获取订单列表
+  const fetchOrders = useCallback(async (status?: OrderStatus) => {
+    try {
+      setLoading(true);
+      const query: OrderListQuery = {};
+      if (status) {
+        query.status = status;
       }
-      return item;
-    }));
-    message.success('订单已取消');
-  };
+      
+      const response = await getOrderList(query);
+      setOrders(response.data || []);
+      setFilteredOrders(response.data || []);
+      setTotal(response.total || 0);
+    } catch (error) {
+      message.error('获取订单列表失败');
+      console.error('获取订单列表失败:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  // --- 逻辑修改：处理超时 ---
-  // 当子组件检测到超时，调用此函数更新父组件状态
-  const handleTimeout = (id: string) => {
-    setOrders(prev => prev.map(item => {
-      if (item.id === id && item.status === 'pending') {
-        // 只有状态改变时才更新，避免死循环
-        return { ...item, status: 'cancelled', statusText: '已取消' };
-      }
-      return item;
-    }));
-  };
+  // 获取订单统计
+  const fetchOrderStats = useCallback(async () => {
+    try {
+      const response = await getOrderStats();
+      setStats(response);
+    } catch (error) {
+      console.error('获取订单统计失败:', error);
+    }
+  }, []);
 
-  // Tabs 配置
-  const tabs = [
-    { key: 'all', label: '全部订单' },
-    { key: 'pending', label: '待付款', count: orders.filter(o => o.status === 'pending').length },
-    { key: 'shipping', label: '待发货', count: orders.filter(o => o.status === 'shipping').length },
-    { key: 'receiving', label: '待收货', count: orders.filter(o => o.status === 'receiving').length },
-  ];
+  // 初始化加载
+  useEffect(() => {
+    fetchOrders();
+    fetchOrderStats();
+  }, [fetchOrders, fetchOrderStats]);
 
-  // --- Tab 切换 ---
+  // Tab切换处理
   const handleTabChange = (key: string) => {
     setActiveTab(key);
     setCurrentPage(1);
-  };
-
-  // --- 搜索逻辑 ---
-  const handleSearch = () => {
-    const term = keyword.trim();
-    if (!term) {
-        // 搜索逻辑如果涉及到重新请求API则这里需要调整，这里仅针对前端模拟数据
-        // 因为 orders 已经是 state，这里搜索应该基于原始数据 filter，或者我们假设 orders 就是当前展示数据
-        // 简单起见，我们这里仅提示，实际应配合 useEffect 或请求重置 orders
-        message.info('请输入搜索内容'); 
-        return;
+    if (key === 'all') {
+      fetchOrders();
+    } else {
+      fetchOrders(key as OrderStatus);
     }
-    // 简单的本地过滤演示（实际通常是后端搜索）
-    const filtered = allOrders.filter(o => {
-       const matchOrderNo = o.orderNo.includes(term);
-       const matchProductName = o.product.name.toLowerCase().includes(term.toLowerCase());
-       return matchOrderNo || matchProductName;
+  };
+
+  // 搜索处理
+  const handleSearch = useCallback(() => {
+    const term = keyword.trim().toLowerCase();
+    if (!term) {
+      setFilteredOrders(orders);
+      return;
+    }
+
+    const filtered = orders.filter(order => {
+      const matchOrderNo = order.orderNo.toLowerCase().includes(term);
+      const matchProductName = order.items.some(item => 
+        item.productName.toLowerCase().includes(term)
+      );
+      return matchOrderNo || matchProductName;
     });
-    setOrders(filtered);
+
+    setFilteredOrders(filtered);
     setCurrentPage(1);
-  };
+  }, [keyword, orders]);
 
-  // --- 核心筛选逻辑 ---
-  const filteredOrders = orders.filter(order => {
-    if (activeTab === 'all') return true;
-    return order.status === activeTab;
-  });
+  // 删除订单后的回调
+  const handleOrderDeleted = useCallback((orderId: string) => {
+    setOrders(prev => prev.filter(order => order.id !== orderId));
+    setFilteredOrders(prev => prev.filter(order => order.id !== orderId));
+    fetchOrderStats(); // 重新获取统计
+  }, [fetchOrderStats]);
 
-  // 分页切片
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const currentShowOrders = filteredOrders.slice(startIndex, endIndex);
+  // 取消订单后的回调
+  const handleOrderCancelled = useCallback((orderId: string) => {
+    setOrders(prev => prev.map(order => 
+      order.id === orderId ? { ...order, status: '已取消' } : order
+    ));
+    setFilteredOrders(prev => prev.map(order => 
+      order.id === orderId ? { ...order, status: '已取消' } : order
+    ));
+    fetchOrderStats(); // 重新获取统计
+  }, [fetchOrderStats]);
 
-  const onPageChange = (page: number) => {
-      setCurrentPage(page);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  // 分页处理
+  const paginatedOrders = filteredOrders.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
-return (
-    <div className="bg-white min-h-[600px]">
-      <style>{`
-        .custom-square-pagination .ant-pagination-item,
-        .custom-square-pagination .ant-pagination-prev .ant-pagination-item-link,
-        .custom-square-pagination .ant-pagination-next .ant-pagination-item-link,
-        .custom-square-pagination .ant-select-selector,
-        .custom-square-pagination .ant-pagination-options-quick-jumper input {
-          border-radius: 0 !important;
-        }
-          .custom-square-pagination .ant-pagination-options-size-changer {
-          display: none !important;
-        }
-      `}</style>
+  // Tab配置
+  const tabItems = [
+    {
+      key: 'all',
+      label: `全部订单`,
+      count: stats.totalCount
+    },
+    {
+      key: '待支付',
+      label: '待付款',
+      count: stats.pendingPaymentCount
+    },
+    {
+      key: '待发货',
+      label: '待发货',
+      count: stats.pendingShipmentCount
+    },
+    {
+      key: '待收货',
+      label: '待收货',
+      count: stats.pendingReceiptCount
+    },
+    {
+      key: '已收货',
+      label: '已完成',
+      count: stats.completedCount
+    },
+    {
+      key: '已取消',
+      label: '已取消',
+      count: stats.cancelledCount
+    }
+  ];
 
-      {/* 顶部栏 */}
-      <div className="flex justify-between items-center border-b border-gray-200 px-2 mb-4">
-        <div className="flex gap-8">
-          {tabs.map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => handleTabChange(tab.key)}
-              className={`relative py-4 text-sm font-medium transition-colors ${
-                activeTab === tab.key ? 'text-[#e1140a] font-bold' : 'text-gray-600 hover:text-[#e1140a]'
-              }`}
-            >
-              {tab.label}
-              {tab.count ? (
-                 <span className="absolute top-2 -right-3 bg-[#e1140a] text-white text-[10px] px-1.5 h-4 rounded-full flex items-center justify-center leading-none">
-                   {tab.count}
-                 </span>
-              ) : null}
-              {activeTab === tab.key && <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[#e1140a]" />}
-            </button>
-          ))}
+  return (
+    <div className="bg-white min-h-[600px] p-6 mx-auto" style={{ maxWidth: '1200px' }}>
+      {/* 页面标题区域 */}
+            {/* 页面标题区域 - 搜索框在右边（优雅版） */}
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-3xl font-bold text-gray-900">我的订单</h1>
+          
         </div>
-
-        <div className="py-2 flex items-center">
-            <input 
-               type="text"
-               value={keyword}
-               onChange={(e) => setKeyword(e.target.value)}
-               placeholder="输入商品名称/订单编号"
-               className="w-[240px] h-[32px] px-3 text-xs border border-r-0 border-gray-300 outline-none focus:border-gray-400 placeholder-gray-400 transition-colors"
-               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            />
-            <button 
-               onClick={handleSearch}
-               className="h-[32px] px-4 text-xs text-[#333] bg-[#f5f5f5] border border-gray-300 hover:bg-[#e8e8e8] transition-colors cursor-pointer"
-            >
-               搜索订单
-            </button>
-        </div>
+        <div className="h-1 w-20 bg-red-600 rounded-full mb-2"></div>
+        <p className="text-gray-600 text-base">查看和管理您的所有订单</p>
       </div>
 
-      {/* 表头 */}
-      <div className="bg-[#f5f5f5] text-xs text-gray-600 py-3 px-4 flex text-center mb-4">
-        <div className="flex-1 text-left pl-10">订单详情</div>
-        <div className="w-[120px]">收货人</div>
-        <div className="w-[120px]">金额</div>
-        <div className="w-[120px]">状态</div>
-        <div className="w-[120px]">操作</div>
-      </div>
 
-      {/* 列表内容 */}
-      <div className="space-y-4 mb-8">
-        {currentShowOrders.length > 0 ? (
-          currentShowOrders.map(order => (
-            <OrderItem 
-              key={order.id} 
-              order={order} 
-              onCancelSuccess={handleCancelOrder} 
-              onTimeout={handleTimeout} // 传递超时处理函数
-            />
-          ))
-        ) : (
-          <OrderEmpty />
-        )}
-      </div>
-
-      {/* 分页 */}
-      {filteredOrders.length > 0 && (
-        <ConfigProvider locale={zhCN}>
-            <div className="flex justify-center py-6 custom-square-pagination">
-            <Pagination
-                total={filteredOrders.length}
-                current={currentPage}
-                pageSize={pageSize}
-                onChange={onPageChange}
-                showSizeChanger
-                showQuickJumper
-                showTotal={(total) => `共 ${total} 条订单`}
-                defaultPageSize={5}
-            />
+      {/* 标签页 - 联想红色主题 */}
+      <div className=" flex relative">
+        <Tabs
+          activeKey={activeTab}
+          onChange={handleTabChange}
+          className="lenovo-tabs"
+          items={tabItems.map(tab => ({
+            key: tab.key,
+            label: (
+              <div className="flex items-center gap-2 px-4 py-2">
+                <span className="font-medium text-gray-800">{tab.label}</span>
+                {tab.count > 0 && (
+                  <span className="bg-red-600 text-white text-xs px-2 py-1 rounded-full font-bold min-w-6 h-6 flex items-center justify-center">
+                    {tab.count}
+                  </span>
+                )}
+              </div>
+            )
+          }))}
+          tabBarStyle={{ 
+            borderBottom: '2px solid #f0f0f0',
+            marginBottom: '20px'
+          }}
+        />
+        <div className="flex items-center gap-2 right-4 top-5 absolute ">
+            <div className="w-64">
+              <Input
+                placeholder="搜索订单号或商品名称"
+                prefix={<SearchOutlined className="text-gray-500" />}
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                onPressEnter={handleSearch}
+                allowClear
+                className="rounded-lg h-10 text-sm"
+                size="middle"
+              />
             </div>
-        </ConfigProvider>
+            <button
+              onClick={handleSearch}
+              className="px-4 py-2 bg-red-600  text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+            >
+              搜索
+            </button>
+          </div>
+      </div>
+
+      {/* 订单列表 */}
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <Spin size="large" />
+        </div>
+      ) : (
+        <>
+          {paginatedOrders.length > 0 ? (
+            <div className="space-y-2">
+              {paginatedOrders.map(order => (
+                <OrderItem
+                  key={order.id}
+                  order={order}
+                  onOrderDeleted={handleOrderDeleted}
+                  onOrderCancelled={handleOrderCancelled}
+                />
+              ))}
+            </div>
+          ) : (
+            <OrderEmpty />
+          )}
+
+          {/* 分页 - 联想风格 */}
+          {filteredOrders.length > 0 && (
+            <div className="mt-10 flex justify-center">
+              <Pagination
+                current={currentPage}
+                total={filteredOrders.length}
+                pageSize={pageSize}
+                onChange={setCurrentPage}
+                showSizeChanger={false}
+                showQuickJumper
+                showTotal={(total, range) => 
+                  <span className="text-gray-600">
+                    显示第 <span className="font-bold text-red-600">{range[0]}</span>-<span className="font-bold text-red-600">{range[1]}</span> 条，共 <span className="font-bold text-red-600">{total}</span> 条
+                  </span>
+                }
+                className="lenovo-pagination"
+                itemRender={(page, type, originalElement) => {
+                  if (type === 'page') {
+                    return (
+                      <span className={`px-3 py-1 rounded ${currentPage === page ? 'bg-red-600 text-white' : 'text-gray-700 hover:text-red-600'}`}>
+                        {page}
+                      </span>
+                    );
+                  }
+                  return originalElement;
+                }}
+              />
+            </div>
+          )}
+        </>
       )}
     </div>
   );
