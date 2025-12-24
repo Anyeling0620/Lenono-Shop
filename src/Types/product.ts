@@ -41,6 +41,9 @@ export interface Product {
   subTitle?: string;
   description?: string;
   mainImage?: string;
+  // 兼容后端卡片接口可能返回的字段
+  image?: string;      // 轮播/卡片主图
+  price?: number;      // 简化价格（当未提供 minPriceConfig 时）
   createdAt: string; // 后端 Date 类型在前端为字符串（ISO格式）
   updatedAt: string;
   status: string; // 商品状态，可替换为具体枚举类型
@@ -126,10 +129,11 @@ export interface CouponItem extends CouponCenter {
  * 商品卡片核心信息（前端展示的核心结构）
  */
 export interface ProductCardItem {
-  shelfProduct: ShelfProduct; // 货架商品信息
+  // 兼容后端返回字段：有些接口可能不返回 shelfProduct/minPriceConfig/coupons
+  shelfProduct?: ShelfProduct; // 货架商品信息
   product: Product; // 商品基本信息
-  minPriceConfig: ProductConfig; // 最低售价配置
-  coupons: CouponItem[]; // 关联的可用优惠券
+  minPriceConfig?: ProductConfig; // 最低售价配置
+  coupons?: CouponItem[]; // 关联的可用优惠券
 }
 
 /**
