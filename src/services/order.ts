@@ -58,10 +58,10 @@ export async function getPaymentStatus(orderId: string):Promise<{
 }
 
 /**
- * 获取订单列表
+ * 获取订单列表：条件检索
  */
 export async function getOrderList(params: OrderListQuery): Promise<OrderListResponse> {
-  return (await axiosInstance.get<ApiResponse<OrderListResponse>>("/order/list", {
+  return (await axiosInstance.get<ApiResponse<OrderListResponse>>("/order/list/query", {
     params
   })).data.data;
 }
@@ -74,15 +74,26 @@ export async function getOrderDetail(id: string): Promise<OrderDetailResponse> {
 }
 
 /**
- * 获取订单统计信息
+ * 获取订单统计信息 : 可以调用这个获取订单总数和各种情况的订单数，也可以根据订单列表自己计算
  */
 export async function getOrderStats(): Promise<OrderStats> {
   return (await axiosInstance.get<ApiResponse<OrderStats>>("/order/stats")).data.data;
 }
 
 /**
- * 获取简单订单列表
+ * 获取订单列表 
  */
 export async function getSimpleOrders(): Promise<{ orders: SimpleOrderItem[] }> {
   return (await axiosInstance.get<ApiResponse<{ orders: SimpleOrderItem[] }>>("/order/list")).data.data;
 }
+
+/**
+ * 
+ * @param orderId 删除订单
+ * @returns 
+ */
+export async function deleteOrder(orderId:string) {
+  return (await axiosInstance.delete<ApiResponse<number>>(`/order/delete-order/${orderId}`)).data.data
+}
+
+

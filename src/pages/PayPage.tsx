@@ -36,6 +36,8 @@ import type { OrderItemDetail, OrderResponse } from '../types/order';
 import type { UserVoucherItem } from '../types/coupon';
 import { getVouchersService } from '../services/coupon';
 import { payWithVoucher } from '../services/order';
+import globalErrorHandler from '../utils/globalAxiosErrorHandler';
+import toast from 'react-hot-toast';
 
 const { Countdown } = Statistic;
 const { Title, Text } = Typography;
@@ -146,15 +148,14 @@ const PayPage: React.FC = () => {
                         </div>
                     ),
                     onOk: () => {
-                        navigate('/order/list');
+                        navigate('/my-order',{replace:true});
                     }
                 });
             } else {
                 message.error('支付失败，请重试');
             }
         } catch (error) {
-            message.error('支付失败');
-            console.error('支付失败:', error);
+            globalErrorHandler.handle(error,toast.error)
         } finally {
             setPayLoading(false);
         }
@@ -180,10 +181,10 @@ const PayPage: React.FC = () => {
     const calculateDiscount = () => {
         if (!selectedVoucherId || !orderData) return 0;
 
-        const selectedVoucher = vouchers.find(v => v.id === selectedVoucherId);
+        const selectedVoucher = vouchers.find(v => v.voucherId === selectedVoucherId);
         if (!selectedVoucher) return 0;
 
-        return Math.min(selectedVoucher.remainAmount, orderData.payAmount);
+        return Math.min(selectedVoucher.remainAmount, orderData.actualPayAmount);
     };
 
     if (!orderData) {
@@ -194,9 +195,9 @@ const PayPage: React.FC = () => {
         );
     }
 
-    const selectedVoucher = vouchers.find(v => v.id === selectedVoucherId);
+    const selectedVoucher = vouchers.find(v => v.voucherId === selectedVoucherId);
     const discountAmount = calculateDiscount();
-    const finalAmount = orderData.payAmount - discountAmount;
+    const finalAmount = orderData.actualPayAmount - discountAmount;
 
     return (
         <div className="min-h-screen bg-gray-50 ">
@@ -376,7 +377,7 @@ const PayPage: React.FC = () => {
                                         <div className="flex justify-between items-center">
                                             <Text className="text-gray-600">商品金额</Text>
                                             <Text strong className="text-lg">
-                                                {formatCurrency(orderData.payAmount)}
+                                                {formatCurrency(orderData.actualPayAmount)}
                                             </Text>
                                         </div>
 
@@ -495,13 +496,13 @@ const PayPage: React.FC = () => {
                                         <Space direction="vertical" className="w-full" size={12}>
                                             {vouchers.map(voucher => (
                                                 <Radio
-                                                    key={voucher.id}
-                                                    value={voucher.id}
+                                                    key={voucher.voucherId}
+                                                    value={voucher.voucherId}
                                                     className="w-full"
                                                 >
                                                     <Card
                                                         size="small"
-                                                        className={`w-full cursor-pointer transition-all duration-200 border-2 ${selectedVoucherId === voucher.id
+                                                        className={`w-full cursor-pointer transition-all duration-200 border-2 ${selectedVoucherId === voucher.voucherId
                                                                 ? 'border-[#e60012] bg-[#fff2f0]'
                                                                 : 'border-[#e8e8e8] hover:border-[#d9d9d9]'
                                                             }`}

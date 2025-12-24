@@ -111,8 +111,6 @@ export interface SimpleOrderItem {
 }
 
 export interface OrderListQuery {
-  page?: number;
-  pageSize?: number;
   status?: OrderStatus;
   startDate?: string;
   endDate?: string;
@@ -121,9 +119,6 @@ export interface OrderListQuery {
 
 export interface OrderListResponse {
   total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
   data: OrderListItem[];
 }
 

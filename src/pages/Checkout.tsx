@@ -589,7 +589,7 @@ const clearOrderState = () => {
                 <CheckCircleFilled className="absolute bottom-[-8px] right-[-8px] text-[#e1140a] bg-white rounded-full" />
               )}
             </button>
-            <button
+            {/* <button
               onClick={() => setPayMethod('cod')}
               className={`px-8 py-2 border text-sm relative transition-all 
                          ${payMethod === 'cod' ? 'border-[#e1140a] ring-1 ring-[#e1140a]' : 'border-[#e0e0e0] hover:border-[#e1140a]'}`}
@@ -598,7 +598,7 @@ const clearOrderState = () => {
               {payMethod === 'cod' && (
                 <CheckCircleFilled className="absolute bottom-[-8px] right-[-8px] text-[#e1140a] bg-white rounded-full" />
               )}
-            </button>
+            </button> */}
           </div>
         </section>
 
