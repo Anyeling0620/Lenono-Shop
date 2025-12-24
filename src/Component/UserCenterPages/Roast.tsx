@@ -112,8 +112,8 @@ const Roast: React.FC = () => {
   }, []);
 
   return (
-    <div className="p-6 bg-[#f5f5f5] min-h-[calc(90vh-120px)]">
-      <h3 className="text-2xl font-bold mb-6 text-[#333]">我的吐槽</h3>
+    <div className="p-6 bg-white min-h-[calc(90vh-120px)]">
+      <h3 className="text-2xl font-bold mb-4 text-[#2b2b2b]">我的吐槽</h3>
 
       {loading && <div className="text-gray-600">加载中...</div>}
       {error && !loading && <div className="text-red-500">{error}</div>}
@@ -122,27 +122,27 @@ const Roast: React.FC = () => {
       )}
 
       {!loading && comments.length > 0 && (
-        <div className="space-y-4 max-w-4xl mx-auto">
+        <div className="space-y-3 max-w-4xl mx-auto">
           {comments.map((comment) => (
             <details key={comment.id} className="group">
               <summary className="cursor-pointer list-none p-0">
-                <div className="bg-white shadow-sm rounded-lg p-6 border border-gray-200 hover:shadow-md hover:border-gray-300 transition-all duration-200">
-                  <div className="flex justify-between items-start mb-4">
+                <div className="bg-white shadow-sm rounded-lg p-5 border border-gray-200 hover:shadow-md hover:border-gray-300 transition-all duration-150">
+                  <div className="flex justify-between items-start mb-3">
                     <div className="flex-1">
-                      <h4 className="text-xl font-semibold text-[#333] mb-2 leading-tight">
+                      <h4 className="text-lg font-semibold text-[#222] mb-1 leading-tight">
                         订单 {comment.order.orderNo} - {comment.orderItem.productName}
                       </h4>
-                      <div className="flex items-center gap-4 mb-2 text-sm text-gray-500">
-                        <span>下单时间：{formatDate(comment.order.createdAt)}</span>
-                        <span>吐槽时间：{formatDate(comment.createdAt)}</span>
+                      <div className="flex flex-wrap items-center gap-3 mb-2 text-sm text-gray-500">
+                        <span>下单：{formatDate(comment.order.createdAt)}</span>
+                        <span>吐槽：{formatDate(comment.createdAt)}</span>
                       </div>
                       <span
-                        className={`px-3 py-1 rounded-md text-xs font-medium border ${getStatusStyle(comment.status)}`}
+                        className={`px-3 py-1.5 rounded-md text-xs font-medium border ${getStatusStyle(comment.status)}`}
                       >
                         {getStatusText(comment.status)}
                       </span>
                     </div>
-                    <button className="ml-4 p-2 text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 transition-colors [&[open]]:rotate-180">
+                    <button className="ml-3 p-2 text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 transition-colors [&[open]]:rotate-180">
                       查看详情
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -151,8 +151,8 @@ const Roast: React.FC = () => {
                   </div>
                 </div>
               </summary>
-              <div className="mt-0 pt-4 pb-6 px-6 bg-gray-50 border-t border-gray-200">
-                <p className="text-base text-gray-700 leading-relaxed mb-6">
+              <div className="mt-0 pt-3 pb-4 px-5 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+                <p className="text-base text-gray-700 leading-relaxed mb-4">
                   {comment.content}
                 </p>
                 {comment.images && comment.images.length > 0 && (
@@ -162,7 +162,7 @@ const Roast: React.FC = () => {
                         key={image.id}
                         src={image.image}
                         alt="吐槽附件"
-                        className="w-24 h-24 object-cover rounded border border-gray-200"
+                        className="w-20 h-20 object-cover rounded border border-gray-200"
                       />
                     ))}
                   </div>
