@@ -10,14 +10,14 @@ const MainProductCard = ({ product }: CardProps) => {
   const name = product.product.name;
   const image = product.product.mainImage;
   const featuresText = product.product.description;  
-  const hasCoupon = product.coupons.length > 0;
-  const couponInfo = product.coupons[0];
-  const customerize = product.shelfProduct.isCustomizable;
-  const tradeIn = product.shelfProduct.isSelfOperated;
-  const originalPrice = product.minPriceConfig?.originalPrice || product?.minPriceConfig.salePrice;
+const hasCoupon = product?.coupons && product.coupons.length > 0 || false;
+  const couponInfo = product?.coupons?.[0];
+  const customerize = product.shelfProduct?.isCustomizable;
+  const tradeIn = product.shelfProduct?.isSelfOperated;
+  const originalPrice = product.minPriceConfig?.originalPrice || product?.minPriceConfig?.salePrice;
   const id = product.product.id;
 
-  let finalPrice = product.minPriceConfig.salePrice;
+  let finalPrice = product.minPriceConfig?.salePrice;
   const tags = [];
 
   if (hasCoupon && couponInfo) {

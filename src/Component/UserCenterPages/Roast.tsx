@@ -13,110 +13,6 @@ import { Card, Image, Button, Divider, Empty, Skeleton } from 'antd';
 import globalErrorHandler from '../../utils/globalAxiosErrorHandler';
 import toast from 'react-hot-toast';
 
-const mockComments: CommentDetail[] = [
-  {
-    id: 'cmt-1',
-    userId: 'user-1',
-    orderId: 'order-1',
-    orderItemId: 'order-item-1',
-    content: '物流速度有点慢，从下单到收货用了整整5天时间，希望改进一下配送效率。另外包装也有点简陋，电脑盒子边角都磕碰了。',
-    status: '正常',
-    createdAt: new Date('2024-12-10T14:30:00').toISOString(),
-    updatedAt: new Date('2024-12-10T14:30:00').toISOString(),
-    images: [],
-    order: {
-      id: 'order-1',
-      orderNo: 'ORD202412100001',
-      status: '已收货',
-      actualPayAmount: 6999,
-      createdAt: new Date('2024-12-05T10:15:00'),
-    },
-    orderItem: {
-      id: 'order-item-1',
-      productName: '联想小新 Pro 14 2024款',
-      configName: 'i5-13500H/16GB/512GB/2.8K 120Hz',
-      quantity: 1,
-      price: 6999,
-      productId: 'prod-1',
-      configId: 'cfg-1',
-      product: null,
-      config: null,
-    },
-  },
-  {
-    id: 'cmt-2',
-    userId: 'user-1',
-    orderId: 'order-2',
-    orderItemId: 'order-item-2',
-    content: '客服回复不及时，等了2个小时才有人回复。不过最后问题解决了，售后工程师态度很好，专业水平也不错。',
-    status: '正常',
-    createdAt: new Date('2024-12-08T09:45:00').toISOString(),
-    updatedAt: new Date('2024-12-08T09:45:00').toISOString(),
-    images: [
-      {
-        id: 'img-1',
-        image: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=300&fit=crop'
-      },
-      {
-        id: 'img-2',
-        image: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w-400&h=300&fit=crop'
-      }
-    ],
-    order: {
-      id: 'order-2',
-      orderNo: 'ORD202412080002',
-      status: '已收货',
-      actualPayAmount: 8999,
-      createdAt: new Date('2024-12-03T15:20:00'),
-    },
-    orderItem: {
-      id: 'order-item-2',
-      productName: 'ThinkPad X1 Carbon Gen 11',
-      configName: 'i7-1365U/16GB/1TB/2.8K OLED',
-      quantity: 1,
-      price: 8999,
-      productId: 'prod-2',
-      configId: 'cfg-2',
-      product: null,
-      config: null,
-    },
-  },
-  {
-    id: 'cmt-3',
-    userId: 'user-1',
-    orderId: 'order-3',
-    orderItemId: 'order-item-3',
-    content: '产品本身没问题，但赠品少发了鼠标垫，联系客服后补发了，处理速度还可以。',
-    status: '已撤回',
-    createdAt: new Date('2024-12-05T16:20:00').toISOString(),
-    updatedAt: new Date('2024-12-06T10:30:00').toISOString(),
-    images: [
-      {
-        id: 'img-3',
-        image: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=300&fit=crop'
-      }
-    ],
-    order: {
-      id: 'order-3',
-      orderNo: 'ORD202412050003',
-      status: '已收货',
-      actualPayAmount: 12999,
-      createdAt: new Date('2024-12-01T11:45:00'),
-    },
-    orderItem: {
-      id: 'order-item-3',
-      productName: '联想拯救者 Y9000P 2024',
-      configName: 'i9-14900HX/32GB/2TB/RTX 4070',
-      quantity: 1,
-      price: 12999,
-      productId: 'prod-3',
-      configId: 'cfg-3',
-      product: null,
-      config: null,
-    },
-  },
-];
-
 
 const formatDate = (value: Date | string) => {
   const date = new Date(value);
@@ -155,7 +51,6 @@ const Roast: React.FC = () => {
 
       } catch (err) {
         globalErrorHandler.handle(err,toast.error)
-        setComments(mockComments);
       } finally {
         setLoading(false);
       }
@@ -169,9 +64,9 @@ const Roast: React.FC = () => {
   };
 
 
-  const handleDelete = (id: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleDelete = (_id: string) => {
     toast('功能待开发');
-    // 这里可以调用删除 API
   };
 
   if (loading) {

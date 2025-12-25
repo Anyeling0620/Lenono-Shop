@@ -111,12 +111,12 @@ const MainProductCategory = ({ group }: { group: ProductGroup }) => {
         <div className="col-span-4 grid grid-rows-2 gap-3">
           <div className="grid grid-cols-4 gap-3">
             {products.slice(0, 4).map((product) => (
-              <MainProductCard key={product.shelfProduct.id} product={product} />
+              <MainProductCard key={product.product?.id} product={product} />
             ))}
           </div>
           <div className="grid grid-cols-4 gap-3">
             {products.slice(4, 8).map((product) => (
-              <MainProductCard key={product.shelfProduct.id} product={product} />
+              <MainProductCard key={product.product?.id} product={product} />
             ))}
           </div>
         </div>

@@ -20,7 +20,7 @@ const ProductListToPages: React.FC<Props> = (props) => {
       </div>}
       <ul className='grid grid-cols-4 gap-3'>
         {props.productList.map(product => (
-          <ProductCard key={product.shelfProduct.id}
+          <ProductCard key={product.product.id}
             product={product}
           />
         ))}

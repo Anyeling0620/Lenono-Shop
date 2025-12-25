@@ -43,7 +43,7 @@ const Product: React.FC = () => {
         try {
             const list = await getProductList(type);
             setProductList(list);
-            const carouselList = list.items.filter((item: ProductCardItem) => item.shelfProduct.isCarousel);
+            const carouselList = list.items.filter((item: ProductCardItem) => item.shelfProduct?.isCarousel);
             setCarouselProducts(carouselList);
         } catch (error) {
             globalErrorHandler.handle(error, toast.error);

@@ -27,7 +27,7 @@ const NewProductList = ({ className }:
 
                     <ul className="grid grid-cols-4 gap-3">
                         {group.items.map(product => (
-                            <ProductCard key={product.shelfProduct.id} product={product} />
+                            <ProductCard key={product.product.id} product={product} />
                         ))}
                     </ul>
                 </section>

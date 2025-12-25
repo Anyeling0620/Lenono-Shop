@@ -89,8 +89,8 @@ export interface OrderInfo {
   orderNo: string;
   status: OrderStatus;
   actualPayAmount: number;
-  createdAt: Date;
-  payTime?: Date | null;
+  createdAt: string;
+  payTime?: string | null;
   receiver: string;
   phone: string;
   address: string;
@@ -123,15 +123,15 @@ export interface CommentDetail {
   orderItemId: string;
   content: string;
   status: CommentStatus;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   images: ImageInfo[];
   order: {
     id: string;
     orderNo: string;
     status: OrderStatus;
     actualPayAmount: number;
-    createdAt: Date;
+    createdAt: string;
   };
   orderItem: OrderItemInfo;
 }
@@ -154,9 +154,9 @@ export interface AfterSaleDetail {
   receiverRemark: string | null;
   receiverName: string;
   receiverPhone: string;
-  applyTime: Date;
-  completeTime: Date | null;
-  createdAt: Date;
+  applyTime: string;
+  completeTime: string | null;
+  createdAt: string;
   images: ImageInfo[];
   order: OrderInfo;
   orderItem: OrderItemInfo;
@@ -170,8 +170,8 @@ export interface ComplaintDetail {
   afterSaleId: string;
   content: string;
   status: ComplaintStatus;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   images: ImageInfo[];
   afterSale: {
     id: string;
@@ -179,7 +179,7 @@ export interface ComplaintDetail {
     type: AfterSaleType;
     status: AfterSaleStatus;
     reason: string;
-    applyTime: Date;
+    applyTime: string;
     order: {
       id: string;
       orderNo: string;
@@ -209,8 +209,8 @@ export interface AfterSaleRecord {
   receiverRemark: string | null;
   receiverName: string;
   receiverPhone: string;
-  applyTime: Date;
-  completeTime: Date | null;
+  applyTime: string;
+  completeTime: string | null;
   images: ImageInfo[];
 }
 
@@ -225,8 +225,8 @@ export interface AfterSaleListItem {
   remark: string | null;
   status: AfterSaleStatus;
   rejectReason: string | null;
-  applyTime: Date;
-  completeTime: Date | null;
+  applyTime: string;
+  completeTime: string | null;
   order: OrderInfo;
   orderItem: OrderItemInfo;
 }
@@ -240,8 +240,8 @@ export interface EvaluationBasic {
   star: number;
   content: string | null;
   status: EvaluationStatus;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   images: ImageInfo[];
 }
 
@@ -253,8 +253,8 @@ export interface CommentBasic {
   orderItemId: string;
   content: string;
   status: CommentStatus;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   images: ImageInfo[];
 }
 
@@ -265,8 +265,8 @@ export interface ComplaintBasic {
   afterSaleId: string;
   content: string;
   status: ComplaintStatus;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   images: ImageInfo[];
 }
 

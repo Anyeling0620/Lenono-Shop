@@ -21,17 +21,12 @@ import {
   CalendarOutlined,
   EyeOutlined,
   DeleteOutlined,
-  EditOutlined,
-  ArrowRightOutlined,
   RollbackOutlined
 } from '@ant-design/icons';
 import { deleteComplaint, getComplaints } from '../../services/afterSale';
 import type {
   ComplaintDetail,
   ComplaintStatus,
-  AfterSaleStatus,
-  AfterSaleType,
-  OrderStatus
 } from '../../types/afterSale';
 import globalErrorHandler from '../../utils/globalAxiosErrorHandler';
 
@@ -87,89 +82,6 @@ const formatCurrency = (value?: number | string) => {
 
 
 
-const MOCK_COMPLAINTS: ComplaintDetail[] = [
-  {
-    id: 'mock-1',
-    userId: 'mock-user',
-    afterSaleId: 'mock-after-1',
-    content: '示例投诉：收到的键盘有按键失灵，空格键按下后无法正常回弹，严重影响打字体验。已经联系客服多次，但问题仍未得到有效解决。',
-    status: '正常' as ComplaintStatus,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    images: [
-      {
-        id: 'img-1',
-        image: 'https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=400&h=300&fit=crop'
-      },
-      {
-        id: 'img-2',
-        image: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w-400&h=300&fit=crop'
-      }
-    ],
-    afterSale: {
-      id: 'after-1',
-      afterSaleNo: 'AS202501010001',
-      type: '退货' as AfterSaleType,
-      status: '申请中' as AfterSaleStatus,
-      reason: '质量问题',
-      applyTime: new Date(),
-      order: {
-        id: 'order-1',
-        orderNo: 'ORD123456',
-        status: '已支付' as OrderStatus,
-        actualPayAmount: 1999
-      },
-      orderItem: {
-        id: 'orderItem-1',
-        productName: '机械键盘',
-        configName: '红轴 RGB',
-        quantity: 1,
-        price: 1999,
-        productId: 'prod-1',
-        configId: 'cfg-1'
-      }
-    }
-  },
-  {
-    id: 'mock-2',
-    userId: 'mock-user',
-    afterSaleId: 'mock-after-2',
-    content: '示例投诉：物流多日未更新，无法联系到客服。订单显示已发货但物流信息停滞超过5天，多次拨打客服电话无人接听，在线客服也长时间无响应。',
-    status: '撤回' as ComplaintStatus,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    images: [
-      {
-        id: 'img-1',
-        image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&h=300&fit=crop'
-      }
-    ],
-    afterSale: {
-      id: 'after-2',
-      afterSaleNo: 'AS202501020002',
-      type: '换货' as AfterSaleType,
-      status: '已同意' as AfterSaleStatus,
-      reason: '物流异常',
-      applyTime: new Date(),
-      order: {
-        id: 'order-2',
-        orderNo: 'ORD654321',
-        status: '待发货' as OrderStatus,
-        actualPayAmount: 899
-      },
-      orderItem: {
-        id: 'orderItem-2',
-        productName: '蓝牙耳机',
-        configName: '曜石黑',
-        quantity: 1,
-        price: 899,
-        productId: 'prod-2',
-        configId: 'cfg-2'
-      }
-    }
-  }
-];
-
 const Complaint: React.FC = () => {
   const [complaints, setComplaints] = useState<ComplaintDetail[]>([]);
   const [loading, setLoading] = useState(false);
@@ -184,7 +96,6 @@ const Complaint: React.FC = () => {
         setComplaints(data);
       } catch (error) {
         globalErrorHandler.handle(error, toast.error)
-        setComplaints(MOCK_COMPLAINTS);
         toast.error('获取投诉列表失败，已使用模拟数据');
       } finally {
         setLoading(false);
