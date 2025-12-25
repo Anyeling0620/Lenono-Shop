@@ -79,13 +79,14 @@ export interface OrderListItem {
   status: OrderStatus;
   payAmount: number;
   actualPayAmount: number;
-  createdAt: Date;
-  payTime?: Date;
+  createdAt: string;
+  payTime?: string;
   items: OrderItemSummary[];
 }
 
 export interface OrderItemSummary {
   id: string;
+  configId:string;
   productId: string;
   productName: string;
   config1: string;
@@ -105,8 +106,8 @@ export interface SimpleOrderItem {
   payAmount: number;
   actualPayAmount: number;
   payType?: string;
-  payTime?: Date;
-  createdAt: Date;
+  payTime?: string;
+  createdAt: string;
   items: OrderItemSummary[];
 }
 
@@ -187,4 +188,16 @@ export interface OrderStats {
   completedCount: number;
   cancelledCount: number;
   totalAmount: number;
+}
+
+
+export interface ConfirmReceiptInput {
+  orderId: string;
+}
+
+
+export interface ConfirmReceiptResponse {
+  orderId: string;
+  status: string;
+  receiveTime: Date;
 }

@@ -152,7 +152,7 @@ const Checkout: React.FC = () => {
 
   const discount = calculateDiscount();
 
-  const finalPrice = totalPrice + shippingFee - discount - seckillDiscount;
+  const finalPrice = totalPrice + shippingFee - discount;
 
   // 筛选优惠券：根据useOK属性
   const availableCoupons = couponList.filter(coupon => coupon.useOK && coupon.status === '未使用');

@@ -8,9 +8,9 @@ import {
   RightOutlined
 } from '@ant-design/icons';
 import CancelOrderModal from './CancelOrderModal';
-import { deleteOrder } from '../../services/order';
+import { confirmReceipt, deleteOrder } from '../../services/order';
 import { addToShoppingCartService } from '../../services/products';
-import type { SimpleOrderItem } from '../../types/order';
+import type { SimpleOrderItem, OrderResponse } from '../../types/order';
 import globalErrorHandler from '../../utils/globalAxiosErrorHandler';
 import toast from 'react-hot-toast';
 
@@ -26,7 +26,10 @@ const OrderItem: React.FC<OrderItemProps> = ({
   onOrderCancelled 
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+
   const [timeLeft, setTimeLeft] = useState('');
+  const [paymentLoading, setPaymentLoading] = useState(false);
   const navigate = useNavigate();
 
   // 倒计时逻辑
@@ -37,7 +40,7 @@ const OrderItem: React.FC<OrderItemProps> = ({
 
     const calculateTimeLeft = () => {
       const createTime = new Date(order.createdAt).getTime();
-      const expireTime = createTime + 24 * 60 * 60 * 1000;
+      const expireTime = createTime + 30 * 60 * 1000;
       const now = new Date().getTime();
       const diff = expireTime - now;
 
@@ -80,6 +83,25 @@ const OrderItem: React.FC<OrderItemProps> = ({
      globalErrorHandler.handle(error,toast.error)
     }
   };
+  // 添加确认收货处理函数
+const handleConfirmReceipt = async () => {
+  if (order.status !== '待收货') {
+    message.warning('当前订单状态不可确认收货');
+    return;
+  }
+
+  setConfirmLoading(true);
+  try {
+    await confirmReceipt({ orderId: order.id });
+    message.success('确认收货成功！');
+    onOrderCancelled(order.id); // 更新订单状态
+  } catch (error) {
+    globalErrorHandler.handle(error, toast.error);
+    message.error('确认收货失败');
+  } finally {
+    setConfirmLoading(false);
+  }
+};
 
   // 再次购买
   const handleBuyAgain = async () => {
@@ -88,11 +110,56 @@ const OrderItem: React.FC<OrderItemProps> = ({
         addToShoppingCartService(item.id)
       );
       await Promise.all(addToCartPromises);
-      message.success('已加入购物车');
+      navigate('/shopping-cart')
     } catch (error) {
       globalErrorHandler.handle(error,toast.error)
     }
   };
+
+// 处理支付跳转
+const handlePayment = async () => {
+  if (order.status !== '待支付') {
+    message.warning('当前订单状态不可支付');
+    return;
+  }
+
+  setPaymentLoading(true);
+  try {
+    // 直接使用当前组件的 order 数据构建 OrderResponse
+    // 因为支付页面主要需要订单基本信息，这些在当前组件中基本都有
+    const orderResponse: OrderResponse = {
+      orderId: order.id,
+      orderNo: order.orderNo,
+      payAmount: order.payAmount,
+      actualPayAmount: order.actualPayAmount,
+      status: order.status,
+      items: order.items.map(item => ({
+        productId: item.productId,
+        productName: item.productName,
+        config1: item.config1,
+        config2: item.config2,
+        config3: item.config3,
+        quantity: item.quantity,
+        price: item.priceSnapshot, // 使用 priceSnapshot 作为 price
+        discount: 0, // 默认折扣为0
+        payAmount: item.payAmountSnapshot // 使用 payAmountSnapshot 作为 payAmount
+      })),
+      createdAt: order.createdAt,
+      payLimitTime: new Date(new Date(order.createdAt).getTime() + 30 * 60 * 1000).toISOString()
+    };
+    
+    // 导航到支付页面，传递构建好的 OrderResponse
+    navigate(`/order/payment`, {
+      replace: true,
+      state: orderResponse
+    });
+  } catch (error) {
+    globalErrorHandler.handle(error, toast.error);
+    message.error('准备支付数据失败');
+  } finally {
+    setPaymentLoading(false);
+  }
+};
 
   // 获取主商品信息
   const mainItem = order.items[0] || {};
@@ -146,7 +213,7 @@ const OrderItem: React.FC<OrderItemProps> = ({
       <div className="p-4">
         <div className="flex gap-4">
           {/* 商品图片 */}
-          <Link to={`/product/${mainItem.productId}`} className="shrink-0">
+          <Link to={`/product/${mainItem.productId}`} target={mainItem.productId}  className="shrink-0">
             <div className="relative">
               <Image
                 width={80}
@@ -170,7 +237,7 @@ const OrderItem: React.FC<OrderItemProps> = ({
             <div className="flex justify-between items-start">
               <div>
                 <Link 
-                  to={`/product/${mainItem.productId}`}
+                  to={`/product/${mainItem.productId}`}  target={mainItem.productId}
                   className="font-semibold text-gray-900 hover:text-red-600 line-clamp-2 text-sm transition-colors"
                 >
                   {mainItem.productName}
@@ -226,7 +293,6 @@ const OrderItem: React.FC<OrderItemProps> = ({
                 <ClockCircleOutlined className="text-xs" />
                 <span className="font-medium">剩余: {timeLeft}</span>
               </div>
-              {/* 调换位置：取消订单在前，立即支付在后 */}
               <Button 
                 danger
                 onClick={() => setIsModalOpen(true)}
@@ -237,7 +303,8 @@ const OrderItem: React.FC<OrderItemProps> = ({
               </Button>
               <Button 
                 type="primary"
-                onClick={() => navigate(`/payment?orderId=${order.orderNo}`)}
+                onClick={handlePayment}
+                loading={paymentLoading}
                 className="h-8 px-4 font-medium text-xs"
                 style={{ 
                   backgroundColor: '#ff6b35',
@@ -245,7 +312,7 @@ const OrderItem: React.FC<OrderItemProps> = ({
                   fontWeight: 'bold'
                 }}
               >
-                立即支付
+                {paymentLoading ? '加载中...' : '立即支付'}
               </Button>
             </>
           )}
@@ -283,17 +350,18 @@ const OrderItem: React.FC<OrderItemProps> = ({
           )}
 
           {order.status === '待收货' && (
-            <Button 
-              type="primary"
-              onClick={() => navigate(`/order-detail/${order.id}`)}
-              className="h-8 px-4 font-medium text-xs"
-              style={{ 
-                backgroundColor: '#52c41a',
-                borderColor: '#52c41a'
-              }}
-            >
-              确认收货
-            </Button>
+           <Button 
+      type="primary"
+      onClick={handleConfirmReceipt}
+      loading={confirmLoading}
+      className="h-8 px-4 font-medium text-xs"
+      style={{ 
+        backgroundColor: '#52c41a',
+        borderColor: '#52c41a'
+      }}
+    >
+      {confirmLoading ? '处理中...' : '确认收货'}
+    </Button>
           )}
         </div>
       </div>

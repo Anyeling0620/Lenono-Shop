@@ -12,7 +12,8 @@ import {
     Col,
     Divider,
     Badge,
-    Tooltip
+    Tooltip,
+    Modal
 } from 'antd';
 import {
     ShoppingOutlined,
@@ -31,7 +32,10 @@ import {
     ThunderboltOutlined
 } from '@ant-design/icons';
 import type { OrderDetailResponse } from '../types/order';
-import { cancelOrder, getOrderDetail } from '../services/order';
+import { cancelOrder, confirmReceipt, getOrderDetail } from '../services/order';
+import type { AfterSaleApplyState, EvaluationPageState } from '../types/afterSale';
+import toast from 'react-hot-toast';
+import globalErrorHandler from '../utils/globalAxiosErrorHandler';
 
 const OrderDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -39,6 +43,7 @@ const OrderDetail: React.FC = () => {
     const [order, setOrder] = useState<OrderDetailResponse | null>(null);
     const [loading, setLoading] = useState(false);
     const [cancelling, setCancelling] = useState(false);
+    const [confirming, setConfirming] = useState(false); // 添加确认收货加载状态
 
     // 获取订单详情
     const fetchOrderDetail = async () => {
@@ -49,9 +54,8 @@ const OrderDetail: React.FC = () => {
             const data = await getOrderDetail(id);
             setOrder(data);
         } catch (error) {
-            message.error('获取订单详情失败');
-            console.error('获取订单详情失败:', error);
-            navigate('/orders');
+            globalErrorHandler.handle(error, toast.error)
+            navigate('/my-order');
         } finally {
             setLoading(false);
         }
@@ -67,8 +71,7 @@ const OrderDetail: React.FC = () => {
             message.success('订单已取消');
             fetchOrderDetail(); // 重新获取详情
         } catch (error) {
-            message.error('取消订单失败');
-            console.error('取消订单失败:', error);
+            globalErrorHandler.handle(error, toast.error)
         } finally {
             setCancelling(false);
         }
@@ -76,19 +79,59 @@ const OrderDetail: React.FC = () => {
 
     // 申请售后
     const handleApplyAfterSale = (orderItemId: string) => {
-        navigate(`/after-sale/apply?orderId=${order?.id}&orderItemId=${orderItemId}`);
-    };
+        if (!order) return;
 
+        const state: AfterSaleApplyState = {
+            orderId: order.id,
+            orderItemId
+        };
+        navigate('/after-sale/apply', { state });
+    };
     // 评价商品
-    const handleEvaluateProduct = (productId: string, configId: string) => {
-        navigate(`/evaluate?productId=${productId}&configId=${configId}`);
+    const handleEvaluateProduct = (orderItem: OrderDetailResponse['items'][0]) => {
+        if (!order) return;
+
+        const state: EvaluationPageState = {
+            productId: orderItem.productId,
+            configId: orderItem.id,
+            productName: orderItem.productName,
+            configName: `${orderItem.config1} / ${orderItem.config2}${orderItem.config3 ? ` / ${orderItem.config3}` : ''}`,
+            image: orderItem.imageSnapshot!,
+            orderId: order.id
+        };
+        navigate('/evaluate', { state });
     };
 
-    // 确认收货
     const handleConfirmReceipt = async () => {
-        // 这里需要调用确认收货的API
-        message.success('确认收货成功');
-        fetchOrderDetail();
+        if (!order || order.status !== '待收货') {
+            message.warning('当前订单状态不可确认收货');
+            return;
+        }
+
+        Modal.confirm({
+            title: '确认收货',
+            content: '请确认您已收到商品且商品完好无损。确认收货后，订单将完成交易。',
+            okText: '确认收货',
+            cancelText: '取消',
+            okButtonProps: {
+                style: {
+                    backgroundColor: '#52c41a',
+                    borderColor: '#52c41a'
+                }
+            },
+            onOk: async () => {
+                setConfirming(true);
+                try {
+                    await confirmReceipt({ orderId: order.id });
+                    message.success('确认收货成功！');
+                    fetchOrderDetail();
+                } catch (error) {
+                    globalErrorHandler.handle(error, toast.error)
+                } finally {
+                    setConfirming(false);
+                }
+            }
+        });
     };
 
     // 状态映射 - 联想主题色
@@ -196,7 +239,7 @@ const OrderDetail: React.FC = () => {
 
     useEffect(() => {
         fetchOrderDetail();
-    }, [id]);
+    }, []);
 
     if (loading) {
         return (
@@ -274,10 +317,10 @@ const OrderDetail: React.FC = () => {
                                     <div className="flex gap-4">
                                         <div className="relative shrink-0">
                                             <Link to={`/product/${item.productId}`}>
-                                                <Badge.Ribbon 
-                                                    text="秒杀" 
+                                                <Badge.Ribbon
+                                                    text="秒杀"
                                                     color="red"
-                                                    style={{ 
+                                                    style={{
                                                         display: item.seckill ? 'block' : 'none',
                                                         fontSize: '12px',
                                                         padding: '0 8px',
@@ -313,11 +356,11 @@ const OrderDetail: React.FC = () => {
                                                     </Link>
                                                     <div className="mt-2">
                                                         <p className="text-sm text-gray-600">
-                                                            <span className="font-medium">规格:</span> 
+                                                            <span className="font-medium">规格:</span>
                                                             <span className="ml-2">{item.config1} / {item.config2}</span>
                                                             {item.config3 && <span> / {item.config3}</span>}
                                                         </p>
-                                                       
+
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
@@ -341,7 +384,7 @@ const OrderDetail: React.FC = () => {
                                                     <Button
                                                         type="primary"
                                                         size="small"
-                                                        onClick={() => handleEvaluateProduct(item.productId, item.id)}
+                                                        onClick={() => handleEvaluateProduct(item)}
                                                         className="h-8 px-4 text-xs font-medium"
                                                         style={{
                                                             backgroundColor: '#ff6b35',
@@ -419,8 +462,8 @@ const OrderDetail: React.FC = () => {
                                             </div>
                                             <div className="space-y-3">
                                                 {order.coupons.map(coupon => (
-                                                    <div 
-                                                        key={coupon.id} 
+                                                    <div
+                                                        key={coupon.id}
                                                         className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-100"
                                                     >
                                                         <div className="flex-1">
@@ -432,11 +475,11 @@ const OrderDetail: React.FC = () => {
                                                                     {couponTypeMap[coupon.type] || couponTypeMap.default}
                                                                 </Tag>
                                                             </div>
-                                                         
+
                                                         </div>
                                                         <div className="text-right">
                                                             <div className="text-lg font-bold text-green-600">
-                                                                -¥{coupon.discount.toFixed(2)}
+                                                                -¥{coupon.amount.toFixed(2)}
                                                             </div>
                                                             <div className="text-xs text-gray-500">
                                                                 面额: ¥{coupon.amount.toFixed(2)}
@@ -458,8 +501,8 @@ const OrderDetail: React.FC = () => {
                                             </div>
                                             <div className="space-y-3">
                                                 {order.vouchers.map(voucher => (
-                                                    <div 
-                                                        key={voucher.id} 
+                                                    <div
+                                                        key={voucher.id}
                                                         className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-100"
                                                     >
                                                         <div className="flex-1">
@@ -467,7 +510,7 @@ const OrderDetail: React.FC = () => {
                                                                 {voucher.title}
                                                             </div>
                                                             <div className="flex items-center gap-4 mt-1">
-                                                                
+
                                                                 <div className="text-xs text-gray-500">
                                                                     使用时间: {new Date(voucher.useTime).toLocaleString()}
                                                                 </div>
@@ -610,7 +653,7 @@ const OrderDetail: React.FC = () => {
                                                 {couponTypeMap[coupon.type] || couponTypeMap.default}
                                             </Tag>
                                         </div>
-                                        <span className="text-green-500">-¥{coupon.discount.toFixed(2)}</span>
+                                        <span className="text-green-500">-¥{coupon.amount.toFixed(2)}</span>
                                     </div>
                                 ))}
 
@@ -693,7 +736,35 @@ const OrderDetail: React.FC = () => {
                                         <Button
                                             type="primary"
                                             block
-                                            onClick={() => navigate(`/payment?orderId=${order.orderNo}`)}
+                                            onClick={() => {
+                                                // 构建支付页面需要的 OrderResponse 数据
+                                                const paymentData = {
+                                                    orderId: order.id,
+                                                    orderNo: order.orderNo,
+                                                    payAmount: order.payAmount,
+                                                    actualPayAmount: order.actualPayAmount,
+                                                    status: order.status,
+                                                    items: order.items.map(item => ({
+                                                        productId: item.productId,
+                                                        productName: item.productName,
+                                                        config1: item.config1,
+                                                        config2: item.config2,
+                                                        config3: item.config3,
+                                                        quantity: item.quantity,
+                                                        price: item.priceSnapshot,
+                                                        discount: 0,
+                                                        payAmount: item.payAmountSnapshot
+                                                    })),
+                                                    createdAt: order.createdAt,
+                                                    payLimitTime: order.payLimitTime
+                                                };
+
+                                                // 导航到支付页面，传递正确的 state
+                                                navigate(`/order/payment`, {
+                                                    replace: true,
+                                                    state: paymentData
+                                                });
+                                            }}
                                             className="h-10 font-medium"
                                             style={{
                                                 backgroundColor: '#ff6b35',
@@ -708,18 +779,20 @@ const OrderDetail: React.FC = () => {
                                     </>
                                 )}
 
+
                                 {order.status === '待收货' && (
                                     <Button
                                         type="primary"
                                         block
                                         onClick={handleConfirmReceipt}
+                                        loading={confirming}
                                         className="h-10 font-medium"
                                         style={{
                                             backgroundColor: '#52c41a',
                                             borderColor: '#52c41a'
                                         }}
                                     >
-                                        确认收货
+                                        {confirming ? '处理中...' : '确认收货'}
                                     </Button>
                                 )}
 
@@ -727,7 +800,7 @@ const OrderDetail: React.FC = () => {
                                     <div className="space-y-3">
                                         <Button
                                             block
-                                            onClick={() => navigate(`/after-sale/apply?orderId=${order.id}`)}
+                                            onClick={() => toast('点左边的商品进行售后')}
                                             className="h-10 font-medium border-gray-300 hover:border-red-500 hover:text-red-600"
                                         >
                                             申请售后
@@ -868,3 +941,4 @@ const OrderDetail: React.FC = () => {
 };
 
 export default OrderDetail;
+

@@ -73,6 +73,8 @@ const PayPage: React.FC = () => {
     // 从路由状态获取订单数据
     useEffect(() => {
         if (location.state) {
+            console.log(location.state);
+            
             const order = location.state as OrderResponse;
             setOrderData(order);
 
@@ -85,7 +87,7 @@ const PayPage: React.FC = () => {
             }
         } else {
             message.error('订单信息不存在');
-            navigate('/cart');
+            navigate('/index');
         }
     }, [location.state, navigate]);
 

@@ -4,183 +4,8 @@ import { SearchOutlined, DeleteOutlined, ShoppingOutlined, ExclamationCircleFill
 import dayjs from 'dayjs';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
-import { axiosInstance, type ApiResponse } from '../../services/AxiosService';
-import type { CreateAfterSaleDto, CreateAfterSaleResponse } from '../../types/afterSale';
-import type { OrderListItem, OrderListQuery, OrderListResponse, OrderStats, OrderStatus } from '../../types/order';
-
-
-
-// ========== 2. 类型定义 (严格同步 uploaded:order.ts) ==========
-
-// // 更新 OrderStatus 枚举为中文
-// export type OrderStatus =
-//   | '待支付'
-//   | '已支付'
-//   | '待发货'
-//   | '已发货'
-//   | '待收货'
-//   | '已收货'
-//   | '已取消';
-
-// // 对应 OrderItemSummary
-// export interface OrderItemSummary {
-//   id: string;
-//   productId: string;
-//   productName: string;
-//   config1: string;
-//   config2: string;
-//   config3?: string;
-//   quantity: number;
-//   priceSnapshot: number;
-//   payAmountSnapshot: number;
-//   imageSnapshot?: string;
-//   seckill: boolean;
-// }
-
-// // 对应 OrderListItem (列表项)
-// export interface OrderListItem {
-//   id: string;
-//   orderNo: string;
-//   status: OrderStatus;
-//   payAmount: number;
-//   actualPayAmount: number;
-//   createdAt: Date | string; 
-//   payTime?: Date | string;
-//   items: OrderItemSummary[];
-// }
-
-// // 对应 OrderStats
-// export interface OrderStats {
-//   totalCount: number;
-//   pendingPaymentCount: number;
-//   pendingShipmentCount: number;
-//   pendingReceiptCount: number;
-//   completedCount: number;
-//   cancelledCount: number;
-//   totalAmount: number;
-// }
-
-// // 对应 OrderListQuery (并补充前端分页参数)
-// export interface OrderListQuery {
-//   status?: OrderStatus;
-//   startDate?: string;
-//   endDate?: string;
-//   keyword?: string;
-//   page?: number;     
-//   pageSize?: number;
-// }
-
-// // 对应 OrderListResponse
-// export interface OrderListResponse {
-//   total: number;
-//   data: OrderListItem[];
-// }
-
-// 对应 CancelOrderInput
-interface CancelOrderInput {
-  orderId: string;
-  // 注意：Types文件中定义只有 orderId，这里前端可能需要 reason，但调用时需符合接口
-  reason?: string; 
-}
-
-
-// ========== 3. 真实 API 服务函数 (适配新类型) ==========
-
-/**
- * 获取订单列表
- */
-// eslint-disable-next-line react-refresh/only-export-components
-export async function getOrderList(params: OrderListQuery): Promise<OrderListResponse> {
-    try {
-        const res = await axiosInstance.get<ApiResponse<OrderListResponse>>("/order/list/query", {
-            params
-        });
-        // 适配 uploaded:order.ts 中的 OrderListResponse { total, data }
-        const data = res.data.data;
-        if (!data) return { total: 0, data: [] };
-        // 兼容性处理：如果后端直接返回数组
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (Array.isArray(data)) return { total: data.length, data: data as any };
-        return data;
-    } catch (error) {
-        console.error("API Error: getOrderList", error);
-        throw error; 
-    }
-}
-
-/**
- * 获取订单统计信息
- */
-// eslint-disable-next-line react-refresh/only-export-components
-export async function getOrderStats(): Promise<OrderStats> {
-    try {
-        const res = await axiosInstance.get<ApiResponse<OrderStats>>("/order/stats");
-        return res.data.data;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-        // 返回默认空统计
-        return { 
-            totalCount: 0, 
-            pendingPaymentCount: 0, 
-            pendingShipmentCount: 0, 
-            pendingReceiptCount: 0, 
-            completedCount: 0, 
-            cancelledCount: 0, 
-            totalAmount: 0 
-        };
-    }
-}
-
-/**
- * 取消订单
- */
-// eslint-disable-next-line react-refresh/only-export-components
-export async function cancelOrder(params: CancelOrderInput): Promise<void> {
-    await axiosInstance.post<ApiResponse<void>>("/order/cancel", params);
-}
-
-/**
- * 删除订单
- */
-// eslint-disable-next-line react-refresh/only-export-components
-export async function deleteOrder(orderId: string) {
-    return (await axiosInstance.delete<ApiResponse<number>>(`/order/delete-order/${orderId}`)).data.data;
-}
-
-/**
- * 确认收货
- */
-// eslint-disable-next-line react-refresh/only-export-components
-export async function confirmReceipt(orderId: string) {
-    return (await axiosInstance.post<ApiResponse<unknown>>('/order/confirm-receipt', { orderId })).data.data;
-}
-
-/**
- * 申请售后
- */
-// eslint-disable-next-line react-refresh/only-export-components
-export async function createAfterSale(
-  params: Omit<CreateAfterSaleDto, 'images'> & { imageFiles?: File[] }
-): Promise<CreateAfterSaleResponse> {
-  const formData = new FormData();
-  formData.append('orderId', params.orderId);
-  formData.append('orderItemId', params.orderItemId);
-  formData.append('type', params.type);
-  formData.append('reason', params.reason);
-  if (params.remark) {
-    formData.append('remark', params.remark);
-  }
-  if (params.imageFiles && params.imageFiles.length > 0) {
-    params.imageFiles.forEach((file) => {
-      formData.append('images', file);
-    });
-  }
-  return (await axiosInstance.post<ApiResponse<CreateAfterSaleResponse>>(
-    "/after-sale/apply", 
-    formData,
-    { headers: { 'Content-Type': 'multipart/form-data' } }
-  )).data.data;
-}
+import type { OrderListItem, OrderListQuery, OrderStats, OrderStatus } from '../../types/order';
+import { cancelOrder, deleteOrder, getOrderList, getOrderStats, confirmReceipt } from '../../services/order'; // 添加 confirmReceipt 导入
 
 // ========== 4. 状态配置 (适配中文枚举) ==========
 
@@ -260,13 +85,12 @@ const Orders = () => {
         fetchOrders();
     }, [fetchOrders]);
 
-
     const showCancelModal = (id: string) => setCancelModal({ open: true, orderId: id });
     const hideCancelModal = () => setCancelModal({ open: false, orderId: null });
     const confirmCancelOrder = async () => {
         if (!cancelModal.orderId) return;
         try {
-            await cancelOrder({ orderId: cancelModal.orderId, reason: '用户主动取消' });
+            await cancelOrder({ orderId: cancelModal.orderId });
             toast.success('订单已取消');
             fetchOrders(); 
         } catch (error) {
@@ -296,22 +120,56 @@ const Orders = () => {
 
     const showConfirmModal = (id: string) => setConfirmModal({ open: true, orderId: id });
     const hideConfirmModal = () => setConfirmModal({ open: false, orderId: null });
+    
+    // 确认收货 - 完整实现
     const confirmReceiveOrder = async () => {
         if (!confirmModal.orderId) return;
         try {
-            await confirmReceipt(confirmModal.orderId);
-            toast.success('确认收货成功');
-            fetchOrders(); 
+            // 调用确认收货API
+            await confirmReceipt({ orderId: confirmModal.orderId });
+            
+            toast.success('确认收货成功！');
+            
+            // 重新获取订单列表
+            fetchOrders();
+            
         } catch (error) {
             console.error(error);
-            toast.error('操作失败');
+            toast.error('确认收货失败');
         } finally {
             hideConfirmModal();
         }
     };
 
     const handlePay = (order: OrderListItem) => {
-        navigate(`/pay?orderId=${order.id}&amount=${order.actualPayAmount}`);
+        // 构建支付页面需要的 OrderResponse 数据
+        const paymentData = {
+            orderId: order.id,
+            orderNo: order.orderNo,
+            payAmount: order.payAmount,
+            actualPayAmount: order.actualPayAmount,
+            status: order.status,
+            items: order.items.map(item => ({
+                productId: item.productId,
+                productName: item.productName,
+                config1: item.config1,
+                config2: item.config2,
+                config3: item.config3,
+                quantity: item.quantity,
+                price: item.priceSnapshot,
+                discount: 0,
+                payAmount: item.payAmountSnapshot
+            })),
+            createdAt: order.createdAt,
+            // 计算支付截止时间：创建时间 + 24小时
+            payLimitTime: new Date(new Date(order.createdAt).getTime() + 30 * 60 * 1000).toISOString()
+        };
+        
+        // 导航到支付页面，传递正确的 state
+        navigate(`/order/payment`, {
+            replace: true,
+            state: paymentData
+        });
     };
 
     const handleApplyAfterSale = (order: OrderListItem) => {
@@ -367,7 +225,7 @@ const Orders = () => {
                 <div className="p-5">
                     {order.items && order.items.map((item) => (
                         <div key={item.id} className="flex gap-4 mb-4 last:mb-0">
-                            <Link to={`/product/${item.productId}`} className="block flex-shrink-0"> 
+                            <Link to={`/product/${item.productId}`} target={item.productId} className="block flex-shrink-0"> 
                                 <div className="w-20 h-20 border border-gray-200 rounded-sm overflow-hidden bg-gray-100 hover:border-red-400 transition-colors">
                                     <Image 
                                         src={item.imageSnapshot} 
@@ -383,7 +241,7 @@ const Orders = () => {
 
                             <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-start">
-                                    <Link to={`/product/${item.productId}`} className="text-gray-800 font-medium text-sm line-clamp-2 w-[70%] hover:text-red-500 transition-colors">
+                                    <Link to={`/product/${item.productId}`} target={item.productId} className="text-gray-800 font-medium text-sm line-clamp-2 w-[70%] hover:text-red-500 transition-colors">
                                         {item.productName}
                                     </Link>
                                     <div className="text-right">
@@ -419,7 +277,14 @@ const Orders = () => {
                                 <Link to={`/logistics/${order.orderNo}`}>
                                     <Button size="small" className="rounded-sm border-gray-300 text-gray-600 hover:text-red-500 hover:border-red-500">查看物流</Button>
                                 </Link>
-                                <Button size="small" type="primary" className="rounded-sm bg-red-500 border-red-500 hover:bg-red-600 hover:border-red-600" onClick={() => showConfirmModal(order.id)}>确认收货</Button>
+                                <Button 
+                                    size="small" 
+                                    type="primary" 
+                                    className="rounded-sm bg-red-500 border-red-500 hover:bg-red-600 hover:border-red-600" 
+                                    onClick={() => showConfirmModal(order.id)}
+                                >
+                                    确认收货
+                                </Button>
                             </>
                         )}
                         {order.status === '已收货' && (
@@ -510,11 +375,71 @@ const Orders = () => {
                 )}
             </div>
 
-            <Modal title={<div className="flex items-center gap-2"><ExclamationCircleFilled style={{ color: '#faad14' }} /> 取消订单</div>} open={cancelModal.open} onOk={confirmCancelOrder} onCancel={hideCancelModal} okText="确定" cancelText="再想想" centered width={360} styles={{ body: { paddingTop: '10px' } }}><p>确定要取消该订单吗？</p></Modal>
-            <Modal title={<div className="flex items-center gap-2"><ExclamationCircleFilled style={{ color: '#ff4d4f' }} /> 删除订单</div>} open={deleteModal.open} onOk={confirmDeleteOrder} onCancel={hideDeleteModal} okText="删除" cancelText="取消" okButtonProps={{ danger: true }} centered width={360} styles={{ body: { paddingTop: '10px' } }}><p>确定要删除该订单记录吗？删除后不可恢复。</p></Modal>
-            <Modal title={<div className="flex items-center gap-2"><CheckCircleFilled style={{ color: '#faad14' }} /> 确认收货</div>} open={confirmModal.open} onOk={confirmReceiveOrder} onCancel={hideConfirmModal} okText="确认" cancelText="取消" okButtonProps={{ style: { backgroundColor: '#ef4444', borderColor: '#ef4444' } }} centered width={360} styles={{ body: { paddingTop: '10px' } }}><p>确认已收到商品且商品无误吗？</p></Modal>
-        </div>
-    );
-};
+            {/* 取消订单弹窗 */}
+            <Modal 
+                title={<div className="flex items-center gap-2"><ExclamationCircleFilled style={{ color: '#faad14' }} /> 取消订单</div>} 
+                open={cancelModal.open} 
+                onOk={confirmCancelOrder} 
+                onCancel={hideCancelModal} 
+                okText="确定" 
+                cancelText="再想想" 
+                centered 
+                width={360} 
+                styles={{ body: { paddingTop: '10px' } }}
+            >
+                <p>确定要取消该订单嘛？</p>
+                </Modal>
+                        {/* 删除订单弹窗 */}
+        <Modal 
+            title={<div className="flex items-center gap-2"><ExclamationCircleFilled style={{ color: '#ff4d4f' }} /> 删除订单</div>} 
+            open={deleteModal.open} 
+            onOk={confirmDeleteOrder} 
+            onCancel={hideDeleteModal} 
+            okText="删除" 
+            cancelText="取消" 
+            okButtonProps={{ danger: true }} 
+            centered 
+            width={360} 
+            styles={{ body: { paddingTop: '10px' } }}
+        >
+            <p>确定要删除该订单记录吗？删除后不可恢复。</p>
+        </Modal>
+        
+        {/* 确认收货弹窗 - 修改为更友好的提示 */}
+        <Modal 
+            title={<div className="flex items-center gap-2"><CheckCircleFilled style={{ color: '#52c41a' }} /> 确认收货</div>} 
+            open={confirmModal.open} 
+            onOk={confirmReceiveOrder} 
+            onCancel={hideConfirmModal} 
+            okText="确认收货" 
+            cancelText="取消" 
+            okButtonProps={{ 
+                style: { 
+                    backgroundColor: '#52c41a', 
+                    borderColor: '#52c41a' 
+                } 
+            }} 
+            centered 
+            width={400} 
+            styles={{ body: { paddingTop: '10px' } }}
+        >
+            <div className="space-y-3">
+                <p className="text-gray-700">请确认您已收到商品且商品完好无损。</p>
+                <div className="bg-blue-50 p-3 rounded border border-blue-100">
+                    <p className="text-sm text-blue-700">
+                        <strong>温馨提示：</strong>
+                    </p>
+                    <ul className="text-xs text-blue-600 mt-1 space-y-1 pl-4">
+                        <li>• 确认收货后，订单将完成交易</li>
+                        <li>• 请仔细检查商品数量和质量</li>
+                        <li>• 如有问题，请在确认收货前联系客服</li>
+                    </ul>
+                </div>
+            </div>
+        </Modal>
+    </div>
+);
+}
 
-export default Orders;
+
+export default Orders

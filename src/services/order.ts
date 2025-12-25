@@ -1,4 +1,4 @@
-import type { CancelOrderInput, CreateOrderInput, OrderDetailResponse, OrderListQuery, OrderListResponse, OrderResponse, OrderStats, PaymentInput, SimpleOrderItem } from "../types/order";
+import type { CancelOrderInput, ConfirmReceiptInput, ConfirmReceiptResponse, CreateOrderInput, OrderDetailResponse, OrderListQuery, OrderListResponse, OrderResponse, OrderStats, PaymentInput, SimpleOrderItem } from "../types/order";
 import { type ApiResponse, axiosInstance } from "./AxiosService";
 
 /**
@@ -13,6 +13,20 @@ export async function createOrder(params:CreateOrderInput): Promise<OrderRespons
  */
 export async function cancelOrder(params: CancelOrderInput): Promise<void> {
   return (await axiosInstance.post<ApiResponse<void>>("/order/cancel", params)).data.data;
+}
+/**
+ * 确认收货
+ */
+/**
+ * 确认收货的异步函数
+ * @param params - 确认收货的参数，类型为 ConfirmReceiptInput
+ * @returns - 返回一个 Promise，解析为 ConfirmReceiptResponse 类型的数据
+ */
+export async function confirmReceipt(params: ConfirmReceiptInput): Promise<ConfirmReceiptResponse> {
+  return (await axiosInstance.post<ApiResponse<ConfirmReceiptResponse>>(
+    "/order/confirm-receipt", 
+    params
+  )).data.data;
 }
 
 /**

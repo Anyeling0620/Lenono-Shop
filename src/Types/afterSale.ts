@@ -109,8 +109,8 @@ export interface EvaluationDetail {
   star: number;
   content: string;
   status: EvaluationStatus;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   images: ImageInfo[];
   product: ProductInfo;
   config: ConfigInfo;
@@ -161,6 +161,7 @@ export interface AfterSaleDetail {
   order: OrderInfo;
   orderItem: OrderItemInfo;
   complaints?: ComplaintDetail[];
+  merchantLogisticsNo: string|null;
 }
 
 export interface ComplaintDetail {
@@ -280,3 +281,42 @@ export type GetCommentsResponse = CommentDetail[];
 export type GetAfterSalesResponse = AfterSaleListItem[];
 export type GetComplaintsResponse = ComplaintDetail[];
 export type GetAfterSaleDetailResponse = AfterSaleDetail;
+
+
+
+
+
+
+
+// types/navigation.ts
+export interface EvaluationPageState {
+  productId: string;
+  configId: string;
+  productName: string;
+  configName: string;
+  image: string;
+  orderId: string;
+}
+
+export interface AfterSaleApplyState {
+  orderId: string;
+  orderItemId: string;
+}
+
+export interface ComplaintPageState {
+  afterSaleId: string;
+}
+
+export interface ReapplyState {
+  orderId: string;
+  orderItemId: string;
+}
+
+export interface AfterSaleQueryParams {
+  status?: string;
+  orderId?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+

@@ -16,12 +16,12 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   // 兼容缺少字段的场景
   const shelfProduct = product.shelfProduct;
-  const minPriceConfig = product.minPriceConfig as any;
+  const minPriceConfig = product.minPriceConfig;
 
   // 1. 获取商品最低配置的售价（转换为数字），无配置时回退到 product.price
   const productPrice = minPriceConfig
     ? toNumber(minPriceConfig.salePrice)
-    : toNumber((product.product as any).price || 0);
+    : toNumber((product.product).price || 0);
 
   // 2. 筛选可用优惠券：满足门槛的优惠券
   const availableCoupons = (product.coupons || []).filter((item) => {
@@ -50,7 +50,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const originalPrice = minPriceConfig
     ? toNumber(minPriceConfig.originalPrice)
-    : toNumber((product.product as any).price || 0);
+    : toNumber((product.product).price || 0);
 
   return (
     <li className='w-[290px] h-[385px] bg-white hover:shadow-lg transition-all duration-300'>
@@ -59,7 +59,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className='overflow-hidden w-[250px] h-[180px] mx-auto border-b-[1px] border-[#e0e0e0] flex items-center justify-center'>
             <img
               className='w-[160px] h-[160px] object-contain'
-              src={(product.product.mainImage || (product.product as any).image) as string}
+              src={(product.product.mainImage || (product.product).image)}
             />
           </div>
 
@@ -90,22 +90,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* 标签区域 */}
           <div className='min-h-[30px] leading-[30px] overflow-hidden flex items-center flex-wrap'>
             {shelfProduct?.isSelfOperated && <Tag type="self" />}
-            {/* 只渲染筛选后的最高额优惠券标签 */}
             {highestCoupon && (
               <Tag
                 type="coupon"
                 money={
                   highestCoupon.coupon.type === '满减'
                     ? toNumber(highestCoupon.coupon.amount)
-                    : toNumber(highestCoupon.coupon.amount) * toNumber(product.minPriceConfig.salePrice)
+                    : toNumber(highestCoupon.coupon.amount) * toNumber(product.minPriceConfig?.salePrice || productPrice)
                 }
               />
             )}
             {shelfProduct?.isCustomizable && <Tag type="custom" />}
             {shelfProduct?.isSelfOperated && <Tag type="tradeIn" />}
-            {shelfProduct?.installment && shelfProduct.installment > 0 && (
-              <Tag type="installment" month={shelfProduct.installment} />
+            {shelfProduct?.installment !== undefined && Number(shelfProduct.installment) > 0 && (
+              <Tag type="installment" month={Number(shelfProduct.installment)} />
             )}
+
           </div>
         </Link>
       </div>

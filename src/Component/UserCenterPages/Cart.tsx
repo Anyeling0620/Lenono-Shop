@@ -62,12 +62,7 @@ const Cart: React.FC = () => {
     // 这里可以调用API更新购物车数量
   };
 
-  // 处理删除商品
-  const handleRemoveItem = (cartId: string) => {
-    setCartItems(prev => prev.filter(item => item.cartId !== cartId));
-    setSelectedIds(prev => prev.filter(id => id !== cartId));
-    // 这里可以调用API删除购物车商品
-  };
+
 
   // 处理删除选中商品
   const handleRemoveSelected = async() => {
@@ -277,7 +272,7 @@ const Cart: React.FC = () => {
                         </div>
                         <button
                           className="text-xs text-gray-500 hover:text-[#e1140a]"
-                          onClick={() => handleRemoveItem(item.cartId)}
+                          onClick={handleRemoveSelected}
                         >
                           删除
                         </button>

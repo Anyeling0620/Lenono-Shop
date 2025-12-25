@@ -1,7 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import toast from 'react-hot-toast';
-import { getComplaints } from '../../services/afterSale';
+import {
+  Card,
+  Tag,
+  Image,
+  Typography,
+  Button,
+  Spin,
+  Empty,
+  Tooltip,
+  Popconfirm
+} from 'antd';
+import {
+  DownOutlined,
+  UpOutlined,
+  ExclamationCircleOutlined,
+  FileTextOutlined,
+  ShoppingOutlined,
+  CalendarOutlined,
+  EyeOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  ArrowRightOutlined,
+  RollbackOutlined
+} from '@ant-design/icons';
+import { deleteComplaint, getComplaints } from '../../services/afterSale';
 import type {
   ComplaintDetail,
   ComplaintStatus,
@@ -9,24 +33,48 @@ import type {
   AfterSaleType,
   OrderStatus
 } from '../../types/afterSale';
+import globalErrorHandler from '../../utils/globalAxiosErrorHandler';
 
-type StatusKey = ComplaintStatus | string;
+const { Paragraph } = Typography;
 
-const STATUS_CONFIG: Record<StatusKey, { label: string; className: string }> = {
-  正常: { label: '正常', className: 'bg-blue-100 text-blue-800 border border-blue-200' },
-  撤回: { label: '撤回', className: 'bg-gray-100 text-gray-800 border border-gray-200' },
-  用户删除: { label: '用户删除', className: 'bg-red-100 text-red-800 border border-red-200' }
+
+
+
+const AFTERSALE_TYPE_CONFIG: Record<string, { color: string; bgColor: string }> = {
+  退货: { color: '#fa541c', bgColor: '#fff2e8' },
+  换货: { color: '#1890ff', bgColor: '#e6f7ff' },
+  维修: { color: '#722ed1', bgColor: '#f9f0ff' },
+  退款: { color: '#13c2c2', bgColor: '#e6fffb' }
 };
 
-const getStatusDisplay = (status: StatusKey) =>
-  STATUS_CONFIG[status] ?? {
-    label: status || '未知状态',
-    className: 'bg-gray-100 text-gray-800 border border-gray-200'
+
+
+const getAfterSaleTypeStyle = (type: string) =>
+  AFTERSALE_TYPE_CONFIG[type] ?? {
+    color: '#8c8c8c',
+    bgColor: '#fafafa'
   };
 
 const formatDateTime = (value?: Date | string) => {
   if (!value) return '--';
-  return dayjs(value).format('YYYY-MM-DD HH:mm');
+  return dayjs(value).format('MM-DD HH:mm');
+};
+
+const formatDate = (value?: Date | string) => {
+  if (!value) return '--';
+  const date = dayjs(value);
+  const now = dayjs();
+  const diffDays = now.diff(date, 'day');
+
+  if (diffDays === 0) {
+    return '今天 ' + date.format('HH:mm');
+  } else if (diffDays === 1) {
+    return '昨天 ' + date.format('HH:mm');
+  } else if (diffDays < 7) {
+    return `${diffDays}天前`;
+  } else {
+    return date.format('MM-DD');
+  }
 };
 
 const formatCurrency = (value?: number | string) => {
@@ -37,16 +85,27 @@ const formatCurrency = (value?: number | string) => {
   return value ?? '--';
 };
 
+
+
 const MOCK_COMPLAINTS: ComplaintDetail[] = [
   {
     id: 'mock-1',
     userId: 'mock-user',
     afterSaleId: 'mock-after-1',
-    content: '示例投诉：收到的键盘有按键失灵。',
+    content: '示例投诉：收到的键盘有按键失灵，空格键按下后无法正常回弹，严重影响打字体验。已经联系客服多次，但问题仍未得到有效解决。',
     status: '正常' as ComplaintStatus,
     createdAt: new Date(),
     updatedAt: new Date(),
-    images: [],
+    images: [
+      {
+        id: 'img-1',
+        image: 'https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=400&h=300&fit=crop'
+      },
+      {
+        id: 'img-2',
+        image: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w-400&h=300&fit=crop'
+      }
+    ],
     afterSale: {
       id: 'after-1',
       afterSaleNo: 'AS202501010001',
@@ -75,14 +134,14 @@ const MOCK_COMPLAINTS: ComplaintDetail[] = [
     id: 'mock-2',
     userId: 'mock-user',
     afterSaleId: 'mock-after-2',
-    content: '示例投诉：物流多日未更新，无法联系到客服。',
+    content: '示例投诉：物流多日未更新，无法联系到客服。订单显示已发货但物流信息停滞超过5天，多次拨打客服电话无人接听，在线客服也长时间无响应。',
     status: '撤回' as ComplaintStatus,
     createdAt: new Date(),
     updatedAt: new Date(),
     images: [
       {
         id: 'img-1',
-        image: 'https://placehold.co/96x96/e2e8f0/1e293b?text=Proof'
+        image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&h=300&fit=crop'
       }
     ],
     afterSale: {
@@ -114,23 +173,17 @@ const MOCK_COMPLAINTS: ComplaintDetail[] = [
 const Complaint: React.FC = () => {
   const [complaints, setComplaints] = useState<ComplaintDetail[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const fetchComplaints = async () => {
       try {
         setLoading(true);
-        setError(null);
         const data = await getComplaints();
-        if (data && data.length > 0) {
-          setComplaints(data);
-        } else {
-          setError('暂无接口数据，已展示模拟数据');
-          setComplaints(MOCK_COMPLAINTS);
-        }
+        setComplaints(data);
       } catch (error) {
-        console.error('获取投诉列表失败', error);
-        setError('获取投诉列表失败，已展示模拟数据');
+        globalErrorHandler.handle(error, toast.error)
         setComplaints(MOCK_COMPLAINTS);
         toast.error('获取投诉列表失败，已使用模拟数据');
       } finally {
@@ -141,101 +194,365 @@ const Complaint: React.FC = () => {
     void fetchComplaints();
   }, []);
 
+  const onExpand = (id: string) => {
+    setExpandedKeys(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteComplaint(id);
+      toast.success('删除成功');
+      setComplaints(prev => prev.filter(item => item.id !== id));
+    } catch (error) {
+      console.error('删除投诉失败', error);
+      toast.error('删除失败，请重试');
+    }
+  };
+
+  const handleWithdraw = async (id: string) => {
+    try {
+      // await withdrawComplaint(id);
+      toast.success('撤回成功');
+      // 更新投诉状态为"撤回"
+      setComplaints(prev => prev.map(item =>
+        item.id === id ? { ...item, status: '撤回' as ComplaintStatus } : item
+      ));
+    } catch (error) {
+      console.error('撤回投诉失败', error);
+      toast.error('撤回失败，请重试');
+    }
+  };
+
+
+
+  if (loading) {
+    return (
+      <div className=" bg-gray-50 p-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-center h-40">
+            <Spin size="large" tip="加载中..." />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 bg-[#f5f5f5] min-h-[calc(90vh-120px)]">
-      <h3 className="text-2xl font-bold mb-6 text-[#333]">我的投诉</h3>
-
-      <div className="max-w-4xl mx-auto space-y-4">
-        {loading && (
-          <div className="bg-white shadow-sm rounded-lg p-6 border border-gray-200 text-gray-500">
-            加载中...
+    <div className=" bg-gray-50 p-4">
+      <div className="max-w-4xl mx-auto">
+        {/* 紧凑标题 */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-red-100 rounded-lg">
+                <ExclamationCircleOutlined className="text-lg text-red-600" />
+              </div>
+              <h1 className="text-xl font-bold text-gray-900">我的投诉</h1>
+              <span className="text-sm text-gray-500 ml-2">({complaints.length})</span>
+            </div>
           </div>
-        )}
+        </div>
 
-        {!loading && error && (
-          <div className="bg-white shadow-sm rounded-lg p-6 border border-gray-200 text-red-500">
-            {error}
-          </div>
-        )}
+        {/* 投诉列表 */}
+        {complaints.length === 0 ? (
+          <Card className="shadow-sm border border-gray-200 rounded-lg">
+            <Empty
+              className="py-12"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={
+                <div className="text-center">
+                  <p className="text-gray-600 mb-2 text-sm">暂无投诉记录</p>
+                  <p className="text-gray-400 text-xs mb-4">您还没有提交过任何投诉</p>
+                 
+                </div>
+              }
+            />
+          </Card>
+        ) : (
+          <div className={`h-[650px] overflow-y-auto pr-[6px] pb-2
+                [&::-webkit-scrollbar]:w-1
+                [&::-webkit-scrollbar-track]:rounded-xl
+                [&::-webkit-scrollbar-track]:bg-gray-100
+                [&::-webkit-scrollbar-thumb]:rounded-xl
+                [&::-webkit-scrollbar-thumb]:bg-gray-300
+                [&::-webkit-scrollbar-thumb:hover]:bg-gray-400
+                [&::-webkit-scrollbar-button]:hidden
+            `}>
+            <div className="space-y-3">
+              {complaints.map((complaint) => {
+                const id = complaint.id;
+                const isExpanded = expandedKeys.has(id);
+                const afterSale = complaint.afterSale;
+                const typeStyle = getAfterSaleTypeStyle(afterSale.type);
 
-        {!loading && !error && complaints.length === 0 && (
-          <div className="bg-white shadow-sm rounded-lg p-10 border border-dashed border-gray-300 text-center text-gray-500">
-            暂无投诉记录
-          </div>
-        )}
+                if (complaint.status !== '正常') return
 
-        {!loading &&
-          complaints.length > 0 &&
-          complaints.map((complaint) => {
-            const badge = getStatusDisplay(complaint.status);
-            const afterSale = complaint.afterSale;
+                return (
+                  <Card
+                    key={id}
+                    className={`shadow-sm border border-gray-200 rounded-lg transition-all duration-200 hover:shadow ${isExpanded ? 'border-red-200' : ''
+                      }`}
+                    bodyStyle={{ padding: 0 }}
+                    size="small"
+                  >
+                    {/* 紧凑头部 */}
+                    <div className="p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        {/* 左侧信息 */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Tag
+                              style={{
+                                color: typeStyle.color,
+                                backgroundColor: typeStyle.bgColor,
+                                borderColor: typeStyle.color,
+                                fontSize: '11px',
+                                height: '20px',
+                                lineHeight: '18px'
+                              }}
+                            >
+                              {afterSale.type}
+                            </Tag>
+                            <span className="text-xs text-gray-500">售后单号: {afterSale.afterSaleNo}</span>
+                          </div>
 
-            return (
-              <details key={complaint.id} className="group">
-                <summary className="cursor-pointer list-none p-0">
-                  <div className="bg-white shadow-sm rounded-lg p-6 border border-gray-200 hover:shadow-md hover:border-gray-300 transition-all duration-200">
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="flex-1">
-                        <h4 className="text-xl font-semibold text-[#333] mb-2 leading-tight">
-                          售后单 {afterSale.afterSaleNo}
-                        </h4>
-                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600">
-                          <span>订单 {afterSale.order.orderNo}</span>
-                          <span>类型：{afterSale.type}</span>
-                          <span>投诉时间：{formatDateTime(complaint.createdAt)}</span>
+                          <h3 className="text-sm font-semibold text-gray-900 mb-1 truncate">
+                            {afterSale.orderItem.productName}
+                          </h3>
+
+                          <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
+                            <span className="flex items-center gap-1">
+                              <ShoppingOutlined className="text-xs" />
+                              订单: {afterSale.order.orderNo}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <CalendarOutlined className="text-xs" />
+                              {formatDate(complaint.createdAt)}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span className="text-base font-bold text-red-600">
+                              {formatCurrency(afterSale.order.actualPayAmount)}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {afterSale.orderItem.quantity}件
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 右侧状态和操作 */}
+                        <div className="flex flex-col items-end gap-2">
+
+                          <div className="flex items-center gap-1">
+                            <Tooltip title={isExpanded ? "收起详情" : "查看详情"}>
+                              <Button
+                                type="text"
+                                size="small"
+                                icon={isExpanded ? <UpOutlined /> : <DownOutlined />}
+                                onClick={() => onExpand(id)}
+                                className="text-gray-500 hover:text-red-600 h-6 w-6 p-0"
+                              />
+                            </Tooltip>
+
+                            <Popconfirm
+                              title="确认撤回"
+                              description="确定要撤回这条投诉吗？撤回后投诉将不再有效"
+                              onConfirm={() => handleWithdraw(complaint.id)}
+                              onCancel={() => { }}
+                              okText="确定"
+                              cancelText="取消"
+                              okButtonProps={{ type: 'primary' }}
+                            >
+                              <Tooltip title="撤回投诉">
+                                <Button
+                                  type="text"
+                                  size="small"
+                                  icon={<RollbackOutlined />}
+                                  className="text-gray-500 hover:text-orange-600 h-6 w-6 p-0"
+                                />
+                              </Tooltip>
+                            </Popconfirm>
+
+                            <Popconfirm
+                              title="确认删除"
+                              description="确定要删除这条投诉吗？删除后不可恢复"
+                              onConfirm={() => handleDelete(complaint.id)}
+                              onCancel={() => { }}
+                              okText="确定"
+                              cancelText="取消"
+                              okButtonProps={{ danger: true }}
+                            >
+                              <Tooltip title="删除投诉">
+                                <Button
+                                  type="text"
+                                  size="small"
+                                  icon={<DeleteOutlined />}
+                                  className="text-gray-500 hover:text-red-600 h-6 w-6 p-0"
+                                />
+                              </Tooltip>
+                            </Popconfirm>
+
+                          </div>
                         </div>
                       </div>
-                      <div className={`px-3 py-1 rounded-md text-xs font-medium border ${badge.className}`}>
-                        {badge.label}
+
+                      {/* 投诉内容预览 */}
+                      <div className="mt-2">
+                        <div className="flex items-start gap-1">
+                          <FileTextOutlined className="text-gray-400 text-xs mt-0.5" />
+                          <Paragraph
+                            className="text-gray-600 text-xs leading-relaxed m-0 line-clamp-2"
+                          >
+                            {complaint.content}
+                          </Paragraph>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </summary>
 
-                <div className="mt-0 pt-4 pb-6 px-6 bg-gray-50 border-t border-gray-200 space-y-4">
-                  <div>
-                    <div className="text-sm text-gray-500 mb-1">投诉内容</div>
-                    <p className="text-base text-gray-700 leading-relaxed">{complaint.content}</p>
-                  </div>
+                    {/* 紧凑详情区域 */}
+                    {isExpanded && (
+                      <div className="border-t border-gray-100 bg-gray-50 animate-fadeIn">
+                        <div className="p-3">
+                          {/* 投诉详情 */}
+                          <div className="mb-3">
+                            <div className="flex items-center gap-1 mb-2">
+                              <ExclamationCircleOutlined className="text-red-500 text-xs" />
+                              <span className="text-xs font-medium text-gray-700">投诉详情</span>
+                            </div>
+                            <div className="bg-white rounded p-3 border border-gray-200">
+                              <Paragraph className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap m-0">
+                                {complaint.content}
+                              </Paragraph>
+                            </div>
+                          </div>
 
-                  {complaint.images && complaint.images.length > 0 && (
-                    <div>
-                      <div className="text-sm text-gray-500 mb-2">附图</div>
-                      <div className="flex flex-wrap gap-3">
-                        {complaint.images.map((img) => (
-                          <img
-                            key={img.id}
-                            src={img.image}
-                            alt="complaint"
-                            className="w-24 h-24 object-cover rounded border border-gray-200"
-                          />
-                        ))}
+                          {/* 投诉图片 */}
+                          {complaint.images && complaint.images.length > 0 && (
+                            <div className="mb-3">
+                              <div className="flex items-center gap-1 mb-2">
+                                <EyeOutlined className="text-blue-500 text-xs" />
+                                <span className="text-xs font-medium text-gray-700">
+                                  投诉图片 ({complaint.images.length}张)
+                                </span>
+                              </div>
+                              <div className="grid grid-cols-3 gap-2">
+                                {complaint.images.map((imgInfo, index) => (
+                                  <div
+                                    key={imgInfo.id}
+                                    className="relative aspect-square rounded overflow-hidden border border-gray-200 bg-gray-100"
+                                  >
+                                    <Image
+                                      src={imgInfo.image}
+                                      alt={`投诉图片 ${index + 1}`}
+                                      width="100%"
+                                      height="100%"
+                                      className="object-cover"
+                                      preview={{
+                                        mask: <EyeOutlined className="text-white text-xs" />
+                                      }}
+                                    />
+                                    <div className="absolute bottom-1 right-1 bg-black/60 text-white text-xs px-1 rounded">
+                                      {index + 1}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* 售后信息 */}
+                          <div className="mb-3">
+                            <div className="flex items-center gap-1 mb-2">
+                              <ShoppingOutlined className="text-green-500 text-xs" />
+                              <span className="text-xs font-medium text-gray-700">售后信息</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="bg-white rounded p-2 border border-gray-200">
+                                <div className="text-xs text-gray-500 mb-1">售后状态</div>
+                                <div className="text-sm text-gray-900 font-medium">{afterSale.status}</div>
+                              </div>
+                              <div className="bg-white rounded p-2 border border-gray-200">
+                                <div className="text-xs text-gray-500 mb-1">申请时间</div>
+                                <div className="text-sm text-gray-900">{formatDateTime(afterSale.applyTime)}</div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 商品信息 */}
+                          <div className="mb-3">
+                            <div className="flex items-center gap-1 mb-2">
+                              <ShoppingOutlined className="text-purple-500 text-xs" />
+                              <span className="text-xs font-medium text-gray-700">商品信息</span>
+                            </div>
+                            <div className="bg-white rounded p-3 border border-gray-200">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <div className="text-sm text-gray-900 font-medium mb-1">
+                                    {afterSale.orderItem.productName}
+                                  </div>
+                                  <div className="text-xs text-gray-500 mb-1">
+                                    配置: {afterSale.orderItem.configName}
+                                  </div>
+                                  <div className="text-xs text-gray-500">
+                                    数量: {afterSale.orderItem.quantity}件
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-base font-bold text-red-600">
+                                    {formatCurrency(afterSale.orderItem.price)}
+                                  </div>
+                                  <div className="text-xs text-gray-500">
+                                    小计: {formatCurrency(afterSale.orderItem.price * afterSale.orderItem.quantity)}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 订单信息 */}
+                          <div>
+                            <div className="flex items-center gap-1 mb-2">
+                              <CalendarOutlined className="text-orange-500 text-xs" />
+                              <span className="text-xs font-medium text-gray-700">订单信息</span>
+                            </div>
+                            <div className="bg-white rounded p-3 border border-gray-200">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <div className="text-sm text-gray-900 font-medium mb-1">
+                                    订单号: {afterSale.order.orderNo}
+                                  </div>
+                                  <div className="text-xs text-gray-500">
+                                    订单状态: {afterSale.order.status}
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-base font-bold text-gray-900">
+                                    实付: {formatCurrency(afterSale.order.actualPayAmount)}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="bg-white rounded-lg p-4 border border-gray-200">
-                      <div className="text-sm text-gray-500 mb-1">售后类型</div>
-                      <div className="text-gray-900 font-medium">{afterSale.type}</div>
-                      <div className="text-sm text-gray-500 mt-2">售后状态</div>
-                      <div className="text-gray-900">{afterSale.status}</div>
-                      <div className="text-sm text-gray-500 mt-2">申请时间</div>
-                      <div className="text-gray-900">{formatDateTime(afterSale.applyTime)}</div>
-                    </div>
-                    <div className="bg-white rounded-lg p-4 border border-gray-200">
-                      <div className="text-sm text-gray-500 mb-1">订单信息</div>
-                      <div className="text-gray-900 font-medium">{formatCurrency(afterSale.order.actualPayAmount)}</div>
-                      <div className="text-sm text-gray-500 mt-2">商品</div>
-                      <div className="text-gray-900">{afterSale.orderItem.productName}</div>
-                      <div className="text-sm text-gray-500 mt-1">{afterSale.orderItem.configName}</div>
-                      <div className="text-sm text-gray-500 mt-1">数量：{afterSale.orderItem.quantity}</div>
-                    </div>
-                  </div>
-                </div>
-              </details>
-            );
-          })}
+
       </div>
     </div>
   );
