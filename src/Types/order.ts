@@ -45,8 +45,8 @@ export interface OrderResponse {
   actualPayAmount: number;
   status: string;
   items: OrderItemDetail[];
-  createdAt: Date;
-  payLimitTime: Date;
+  createdAt: string;
+  payLimitTime: string;
 }
 
 export interface OrderItemDetail {
@@ -141,13 +141,13 @@ export interface OrderDetailResponse {
   payAmount: number;
   actualPayAmount: number;
   payType?: string;
-  payTime?: Date;
-  createdAt: Date;
-  payLimitTime: Date;
-  cancelTime?: Date;
-  shipTime?: Date;
-  receiveTime?: Date;
-  completeTime?: Date;
+  payTime?: string;
+  createdAt: string;
+  payLimitTime: string;
+  cancelTime?: string;
+  shipTime?: string;
+  receiveTime?: string;
+  completeTime?: string;
   remark?: string;
   logisticsNo?: string;
 
@@ -175,7 +175,7 @@ export interface OrderDetailResponse {
     id: string;
     title: string;
     usedAmount: number;
-    useTime: Date;
+    useTime: string;
   }[];
 }
 

@@ -11,6 +11,8 @@ import CancelOrderModal from './CancelOrderModal';
 import { deleteOrder } from '../../services/order';
 import { addToShoppingCartService } from '../../services/products';
 import type { SimpleOrderItem } from '../../types/order';
+import globalErrorHandler from '../../utils/globalAxiosErrorHandler';
+import toast from 'react-hot-toast';
 
 interface OrderItemProps {
   order: SimpleOrderItem;
@@ -30,7 +32,6 @@ const OrderItem: React.FC<OrderItemProps> = ({
   // 倒计时逻辑
   useEffect(() => {
     if (order.status !== '待支付') {
-      setTimeLeft('');
       return;
     }
 
@@ -76,8 +77,7 @@ const OrderItem: React.FC<OrderItemProps> = ({
       message.success('订单已删除');
       onOrderDeleted(order.id);
     } catch (error) {
-      message.error('删除订单失败');
-      console.error('删除订单失败:', error);
+     globalErrorHandler.handle(error,toast.error)
     }
   };
 
@@ -89,72 +89,76 @@ const OrderItem: React.FC<OrderItemProps> = ({
       );
       await Promise.all(addToCartPromises);
       message.success('已加入购物车');
-      navigate('/shopping-cart');
     } catch (error) {
-      message.error('加入购物车失败');
-      console.error('加入购物车失败:', error);
+      globalErrorHandler.handle(error,toast.error)
     }
   };
 
   // 获取主商品信息
   const mainItem = order.items[0] || {};
 
+  // 处理取消订单成功
+  const handleCancelSuccess = () => {
+    onOrderCancelled(order.id);
+    setIsModalOpen(false);
+  };
+
   return (
-    <div className="border border-gray-200 rounded-xl bg-white hover:shadow-xl transition-all duration-300 overflow-hidden">
-      {/* 订单头部 - 联想风格 */}
-      <div className="flex justify-between items-center px-6 py-2 bg-gradient-to-r from-gray-50 to-white border-b">
-        <div className="flex items-center gap-6">
-          <span className="text-sm text-gray-600 font-medium">
+    <div className="border border-gray-200 rounded-lg bg-white hover:shadow-lg transition-all duration-200 overflow-hidden">
+      {/* 订单头部 - 紧凑版 */}
+      <div className="flex justify-between items-center px-4 py-2 bg-gray-50 border-b">
+        <div className="flex items-center gap-4">
+          <span className="text-xs text-gray-600">
             {new Date(order.createdAt).toLocaleDateString('zh-CN', { 
               year: 'numeric', 
-              month: 'long', 
+              month: 'short', 
               day: 'numeric',
               hour: '2-digit',
               minute: '2-digit'
             })}
           </span>
-          <span className="text-sm font-mono text-gray-800 bg-gray-100 px-3 py-1 rounded">
+          <span className="text-xs font-mono text-gray-800 bg-gray-100 px-2 py-0.5 rounded">
             订单号: {order.orderNo}
           </span>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Link 
             to="/customer-service" 
-            className="text-gray-600 hover:text-red-600 text-sm flex items-center gap-2 font-medium transition-colors"
+            className="text-gray-500 hover:text-red-600 text-xs flex items-center gap-1"
           >
-            <MessageOutlined />
-            <span>联系客服</span>
+            <MessageOutlined className="text-xs" />
+            <span>客服</span>
           </Link>
           {(order.status === '已取消' || order.status === '已收货') && (
             <button
               onClick={handleDeleteOrder}
-              className="text-gray-500 hover:text-red-600 cursor-pointer flex items-center gap-1 text-sm"
+              className="text-gray-400 hover:text-red-600 cursor-pointer flex items-center gap-1 text-xs"
               title="删除订单"
             >
-              <DeleteOutlined />
+              <DeleteOutlined className="text-xs" />
               <span>删除</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* 订单内容 */}
-      <div className="p-6">
-        <div className="flex gap-6">
+      {/* 订单内容 - 紧凑版 */}
+      <div className="p-4">
+        <div className="flex gap-4">
           {/* 商品图片 */}
-          <Link to={`/product/${mainItem.productId}`} target={mainItem.productId} className="shrink-0">
+          <Link to={`/product/${mainItem.productId}`} className="shrink-0">
             <div className="relative">
               <Image
-                width={100}
-                height={100}
+                width={80}
+                height={80}
                 src={mainItem.imageSnapshot}
                 alt={mainItem.productName}
-                className="rounded-lg border-2 border-gray-100 hover:border-red-300 transition-colors"
-                fallback="https://via.placeholder.com/100"
+                className="rounded border border-gray-200 hover:border-red-300 transition-colors"
+                fallback="https://via.placeholder.com/80"
                 preview={false}
               />
               {order.items.length > 1 && (
-                <div className="absolute -bottom-2 -right-2 bg-red-600 text-white text-xs px-2 py-1 rounded-full">
+                <div className="absolute -bottom-1 -right-1 bg-red-600 text-white text-xs px-1.5 py-0.5 rounded-full">
                   +{order.items.length - 1}
                 </div>
               )}
@@ -167,29 +171,29 @@ const OrderItem: React.FC<OrderItemProps> = ({
               <div>
                 <Link 
                   to={`/product/${mainItem.productId}`}
-                  className="font-bold text-lg text-gray-900 hover:text-red-600 line-clamp-2 transition-colors"
+                  className="font-semibold text-gray-900 hover:text-red-600 line-clamp-2 text-sm transition-colors"
                 >
                   {mainItem.productName}
                 </Link>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-xs text-gray-500 mt-1">
                   规格: {mainItem.config1} / {mainItem.config2}
                   {mainItem.config3 && ` / ${mainItem.config3}`}
                 </p>
-                <div className="flex items-center gap-4 mt-3">
-                  <span className="text-gray-700 font-medium">
+                <div className="flex items-center gap-3 mt-2">
+                  <span className="text-gray-700 text-sm">
                     单价: <span className="text-red-600">¥{mainItem.priceSnapshot}</span>
                   </span>
                   <span className="text-gray-400">×</span>
-                  <span className="text-gray-700 font-medium">{mainItem.quantity}</span>
+                  <span className="text-gray-700 text-sm">{mainItem.quantity}</span>
                 </div>
               </div>
               
               {/* 订单状态和金额 */}
-              <div className="w-56 shrink-0 text-right">
-                <div className="mb-3">
+              <div className="w-40 shrink-0 text-right">
+                <div className="mb-2">
                   <Tag 
                     color={statusColors[order.status] || 'default'}
-                    className="px-3 py-1 rounded-full font-bold text-sm"
+                    className="px-2 py-0.5 rounded-full font-medium text-xs"
                     style={{ 
                       backgroundColor: statusColors[order.status] + '15',
                       color: statusColors[order.status],
@@ -199,12 +203,12 @@ const OrderItem: React.FC<OrderItemProps> = ({
                     {order.status}
                   </Tag>
                 </div>
-                <div className="text-2xl font-bold text-red-600 mb-2">
+                <div className="text-lg font-bold text-red-600 mb-1">
                   ¥{order.actualPayAmount.toFixed(2)}
                 </div>
                 <Link 
                   to={`/order-detail/${order.id}`}
-                  className="text-red-600 hover:text-red-700 text-sm font-medium inline-flex items-center gap-1"
+                  className="text-red-600 hover:text-red-700 text-xs font-medium inline-flex items-center gap-0.5"
                 >
                   查看详情
                   <RightOutlined className="text-xs" />
@@ -214,35 +218,34 @@ const OrderItem: React.FC<OrderItemProps> = ({
           </div>
         </div>
 
-        {/* 操作按钮 - 联想风格 */}
-        <div className="flex justify-end gap-4 mt-6 pt-6 border-t">
+        {/* 操作按钮 - 紧凑版，按钮位置调换 */}
+        <div className="flex justify-end gap-3 mt-4 pt-4 border-t">
           {order.status === '待支付' && (
             <>
-              <div className="flex items-center gap-2 text-sm text-orange-600 mr-auto bg-orange-50 px-4 py-2 rounded-lg">
-                <ClockCircleOutlined />
-                <span className="font-medium">剩余支付时间: {timeLeft}</span>
+              <div className="flex items-center gap-1 text-xs text-orange-600 mr-auto bg-orange-50 px-3 py-1.5 rounded">
+                <ClockCircleOutlined className="text-xs" />
+                <span className="font-medium">剩余: {timeLeft}</span>
               </div>
+              {/* 调换位置：取消订单在前，立即支付在后 */}
+              <Button 
+                danger
+                onClick={() => setIsModalOpen(true)}
+                className="h-8 px-4 font-medium text-xs"
+                style={{ borderColor: '#ff4d4f' }}
+              >
+                取消订单
+              </Button>
               <Button 
                 type="primary"
                 onClick={() => navigate(`/payment?orderId=${order.orderNo}`)}
-                className=""
-                                style={{ 
+                className="h-8 px-4 font-medium text-xs"
+                style={{ 
                   backgroundColor: '#ff6b35',
                   borderColor: '#ff6b35',
-                  height: '40px',
-                  padding: '0 24px',
                   fontWeight: 'bold'
                 }}
               >
                 立即支付
-              </Button>
-              <Button 
-                danger
-                onClick={() => setIsModalOpen(true)}
-                className="h-10 px-6 font-medium"
-                style={{ borderColor: '#ff4d4f' }}
-              >
-                取消订单
               </Button>
             </>
           )}
@@ -251,7 +254,7 @@ const OrderItem: React.FC<OrderItemProps> = ({
             <Button 
               type="primary"
               onClick={() => navigate(`/order-detail/${order.id}`)}
-              className="h-10 px-6 font-medium"
+              className="h-8 px-4 font-medium text-xs"
               style={{ 
                 backgroundColor: '#1890ff',
                 borderColor: '#1890ff'
@@ -264,7 +267,7 @@ const OrderItem: React.FC<OrderItemProps> = ({
           {order.status === '已收货' && (
             <Button 
               onClick={() => navigate(`/order-detail/${order.id}`)}
-              className="h-10 px-6 font-medium border-gray-300 hover:border-red-500 hover:text-red-600"
+              className="h-8 px-4 font-medium text-xs border-gray-300 hover:border-red-500 hover:text-red-600"
             >
               评价商品
             </Button>
@@ -273,7 +276,7 @@ const OrderItem: React.FC<OrderItemProps> = ({
           {order.status === '已取消' && (
             <Button 
               onClick={handleBuyAgain}
-              className="h-10 px-6 font-medium bg-red-600 text-white hover:bg-red-700 border-red-600"
+              className="h-8 px-4 font-medium text-xs bg-red-600 text-white hover:bg-red-700 border-red-600"
             >
               再次购买
             </Button>
@@ -283,7 +286,7 @@ const OrderItem: React.FC<OrderItemProps> = ({
             <Button 
               type="primary"
               onClick={() => navigate(`/order-detail/${order.id}`)}
-              className="h-10 px-6 font-medium"
+              className="h-8 px-4 font-medium text-xs"
               style={{ 
                 backgroundColor: '#52c41a',
                 borderColor: '#52c41a'
@@ -295,24 +298,20 @@ const OrderItem: React.FC<OrderItemProps> = ({
         </div>
       </div>
 
-      {/* 取消订单模态框 */}
+      {/* 取消订单模态框 - 修复通信 */}
       <CancelOrderModal
         visible={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onSuccess={handleCancelSuccess} // 传递正确的回调函数
         orderId={order.id}
         orderItems={order.items.map(item => ({
           configId: item.id,
           quantity: item.quantity,
           productName: item.productName
         }))}
-        onSuccess={() => {
-          onOrderCancelled(order.id);
-          setIsModalOpen(false);
-        }}
       />
     </div>
   );
 };
 
 export default OrderItem;
-

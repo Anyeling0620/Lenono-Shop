@@ -4,96 +4,77 @@ import { SearchOutlined, DeleteOutlined, ShoppingOutlined, ExclamationCircleFill
 import dayjs from 'dayjs';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
-import axios, { type AxiosInstance } from 'axios';
+import { axiosInstance, type ApiResponse } from '../../services/AxiosService';
+import type { CreateAfterSaleDto, CreateAfterSaleResponse } from '../../types/afterSale';
+import type { OrderListItem, OrderListQuery, OrderListResponse, OrderStats, OrderStatus } from '../../types/order';
 
-// ========== 1. Axios 实例配置 (适配您的 AxiosService.ts) ==========
-const baseURL = 'http://localhost:8080/api'; 
-const axiosInstance: AxiosInstance = axios.create({
-    baseURL,
-    timeout: 10000,
-});
 
-axiosInstance.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        const msg = error.response?.data?.message || '请求失败';
-        console.error('API Error:', error);
-        return Promise.reject(new Error(msg));
-    }
-);
-
-// 对应您 AxiosService.ts 中的 ApiResponse
-interface ApiResponse<T> {
-    code: number;
-    message: string;
-    data: T;
-}
 
 // ========== 2. 类型定义 (严格同步 uploaded:order.ts) ==========
 
-// 更新 OrderStatus 枚举为中文
-export type OrderStatus =
-  | '待支付'
-  | '已支付'
-  | '待发货'
-  | '已发货'
-  | '待收货'
-  | '已收货'
-  | '已取消';
+// // 更新 OrderStatus 枚举为中文
+// export type OrderStatus =
+//   | '待支付'
+//   | '已支付'
+//   | '待发货'
+//   | '已发货'
+//   | '待收货'
+//   | '已收货'
+//   | '已取消';
 
-// 对应 OrderItemSummary
-export interface OrderItemSummary {
-  id: string;
-  productId: string;
-  productName: string;
-  config1: string;
-  config2: string;
-  config3?: string;
-  quantity: number;
-  priceSnapshot: number;
-  payAmountSnapshot: number;
-  imageSnapshot?: string;
-  seckill: boolean;
-}
+// // 对应 OrderItemSummary
+// export interface OrderItemSummary {
+//   id: string;
+//   productId: string;
+//   productName: string;
+//   config1: string;
+//   config2: string;
+//   config3?: string;
+//   quantity: number;
+//   priceSnapshot: number;
+//   payAmountSnapshot: number;
+//   imageSnapshot?: string;
+//   seckill: boolean;
+// }
 
-// 对应 OrderListItem (列表项)
-export interface OrderListItem {
-  id: string;
-  orderNo: string;
-  status: OrderStatus;
-  payAmount: number;
-  actualPayAmount: number;
-  createdAt: Date | string; 
-  payTime?: Date | string;
-  items: OrderItemSummary[];
-}
+// // 对应 OrderListItem (列表项)
+// export interface OrderListItem {
+//   id: string;
+//   orderNo: string;
+//   status: OrderStatus;
+//   payAmount: number;
+//   actualPayAmount: number;
+//   createdAt: Date | string; 
+//   payTime?: Date | string;
+//   items: OrderItemSummary[];
+// }
 
-// 对应 OrderStats
-export interface OrderStats {
-  totalCount: number;
-  pendingPaymentCount: number;
-  pendingShipmentCount: number;
-  pendingReceiptCount: number;
-  completedCount: number;
-  cancelledCount: number;
-  totalAmount: number;
-}
+// // 对应 OrderStats
+// export interface OrderStats {
+//   totalCount: number;
+//   pendingPaymentCount: number;
+//   pendingShipmentCount: number;
+//   pendingReceiptCount: number;
+//   completedCount: number;
+//   cancelledCount: number;
+//   totalAmount: number;
+// }
 
-// 对应 OrderListQuery (并补充前端分页参数)
-export interface OrderListQuery {
-  status?: OrderStatus;
-  startDate?: string;
-  endDate?: string;
-  keyword?: string;
-  page?: number;     
-  pageSize?: number;
-}
+// // 对应 OrderListQuery (并补充前端分页参数)
+// export interface OrderListQuery {
+//   status?: OrderStatus;
+//   startDate?: string;
+//   endDate?: string;
+//   keyword?: string;
+//   page?: number;     
+//   pageSize?: number;
+// }
 
-// 对应 OrderListResponse
-export interface OrderListResponse {
-  total: number;
-  data: OrderListItem[];
-}
+// // 对应 OrderListResponse
+// export interface OrderListResponse {
+//   total: number;
+//   data: OrderListItem[];
+// }
 
 // 对应 CancelOrderInput
 interface CancelOrderInput {
@@ -102,20 +83,6 @@ interface CancelOrderInput {
   reason?: string; 
 }
 
-// 售后相关类型
-export interface CreateAfterSaleDto {
-    orderId: string;
-    orderItemId: string;
-    type: string;
-    reason: string;
-    remark?: string;
-    images?: string[];
-}
-
-export interface CreateAfterSaleResponse {
-    id: string;
-    status: string;
-}
 
 // ========== 3. 真实 API 服务函数 (适配新类型) ==========
 
@@ -247,7 +214,6 @@ const Orders = () => {
     const [stats, setStats] = useState<OrderStats | null>(null);
     const [activeTab, setActiveTab] = useState<string>('all');
     const [searchText, setSearchText] = useState('');
-    const [page, setPage] = useState(1);
 
     // 弹窗状态管理
     const [cancelModal, setCancelModal] = useState<{ open: boolean; orderId: string | null }>({
@@ -275,8 +241,6 @@ const Orders = () => {
             const statusParam = TAB_TO_STATUS_MAP[activeTab];
             
             const queryParams: OrderListQuery = {
-                page: page,
-                pageSize: 20,
                 keyword: searchText || undefined,
                 status: statusParam,
             };
@@ -290,14 +254,12 @@ const Orders = () => {
         } finally {
             setLoading(false);
         }
-    }, [activeTab, searchText, page, fetchStats]);
+    }, [activeTab, searchText, fetchStats]);
 
     useEffect(() => {
-        setPage(1); 
         fetchOrders();
     }, [fetchOrders]);
 
-    // --- 交互操作 ---
 
     const showCancelModal = (id: string) => setCancelModal({ open: true, orderId: id });
     const hideCancelModal = () => setCancelModal({ open: false, orderId: null });
@@ -394,7 +356,7 @@ const Orders = () => {
                     <div className="flex items-center gap-2">
                         <Tag color={statusInfo.color}>{statusInfo.label}</Tag>
                         <Link 
-                            to={`/order/order-detail/${order.id}`} 
+                             to={`/order-detail/${order.id}`}
                             className="text-xs text-gray-500 hover:text-red-500 hover:underline"
                         >
                             订单详情 &gt;

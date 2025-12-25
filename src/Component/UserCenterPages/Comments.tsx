@@ -1,170 +1,270 @@
-import React, { useState } from 'react';
-// TODO: 服务器配置完成后，取消下面这行的注释，并删除 useState 中的 useEffect（如果已添加）
-// import React, { useState, useEffect } from 'react';
-import { Row, Col, Rate, Button, Card, Image, Typography, Checkbox, Space } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { 
+  Row, 
+  Col, 
+  Rate, 
+  Button, 
+  Card, 
+  Image, 
+  Typography, 
+  Checkbox, 
+  Empty,
+  Tag,
+  Spin,
+  Tooltip,
+  Popconfirm
+} from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import type { EvaluationDetail } from '../../types/afterSale';
-// TODO: 服务器配置完成后，取消下面这行的注释
-// import { getEvaluations, deleteEvaluation } from '../../services/afterSale';
-import { DownOutlined, UpOutlined } from '@ant-design/icons';
+import { 
+  DownOutlined, 
+  UpOutlined, 
+  StarFilled,
+  DeleteOutlined,
+  EditOutlined,
+  EyeOutlined,
+  CalendarOutlined,
+  ShoppingOutlined,
+  CheckCircleOutlined,
+} from '@ant-design/icons';
+import { deleteEvaluation, getEvaluations } from '../../services/afterSale';
+import globalErrorHandler from '../../utils/globalAxiosErrorHandler';
+import toast from 'react-hot-toast';
 
-const { Text, Title, Paragraph } = Typography;
+const { Paragraph } = Typography;
 
-// 格式化日期为 MM-DD HH:mm
-const formatDate = (date: Date): string => {
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${month}-${day} ${hours}:${minutes}`;
-};
-
-// ==================== 模拟数据区域 ====================
-// TODO: 服务器配置完成后，删除下面的模拟数据，改用 API 获取数据
-// 模拟数据：3个商品评价，使用 EvaluationDetail 类型
-const initialComments: EvaluationDetail[] = [
+// 模拟数据
+const mockEvaluations: EvaluationDetail[] = [
   {
-    id: '1',
-    userId: 'user1',
-    productId: 'product1',
-    configId: 'config1',
-    star: 4,
-    content: '这款笔记本性能出色，电池续航很长，键盘手感一流，值得推荐！',
-    status: '正常',
-    createdAt: new Date('2024-12-08T18:12:00'),
-    updatedAt: new Date('2024-12-08T18:12:00'),
-    images: [
-      {
-        id: 'img1',
-        image: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-      },
-    ],
-    product: {
-      id: 'product1',
-      name: '联想ThinkPad X1 Carbon',
-      mainImage: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-      brand: {
-        id: 'brand1',
-        name: '联想',
-      },
-      category: {
-        id: 'cat1',
-        name: '笔记本电脑',
-      },
-    },
-    config: {
-      id: 'config1',
-      config1: '16GB内存',
-      config2: '512GB SSD',
-      config3: 'i7处理器',
-      salePrice: 9999.00,
-      originalPrice: 11999.00,
-      configImage: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-    },
-  },
-  {
-    id: '2',
-    userId: 'user1',
-    productId: 'product2',
-    configId: 'config2',
+    id: 'eval-1',
+    userId: 'user-1',
+    productId: 'prod-1',
+    configId: 'cfg-1',
     star: 5,
-    content: '轻薄便携，屏幕显示效果优秀，性价比高，非常满意！',
+    content: '这款笔记本性能非常出色，运行速度飞快，屏幕显示效果惊艳，电池续航也很给力。键盘手感舒适，散热效果不错，整体做工精细，非常满意！',
     status: '正常',
-    createdAt: new Date('2024-12-08T00:45:00'),
-    updatedAt: new Date('2024-12-08T00:45:00'),
+    createdAt: new Date('2024-12-10T14:30:00'),
+    updatedAt: new Date('2024-12-10T14:30:00'),
     images: [
       {
-        id: 'img2',
-        image: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
+        id: 'img-1',
+        image: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=300&fit=crop'
       },
       {
-        id: 'img3',
-        image: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-      },
+        id: 'img-2',
+        image: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=300&fit=crop'
+      }
     ],
     product: {
-      id: 'product2',
-      name: '联想小新Air 14',
-      mainImage: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
+      id: 'prod-1',
+      name: '联想小新 Pro 14 2024款',
+      mainImage: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=300&fit=crop',
       brand: {
-        id: 'brand1',
-        name: '联想',
+        id: 'brand-1',
+        name: '联想'
       },
       category: {
-        id: 'cat1',
-        name: '笔记本电脑',
-      },
+        id: 'cat-1',
+        name: '笔记本电脑'
+      }
     },
     config: {
-      id: 'config2',
-      config1: '8GB内存',
-      config2: '256GB SSD',
-      config3: 'i5处理器',
-      salePrice: 5999.00,
-      originalPrice: 6999.00,
-      configImage: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-    },
+      id: 'cfg-1',
+      config1: 'i5-13500H',
+      config2: '16GB DDR5',
+      config3: '512GB SSD',
+      salePrice: 6999.00,
+      originalPrice: 7999.00,
+      configImage: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=300&fit=crop'
+    }
   },
   {
-    id: '3',
-    userId: 'user1',
-    productId: 'product3',
-    configId: 'config3',
-    star: 3,
-    content: '游戏性能强劲，但风扇噪音较大，希望优化一下散热。',
+    id: 'eval-2',
+    userId: 'user-1',
+    productId: 'prod-2',
+    configId: 'cfg-2',
+    star: 4,
+    content: 'ThinkPad的品质一如既往的优秀，键盘手感极佳，运行稳定。不过屏幕亮度在户外使用稍显不足，希望下一代能改进。',
     status: '正常',
-    createdAt: new Date('2024-12-06T20:20:00'),
-    updatedAt: new Date('2024-12-06T20:20:00'),
+    createdAt: new Date('2024-12-08T09:45:00'),
+    updatedAt: new Date('2024-12-08T09:45:00'),
+    images: [
+      {
+        id: 'img-3',
+        image: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=300&fit=crop'
+      }
+    ],
+    product: {
+      id: 'prod-2',
+      name: 'ThinkPad X1 Carbon Gen 11',
+      mainImage: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=300&fit=crop',
+      brand: {
+        id: 'brand-1',
+        name: '联想'
+      },
+      category: {
+        id: 'cat-1',
+        name: '笔记本电脑'
+      }
+    },
+    config: {
+      id: 'cfg-2',
+      config1: 'i7-1365U',
+      config2: '16GB LPDDR5',
+      config3: '1TB SSD',
+      salePrice: 12999.00,
+      originalPrice: 14999.00,
+      configImage: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=300&fit=crop'
+    }
+  },
+  {
+    id: 'eval-3',
+    userId: 'user-1',
+    productId: 'prod-3',
+    configId: 'cfg-3',
+    star: 3,
+    content: '游戏性能确实很强，但风扇噪音有点大，而且机身比较厚重，携带不太方便。屏幕显示效果很好，色彩鲜艳。',
+    status: '正常',
+    createdAt: new Date('2024-12-05T16:20:00'),
+    updatedAt: new Date('2024-12-05T16:20:00'),
     images: [],
     product: {
-      id: 'product3',
-      name: '联想拯救者游戏本',
-      mainImage: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
+      id: 'prod-3',
+      name: '联想拯救者 Y9000P 2024',
+      mainImage: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=300&fit=crop',
       brand: {
-        id: 'brand1',
-        name: '联想',
+        id: 'brand-1',
+        name: '联想'
       },
       category: {
-        id: 'cat1',
-        name: '笔记本电脑',
-      },
+        id: 'cat-1',
+        name: '游戏本'
+      }
     },
     config: {
-      id: 'config3',
-      config1: '16GB内存',
-      config2: '1TB SSD',
-      config3: 'RTX 3060',
-      salePrice: 7999.00,
-      originalPrice: 8999.00,
-      configImage: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-    },
+      id: 'cfg-3',
+      config1: 'i9-14900HX',
+      config2: '32GB DDR5',
+      config3: 'RTX 4070',
+      salePrice: 15999.00,
+      originalPrice: 17999.00,
+      configImage: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=300&fit=crop'
+    }
   },
+  {
+    id: 'eval-4',
+    userId: 'user-1',
+    productId: 'prod-4',
+    configId: 'cfg-4',
+    star: 5,
+    content: '非常轻薄的办公本，续航能力出色，带出去一整天都不用充电。屏幕素质很好，色彩准确，适合设计工作。',
+    status: '正常',
+    createdAt: new Date('2024-12-03T11:15:00'),
+    updatedAt: new Date('2024-12-03T11:15:00'),
+    images: [
+      {
+        id: 'img-4',
+        image: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=300&fit=crop'
+      },
+      {
+        id: 'img-5',
+        image: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=300&fit=crop'
+      },
+      {
+        id: 'img-6',
+        image: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=300&fit=crop'
+      }
+    ],
+    product: {
+      id: 'prod-4',
+      name: '联想 Yoga Pro 9i',
+      mainImage: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=300&fit=crop',
+      brand: {
+        id: 'brand-1',
+        name: '联想'
+      },
+      category: {
+        id: 'cat-1',
+        name: '二合一笔记本'
+      }
+    },
+    config: {
+      id: 'cfg-4',
+      config1: 'i7-1360P',
+      config2: '16GB LPDDR5',
+      config3: '1TB SSD',
+      salePrice: 8999.00,
+      originalPrice: 9999.00,
+      configImage: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=300&fit=crop'
+    }
+  }
 ];
 
+// 格式化日期
+const formatDate = (date: Date): string => {
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) {
+    return '今天 ' + date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  } else if (diffDays === 1) {
+    return '昨天 ' + date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  } else if (diffDays < 7) {
+    return `${diffDays}天前`;
+  } else {
+    return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+  }
+};
+
+// 星级颜色映射
+const getStarColor = (star: number) => {
+  if (star >= 4.5) return '#52c41a'; // 绿色
+  if (star >= 3.5) return '#faad14'; // 橙色
+  if (star >= 2.5) return '#fa8c16'; // 深橙色
+  return '#ff4d4f'; // 红色
+};
+
+// 星级标签样式
+const getStarTagStyle = (star: number) => {
+  const color = getStarColor(star);
+  return {
+    backgroundColor: `${color}15`,
+    color: color,
+    borderColor: `${color}30`,
+    fontWeight: 600,
+    borderRadius: '12px',
+    padding: '2px 10px'
+  };
+};
+
 const Comments: React.FC = () => {
-  // TODO: 服务器配置完成后，将下面的 initialComments 改为 []
-  const [comments, setComments] = useState<EvaluationDetail[]>(initialComments);
+  const [comments, setComments] = useState<EvaluationDetail[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState<boolean>(true);
+  const [deleting, setDeleting] = useState<boolean>(false);
 
-  // ==================== API 调用区域 ====================
-  // TODO: 服务器配置完成后，取消下面代码的注释，用于从 API 获取评价列表
-  /*
   useEffect(() => {
     const fetchEvaluations = async () => {
       try {
-        // 获取评价列表，可以根据需要传入查询参数
-        // 例如：getEvaluations({ status: '正常' })
-        const data = await getEvaluations();
-        setComments(data);
+        setLoading(true);
+         const data = await getEvaluations();
+         setComments(data);
+        // // 模拟 API 延迟
+        // setTimeout(() => {
+        //   setLoading(false);
+        // }, 800);
       } catch (error) {
-        console.error('获取评价列表失败:', error);
-        // 可以添加错误提示，例如使用 message.error('获取评价列表失败')
+        globalErrorHandler.handle(error, toast.error);
+        setComments(mockEvaluations);
+      }finally{
+        
+        setLoading(false);
       }
     };
     fetchEvaluations();
   }, []);
-  */
 
   const onSelectAllChange = (e: CheckboxChangeEvent) => {
     if (e.target.checked) {
@@ -183,25 +283,20 @@ const Comments: React.FC = () => {
   };
 
   const onDelete = async () => {
-    // TODO: 服务器配置完成后，取消下面代码的注释，使用 API 删除评价
-    /*
+    if (selectedIds.length === 0) return;
+    
     try {
-      // 批量删除选中的评价
+      setDeleting(true);
       await Promise.all(selectedIds.map(id => deleteEvaluation(id)));
-      // 删除成功后，重新获取评价列表
       const data = await getEvaluations();
       setComments(data);
       setSelectedIds([]);
-      // 可以添加成功提示，例如使用 message.success('删除成功')
+      toast.success(`成功删除 ${selectedIds.length} 条评价`);
     } catch (error) {
-      console.error('删除评价失败:', error);
-      // 可以添加错误提示，例如使用 message.error('删除评价失败')
+      globalErrorHandler.handle(error, toast.error);
+    } finally {
+      setDeleting(false);
     }
-    */
-    
-    // 临时模拟删除（服务器配置完成后删除此代码）
-    setComments(prev => prev.filter(c => !selectedIds.includes(c.id)));
-    setSelectedIds([]);
   };
 
   const onExpand = (id: string) => {
@@ -219,293 +314,354 @@ const Comments: React.FC = () => {
   const allChecked = comments.length > 0 && selectedIds.length === comments.length;
   const indeterminate = selectedIds.length > 0 && selectedIds.length < comments.length;
 
+
+  if (loading) {
+    return (
+      <div className=" bg-gradient-to-b from-gray-50 to-white p-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <Spin size="large" tip="加载评价中..." />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ 
-      padding: '24px', 
-      background: 'linear-gradient(to bottom, #fafafa 0%, #ffffff 100%)',
-      minHeight: '100vh'
-    }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <Title 
-          level={2} 
-          style={{ 
-            marginBottom: '16px',
-            fontWeight: 600,
-            color: '#1a1a1a',
-            letterSpacing: '0.5px',
-            fontSize: '20px'
-          }}
-        >
-          我的评价
-        </Title>
-        
-        <Card
-          style={{
-            marginBottom: '16px',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-            border: 'none'
-          }}
-          bodyStyle={{ padding: '12px 20px' }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Checkbox
-              indeterminate={indeterminate}
-              checked={allChecked}
-              onChange={onSelectAllChange}
-              style={{ fontSize: '15px' }}
-            >
-              <span style={{ fontWeight: 500 }}>全选</span>
-            </Checkbox>
-            <Button 
-              type="primary" 
-              danger 
-              disabled={selectedIds.length === 0}
-              onClick={onDelete}
-              size="middle"
-              style={{
-                borderRadius: '6px',
-                fontWeight: 500,
-                boxShadow: selectedIds.length > 0 ? '0 2px 8px rgba(255,77,79,0.3)' : 'none',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              批量删除
-            </Button>
+    <div className=" bg-gradient-to-b from-gray-50 to-white p-6">
+      <div className=" mx-auto">
+        {/* 页面标题 */}
+        <div className="mb-4">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <StarFilled className="text-xl text-blue-600" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">我的评价</h1>
+            </div>
+          </div>
+        </div>
+
+     
+        {/* 操作栏 */}
+        <Card className="shadow-sm border-0 rounded-xl mb-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex items-center gap-4">
+              <Checkbox
+                indeterminate={indeterminate}
+                checked={allChecked}
+                onChange={onSelectAllChange}
+                className="text-base"
+              >
+                <span className="font-medium text-gray-700">全选</span>
+              </Checkbox>
+              <span className="text-sm text-gray-500">
+                已选择 <span className="font-bold text-blue-600">{selectedIds.length}</span> 条评价
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Popconfirm
+                title="确认删除"
+                description={`确定要删除选中的 ${selectedIds.length} 条评价吗？此操作不可恢复。`}
+                onConfirm={onDelete}
+                okText="确定"
+                cancelText="取消"
+                okButtonProps={{ danger: true, loading: deleting }}
+              >
+                <Button
+                  type="primary"
+                  danger
+                  disabled={selectedIds.length === 0}
+                  loading={deleting}
+                  icon={<DeleteOutlined />}
+                  className="flex items-center gap-2"
+                >
+                  批量删除
+                </Button>
+              </Popconfirm>
+            </div>
           </div>
         </Card>
 
-        <Space direction="vertical" size="small" style={{ width: '100%' }}>
-          {comments.map((comment) => {
-            const id = comment.id;
-            const isSelected = selectedIds.includes(id);
-            const isExpanded = expandedKeys.has(id);
-            return (
-              <Card
-                key={id}
-                style={{
-                  marginBottom: 0,
-                  borderRadius: '12px',
-                  boxShadow: isSelected 
-                    ? '0 3px 16px rgba(24,144,255,0.12)' 
-                    : '0 2px 8px rgba(0,0,0,0.06)',
-                  border: isSelected ? '1px solid #1890ff' : '1px solid #e8e8e8',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  overflow: 'hidden',
-                  background: '#ffffff'
-                }}
-                bodyStyle={{ padding: 0 }}
-                hoverable
-              >
-                <div style={{ padding: '16px' }}>
-                  <Row gutter={16} align="middle">
-                    <Col span={1}>
-                      <Checkbox
-                        checked={isSelected}
-                        onChange={(e) => onSelectChange(id, e.target.checked)}
-                        style={{ margin: 0 }}
-                      />
-                    </Col>
-                    <Col span={11}>
-                      <Row gutter={12} align="middle">
-                        <Col>
-                          <div
-                            style={{
-                              width: '60px',
-                              height: '60px',
-                              borderRadius: '8px',
-                              overflow: 'hidden',
-                              boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-                              border: '1px solid #f0f0f0',
-                              background: '#fafafa',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              transition: 'all 0.3s ease'
-                            }}
-                          >
-                            <Image
-                              src={comment.product.mainImage || 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png'}
-                              width={58}
-                              height={58}
-                              preview={true}
-                              style={{ 
-                                borderRadius: '7px',
-                                objectFit: 'cover'
-                              }}
-                            />
-                          </div>
-                        </Col>
-                        <Col flex="auto">
-                          <div>
-                            <Title 
-                              level={5} 
-                              style={{ 
-                                margin: 0, 
-                                marginBottom: '4px',
-                                lineHeight: 1.3,
-                                fontWeight: 600,
-                                color: '#1a1a1a',
-                                fontSize: '14px'
-                              }}
-                            >
-                              {comment.product.name}
-                            </Title>
-                            <div style={{ marginBottom: '4px' }}>
-                              <Text 
-                                style={{ 
-                                  fontSize: '16px',
-                                  fontWeight: 600,
-                                  color: '#ff4d4f'
-                                }}
-                              >
-                                ¥{comment.config.salePrice.toFixed(2)}
-                              </Text>
-                            </div>
-                            <Text 
-                              type="secondary" 
-                              style={{ 
-                                fontSize: '12px',
-                                color: '#8c8c8c'
-                              }}
-                            >
-                              {formatDate(comment.createdAt)}
-                            </Text>
-                          </div>
-                        </Col>
-                      </Row>
-                    </Col>
-                    <Col span={12} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center', gap: '8px' }}>
-                      <div style={{ 
-                        display: 'flex', 
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '6px 12px',
-                        background: 'linear-gradient(135deg, #fff5f5 0%, #fff 100%)',
-                        borderRadius: '8px',
-                        border: '1px solid #ffe0e0'
-                      }}>
-                        <Rate 
-                          disabled 
-                          defaultValue={comment.star} 
-                          style={{ 
-                            fontSize: '16px',
-                            color: '#ffa940'
-                          }}
-                        />
-                        <Text 
-                          style={{ 
-                            marginLeft: '6px',
-                            fontSize: '13px',
-                            fontWeight: 600,
-                            color: '#ff7a00'
-                          }}
-                        >
-                          {comment.star}分
-                        </Text>
-                      </div>
-                      <Button 
-                        type="text"
-                        onClick={() => onExpand(id)}
-                        icon={isExpanded ? <UpOutlined /> : <DownOutlined />}
-                        style={{
-                          color: '#1890ff',
-                          padding: '2px 6px',
-                          height: 'auto',
-                          borderRadius: '4px',
-                          transition: 'all 0.3s ease',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '14px'
-                        }}
-                      />
-                    </Col>
-                  </Row>
+              {comments.length === 0 ? (
+          <Card className="shadow-sm border-0 rounded-xl">
+            <Empty
+              className="py-16"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={
+                <div className="text-center">
+                  <p className="text-gray-600 mb-2">暂无评价记录</p>
+                  <p className="text-gray-400 text-sm">您还没有发表过任何商品评价</p>
+                  <Button type="primary" className="mt-4" onClick={() => window.location.href = '/orders'}>
+                    去评价已购商品
+                  </Button>
                 </div>
-                
-                {isExpanded && (
-                  <div 
-                    style={{ 
-                      padding: '16px',
-                      background: 'linear-gradient(to bottom, #fafafa 0%, #ffffff 100%)',
-                      borderTop: '1px solid #f0f0f0',
-                      animation: 'slideDown 0.3s ease-out'
-                    }}
-                  >
-                    <style>{`
-                      @keyframes slideDown {
-                        from {
-                          opacity: 0;
-                          transform: translateY(-10px);
-                        }
-                        to {
-                          opacity: 1;
-                          transform: translateY(0);
-                        }
-                      }
-                    `}</style>
-                    <Paragraph
-                      style={{
-                        marginBottom: comment.images.length > 0 ? '12px' : 0,
-                        fontSize: '14px',
-                        lineHeight: 1.6,
-                        color: '#434343',
-                        whiteSpace: 'pre-wrap',
-                        wordBreak: 'break-word'
-                      }}
-                    >
-                      {comment.content}
-                    </Paragraph>
-                    {comment.images.length > 0 && (
-                      <div style={{ marginTop: '12px' }}>
-                        <Row gutter={[8, 8]} wrap>
-                          {comment.images.map((imgInfo) => (
-                            <Col key={imgInfo.id}>
-                              <div
-                                style={{
-                                  width: '100px',
-                                  height: '100px',
-                                  borderRadius: '8px',
-                                  overflow: 'hidden',
-                                  boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-                                  border: '1px solid #f0f0f0',
-                                  cursor: 'pointer',
-                                  transition: 'all 0.3s ease',
-                                  background: '#fafafa'
+              }
+            />
+          </Card>
+        ) : (
+            <div className="h-[450px] overflow-y-auto pr-[6px] 
+    [&::-webkit-scrollbar]:w-1
+    [&::-webkit-scrollbar-track]:rounded-xl
+    [&::-webkit-scrollbar-track]:bg-gray-100
+    [&::-webkit-scrollbar-thumb]:rounded-xl
+    [&::-webkit-scrollbar-thumb]:bg-gray-300
+    [&::-webkit-scrollbar-thumb:hover]:bg-gray-400
+    [&::-webkit-scrollbar-button]:hidden
+">
+          <div className="space-y-4">
+            {comments.map((comment) => {
+              const id = comment.id;
+              const isSelected = selectedIds.includes(id);
+              const isExpanded = expandedKeys.has(id);
+              const starColor = getStarColor(comment.star);
+              
+              return (
+                <Card
+                  key={id}
+                  className={`shadow-sm border-0 rounded-xl transition-all duration-300 hover:shadow-md ${
+                    isSelected ? 'border-l-4 border-l-blue-500 bg-blue-50' : ''
+                  } ${isExpanded ? 'border border-blue-200' : ''}`}
+                  bodyStyle={{ padding: 0 }}
+                >
+                  {/* 评价卡片头部 */}
+                  <div className="p-5">
+                    <Row gutter={16} align="middle">
+                      {/* 选择框 */}
+                      <Col xs={2} sm={1}>
+                        <Checkbox
+                          checked={isSelected}
+                          onChange={(e) => onSelectChange(id, e.target.checked)}
+                          className="transform scale-125"
+                        />
+                      </Col>
+                      
+                      {/* 商品信息 */}
+                      <Col xs={22} sm={11}>
+                        <div className="flex items-start gap-4">
+                          {/* 商品图片 */}
+                          <div className="relative group">
+                            <div className="w-20 h-20 rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white">
+                              <Image
+                                src={comment.product.mainImage || 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=200&h=200&fit=crop'}
+                                width={80}
+                                height={80}
+                                preview={{
+                                  mask: (
+                                    <div className="flex items-center justify-center text-white">
+                                      <EyeOutlined className="mr-2" />
+                                      查看大图
+                                    </div>
+                                  )
                                 }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.transform = 'scale(1.05)';
-                                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.transform = 'scale(1)';
-                                  e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)';
-                                }}
-                              >
-                                <Image
-                                  src={imgInfo.image}
-                                  width={100}
-                                  height={100}
-                                  preview={true}
-                                  style={{ 
-                                    borderRadius: '7px',
-                                    objectFit: 'cover'
-                                  }}
-                                />
+                                className="object-cover hover:scale-105 transition-transform duration-300"
+                              />
+                            </div>
+                            {comment.images && comment.images.length > 0 && (
+                              <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                                {comment.images.length}
                               </div>
-                            </Col>
-                          ))}
-                        </Row>
-                      </div>
-                    )}
+                            )}
+                          </div>
+                          
+                          {/* 商品详情 */}
+                          <div className="flex-1">
+                            
+                            <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-1">
+                              {comment.product.name}
+                            </h3>
+                            
+                            <div className="flex items-center gap-4 mb-2">
+                              <div className="flex items-center gap-1">
+                                <span className="text-lg font-bold text-red-600">
+                                  ¥{comment.config.salePrice.toFixed(2)}
+                                </span>
+                                {comment.config.originalPrice > comment.config.salePrice && (
+                                  <span className="text-sm text-gray-400 line-through">
+                                    ¥{comment.config.originalPrice.toFixed(2)}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-3 text-sm text-gray-500">
+                              <span className="flex items-center gap-1">
+                                <CalendarOutlined className="text-gray-400" />
+                                {formatDate(comment.createdAt)}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <ShoppingOutlined className="text-gray-400" />
+                                {comment.config.config1}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </Col>
+                      
+                      {/* 评分和操作 */}
+                      <Col xs={24} sm={12} className="mt-4 sm:mt-0">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between h-full gap-4">
+                          {/* 评分区域 */}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2">
+                                <Rate
+                                  disabled
+                                  value={comment.star}
+                                  character={<StarFilled />}
+                                  className="text-lg"
+                                  style={{ color: starColor }}
+                                />
+                                <Tag style={getStarTagStyle(comment.star)}>
+                                  {comment.star}分
+                                </Tag>
+                              </div>
+                            </div>
+                            
+                            {/* 配置信息 */}
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                                {comment.config.config1}
+                              </span>
+                              <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                                {comment.config.config2}
+                              </span>
+                              <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                                {comment.config.config3}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {/* 操作按钮 */}
+                          <div className="flex items-center gap-2">
+                            <Tooltip title={isExpanded ? "收起详情" : "查看详情"}>
+                              <Button
+                                type="text"
+                                icon={isExpanded ? <UpOutlined /> : <DownOutlined />}
+                                onClick={() => onExpand(id)}
+                                className="text-gray-500 hover:text-blue-600"
+                              />
+                            </Tooltip>
+                            
+                            <Tooltip title="编辑评价">
+                              <Button
+                                type="text"
+                                icon={<EditOutlined />}
+                                className="text-gray-500 hover:text-blue-600"
+                                onClick={() => {
+                                  // 编辑评价逻辑
+                                  toast.success('编辑功能开发中');
+                                }}
+                              />
+                            </Tooltip>
+                            
+                            <Popconfirm
+                              title="确认删除"
+                              description="确定要删除这条评价吗？此操作不可恢复。"
+                              onConfirm={() => {
+                                setSelectedIds([id]);
+                                onDelete();
+                              }}
+                              okText="确定"
+                              cancelText="取消"
+                            >
+                              <Tooltip title="删除评价">
+                                <Button
+                                  type="text"
+                                  icon={<DeleteOutlined />}
+                                  className="text-gray-500 hover:text-red-600"
+                                />
+                              </Tooltip>
+                            </Popconfirm>
+                          </div>
+                        </div>
+                      </Col>
+                    </Row>
                   </div>
-                )}
-              </Card>
-            );
-          })}
-        </Space>
+
+                  {/* 展开的评价详情 */}
+                  {isExpanded && (
+                    <div className="border-t border-gray-100 bg-gradient-to-b from-gray-50 to-white animate-fadeIn">
+                      <div className="p-5">
+                        {/* 评价内容 */}
+                        <div className="mb-6">
+                          <div className="flex items-center gap-2 mb-3">
+                            <CheckCircleOutlined className="text-green-500" />
+                            <h4 className="text-sm font-medium text-gray-700">评价内容</h4>
+                          </div>
+                          <div className="bg-white rounded-lg p-4 border border-gray-200">
+                            <Paragraph className="text-gray-800 leading-relaxed whitespace-pre-wrap m-0">
+                              {comment.content}
+                            </Paragraph>
+                          </div>
+                        </div>
+
+                        {/* 评价图片 */}
+                        {comment.images && comment.images.length > 0 && (
+                          <div className="mb-6">
+                            <div className="flex items-center gap-2 mb-3">
+                              <EyeOutlined className="text-blue-500" />
+                              <h4 className="text-sm font-medium text-gray-700">
+                                评价图片 ({comment.images.length}张)
+                              </h4>
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                              {comment.images.map((imgInfo, index) => (
+                                <div
+                                  key={imgInfo.id}
+                                  className="relative group cursor-pointer"
+                                >
+                                  <div className="aspect-square rounded-lg overflow-hidden border border-gray-200 bg-gray-100">
+                                    <Image
+                                      src={imgInfo.image}
+                                      alt={`评价图片 ${index + 1}`}
+                                      width="100%"
+                                      height="100%"
+                                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                      preview={{
+                                        mask: (
+                                          <div className="flex items-center justify-center text-white">
+                                            <EyeOutlined className="mr-2" />
+                                            查看大图
+                                          </div>
+                                        )
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                                    {index + 1}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 评价状态和时间 */}
+                        <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-gray-100">
+                          <div className="flex items-center gap-4 text-sm text-gray-500">
+                            <span className="flex items-center gap-1">
+                              <CalendarOutlined />
+                              发表时间: {comment.createdAt.toLocaleString()}
+                            </span>
+                           
+                          </div>
+                          
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              );
+            })}
+          </div>
+          </div>
+        )}
+
       </div>
+
+   
     </div>
   );
 };

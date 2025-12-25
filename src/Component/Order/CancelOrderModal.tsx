@@ -10,13 +10,13 @@ import toast from 'react-hot-toast';
 interface CancelOrderModalProps {
   visible: boolean;
   onClose: () => void;
-  onConfirm: (reason: string, returnToCart: boolean) => Promise<void>;
+  onSuccess: () => void; // 修改：将 onConfirm 改为 onSuccess
   orderId: string;
   orderItems: Array<{
     configId: string;
     quantity: number;
     productName: string;
-  }>; 
+  }>;
 }
 
 const reasons = [
@@ -27,12 +27,12 @@ const reasons = [
   "没用/少用/错用优惠"
 ];
 
-const CancelOrderModal: React.FC<CancelOrderModalProps> = ({ 
-  visible, 
-  onClose, 
-  onConfirm,
+const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
+  visible,
+  onClose,
+  onSuccess, // 接收 onSuccess
   orderId,
-  orderItems = []
+  orderItems = [],
 }) => {
   const [selectedReason, setSelectedReason] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -46,35 +46,35 @@ const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
 
     try {
       setLoading(true);
-      
+
       // 1. 先调用取消订单API
       await cancelOrder({
         orderId: orderId,
       });
-      
+
       // 2. 如果选择了放回购物车，将商品加入购物车
       if (returnToCart && orderItems.length > 0) {
         try {
           // 将订单中的所有商品加入购物车
-          const addToCartPromises = orderItems.map(item => 
+          const addToCartPromises = orderItems.map(item =>
             addToShoppingCartService(item.configId)
           );
-          
+
           await Promise.all(addToCartPromises);
           message.success(`已将${orderItems.length}件商品放回购物车`);
         } catch (cartError) {
-        globalErrorHandler.handle(cartError,toast.error) 
+          globalErrorHandler.handle(cartError, toast.error);
+          // 即使加入购物车失败，也继续执行取消订单逻辑
         }
       }
-      
-      // 3. 调用父组件的确认回调
-      await onConfirm(selectedReason, returnToCart);
-      
+
+      // 3. 调用父组件的成功回调
+      onSuccess(); // 调用 onSuccess 而不是 onConfirm
+
       message.success('订单已取消');
       resetForm();
     } catch (error) {
-        globalErrorHandler.handle(error,toast.error) 
-
+      globalErrorHandler.handle(error, toast.error);
     } finally {
       setLoading(false);
     }
@@ -116,11 +116,10 @@ const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
             key={reason}
             onClick={() => setSelectedReason(reason)}
             disabled={loading}
-            className={`py-3 px-4 text-sm border rounded-sm text-left transition-all ${
-              selectedReason === reason 
-                ? 'border-[#e1140a] text-[#e1140a] bg-white ring-1 ring-[#e1140a]' 
+            className={`py-3 px-4 text-sm border rounded-sm text-left transition-all ${selectedReason === reason
+                ? 'border-[#e1140a] text-[#e1140a] bg-white ring-1 ring-[#e1140a]'
                 : 'border-gray-200 text-gray-600 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed'
-            }`}
+              }`}
           >
             {reason}
           </button>
@@ -136,8 +135,8 @@ const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
             </div>
           )}
         </div>
-        <Switch 
-          size="small" 
+        <Switch
+          size="small"
           checked={returnToCart}
           onChange={setReturnToCart}
           disabled={loading}
@@ -145,21 +144,20 @@ const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
       </div>
 
       <div className="flex justify-center gap-4">
-        <button 
+        <button
           onClick={handleCancel}
           disabled={loading}
           className="w-[120px] h-[36px] border border-[#e1140a] text-[#e1140a] rounded-sm hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           再想想要
         </button>
-        <button 
+        <button
           onClick={handleOk}
           disabled={!selectedReason || loading}
-          className={`w-[120px] h-[36px] rounded-sm text-white flex items-center justify-center ${
-            selectedReason && !loading 
-              ? 'bg-[#e1140a] hover:bg-[#c91008]' 
+          className={`w-[120px] h-[36px] rounded-sm text-white flex items-center justify-center ${selectedReason && !loading
+              ? 'bg-[#e1140a] hover:bg-[#c91008]'
               : 'bg-gray-300 cursor-not-allowed'
-          }`}
+            }`}
         >
           {loading ? '处理中...' : '提交'}
         </button>

@@ -1,10 +1,10 @@
 
-type AfterSaleStatus = "申请中" | "已退款" | "已同意" | "已拒绝" | "已寄回" | "已寄出" | "已完成"
-type AfterSaleType = "退货" | "换货" | "维修"
-type ComplaintStatus = "撤回" | "正常" | "用户删除"
+export type AfterSaleStatus = "申请中" | "已退款" | "已同意" | "已拒绝" | "已寄回" | "已寄出" | "已完成"
+export type AfterSaleType = "退货" | "换货" | "维修"
+export type ComplaintStatus = "撤回" | "正常" | "用户删除"
 type CommentStatus = "撤回" | "正常" | "用户删除"
 type EvaluationStatus = "撤回" | "正常" | "用户删除"
-type OrderStatus = "待支付" | "已支付" | "待发货" | "已发货" | "待收货" | "已收货" | "已取消"
+export type OrderStatus = "待支付" | "已支付" | "待发货" | "已发货" | "待收货" | "已收货" | "已取消"
 export interface CreateAfterSaleDto {
   orderId: string;
   orderItemId: string;

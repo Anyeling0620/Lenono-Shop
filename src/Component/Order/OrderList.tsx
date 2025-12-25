@@ -23,8 +23,7 @@ const OrderList: React.FC = () => {
 
   // 分页状态
   const [currentPage, setCurrentPage] = useState(1);
-  const [total, setTotal] = useState(0);
-  const pageSize = 10;
+  const pageSize = 3;
 
   // 获取订单列表
   const fetchOrders = useCallback(async (status?: OrderStatus) => {
@@ -38,7 +37,6 @@ const OrderList: React.FC = () => {
       const response = await getOrderList(query);
       setOrders(response.data || []);
       setFilteredOrders(response.data || []);
-      setTotal(response.total || 0);
     } catch (error) {
       message.error('获取订单列表失败');
       console.error('获取订单列表失败:', error);
@@ -153,21 +151,40 @@ const OrderList: React.FC = () => {
   ];
 
   return (
-    <div className="bg-white min-h-[600px] p-6 mx-auto" style={{ maxWidth: '1200px' }}>
-      {/* 页面标题区域 */}
-            {/* 页面标题区域 - 搜索框在右边（优雅版） */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-bold text-gray-900">我的订单</h1>
-          
+    <div className="bg-white min-h-[600px] p-4 mx-auto" style={{ maxWidth: '1200px' }}>
+      {/* 页面标题区域 - 紧凑版 */}
+      <div className="mb-3">
+        <div className="flex justify-between items-center mb-3">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">我的订单</h1>
+            <div className="h-1 w-16 bg-red-600 rounded-full"></div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-56">
+              <Input
+                placeholder="搜索订单号或商品"
+                prefix={<SearchOutlined className="text-gray-500 text-xs" />}
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                onPressEnter={handleSearch}
+                allowClear
+                className="rounded-lg h-9 text-sm"
+                size="middle"
+              />
+            </div>
+            <button
+              onClick={handleSearch}
+              className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm"
+            >
+              搜索
+            </button>
+          </div>
         </div>
-        <div className="h-1 w-20 bg-red-600 rounded-full mb-2"></div>
-        <p className="text-gray-600 text-base">查看和管理您的所有订单</p>
+        <p className="text-gray-600 text-sm mt-1">查看和管理您的所有订单</p>
       </div>
 
-
-      {/* 标签页 - 联想红色主题 */}
-      <div className=" flex relative">
+      {/* 标签页 - 紧凑版 */}
+      <div className="mb-3 relative">
         <Tabs
           activeKey={activeTab}
           onChange={handleTabChange}
@@ -175,10 +192,10 @@ const OrderList: React.FC = () => {
           items={tabItems.map(tab => ({
             key: tab.key,
             label: (
-              <div className="flex items-center gap-2 px-4 py-2">
-                <span className="font-medium text-gray-800">{tab.label}</span>
+              <div className="flex items-center gap-1 px-3 py-1">
+                <span className="font-medium text-gray-800 text-sm">{tab.label}</span>
                 {tab.count > 0 && (
-                  <span className="bg-red-600 text-white text-xs px-2 py-1 rounded-full font-bold min-w-6 h-6 flex items-center justify-center">
+                  <span className="bg-red-600 text-white text-xs px-1.5 py-0.5 rounded-full font-bold min-w-5 h-5 flex items-center justify-center">
                     {tab.count}
                   </span>
                 )}
@@ -186,30 +203,10 @@ const OrderList: React.FC = () => {
             )
           }))}
           tabBarStyle={{ 
-            borderBottom: '2px solid #f0f0f0',
-            marginBottom: '20px'
+            borderBottom: '1px solid #f0f0f0',
+            marginBottom: '16px'
           }}
         />
-        <div className="flex items-center gap-2 right-4 top-5 absolute ">
-            <div className="w-64">
-              <Input
-                placeholder="搜索订单号或商品名称"
-                prefix={<SearchOutlined className="text-gray-500" />}
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                onPressEnter={handleSearch}
-                allowClear
-                className="rounded-lg h-10 text-sm"
-                size="middle"
-              />
-            </div>
-            <button
-              onClick={handleSearch}
-              className="px-4 py-2 bg-red-600  text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
-            >
-              搜索
-            </button>
-          </div>
       </div>
 
       {/* 订单列表 */}
@@ -220,7 +217,7 @@ const OrderList: React.FC = () => {
       ) : (
         <>
           {paginatedOrders.length > 0 ? (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {paginatedOrders.map(order => (
                 <OrderItem
                   key={order.id}
@@ -234,9 +231,9 @@ const OrderList: React.FC = () => {
             <OrderEmpty />
           )}
 
-          {/* 分页 - 联想风格 */}
+          {/* 分页 - 紧凑版 */}
           {filteredOrders.length > 0 && (
-            <div className="mt-10 flex justify-center">
+            <div className="mt-8 flex justify-center">
               <Pagination
                 current={currentPage}
                 total={filteredOrders.length}
@@ -245,15 +242,15 @@ const OrderList: React.FC = () => {
                 showSizeChanger={false}
                 showQuickJumper
                 showTotal={(total, range) => 
-                  <span className="text-gray-600">
-                    显示第 <span className="font-bold text-red-600">{range[0]}</span>-<span className="font-bold text-red-600">{range[1]}</span> 条，共 <span className="font-bold text-red-600">{total}</span> 条
+                  <span className="text-gray-600 text-sm">
+                    第 <span className="font-bold text-red-600">{range[0]}</span>-<span className="font-bold text-red-600">{range[1]}</span> 条，共 <span className="font-bold text-red-600">{total}</span> 条
                   </span>
                 }
                 className="lenovo-pagination"
                 itemRender={(page, type, originalElement) => {
                   if (type === 'page') {
                     return (
-                      <span className={`px-3 py-1 rounded ${currentPage === page ? 'bg-red-600 text-white' : 'text-gray-700 hover:text-red-600'}`}>
+                      <span className={`px-2 py-1 rounded text-sm ${currentPage === page ? 'bg-red-600 text-white' : 'text-gray-700 hover:text-red-600'}`}>
                         {page}
                       </span>
                     );
