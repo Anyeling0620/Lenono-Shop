@@ -7,8 +7,6 @@ triggers:
     branches:
       prefix:
         - happy-end
-      precise:
-        - happy-end2
 stages:
   - name: build_stage
     displayName: 构建阶段
