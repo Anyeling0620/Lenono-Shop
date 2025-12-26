@@ -5,8 +5,8 @@ triggers:
   trigger: auto
   push:
     branches:
-      precise:
-        - happy-end2
+      include:
+        - .*
 stages:
   - name: build_stage
     displayName: 构建阶段
