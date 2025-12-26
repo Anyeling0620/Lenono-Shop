@@ -3,6 +3,10 @@ name: lenovo-shop-ci
 displayName: 京东云自动部署流水线
 triggers:
   trigger: auto
+  push:
+    branches:
+      precise:
+        - happy-end2
 stages:
   - name: build_stage
     displayName: 构建阶段
