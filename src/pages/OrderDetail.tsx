@@ -93,7 +93,7 @@ const OrderDetail: React.FC = () => {
 
         const state: EvaluationPageState = {
             productId: orderItem.productId,
-            configId: orderItem.id,
+            configId: orderItem.configId,
             productName: orderItem.productName,
             configName: `${orderItem.config1} / ${orderItem.config2}${orderItem.config3 ? ` / ${orderItem.config3}` : ''}`,
             image: orderItem.imageSnapshot!,

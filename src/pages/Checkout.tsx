@@ -21,6 +21,7 @@ import globalErrorHandler from '../utils/globalAxiosErrorHandler';
 import toast from 'react-hot-toast';
 import { createOrder } from '../services/order';
 import { deleteShopCardsService } from '../services/products';
+import { getImageUrl } from '../utils/imageConfig';
 
 
 
@@ -623,7 +624,7 @@ const clearOrderState = () => {
                   className="relative p-5 border-b border-[#f0f0f0] flex items-start"
                 >
                   <img
-                    src={item.productImage || 'https://via.placeholder.com/100'}
+                    src={getImageUrl(item.productImage) }
                     alt={item.productName}
                     className="w-[100px] h-[100px] object-contain border border-[#eee] bg-white mr-4"
                   />

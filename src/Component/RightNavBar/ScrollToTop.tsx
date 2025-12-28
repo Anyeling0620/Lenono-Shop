@@ -1,13 +1,4 @@
-/*
- * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @Date: 2025-11-22 09:29:13
- * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-22 12:56:45
- * @FilePath: \lenovo-shop\src\Component\RightNavBar\ScrollToTop.tsx
- * @Description: 
- * 
- * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
- */
+
 import React, { useState} from 'react';
 
 interface ScrollToTopProps {

@@ -18,6 +18,7 @@ import ProductComments from "../component/ProductInfo/ProductComments";
 import { Loading } from "../component/LoadingFallback";
 import type { OrderState } from "../types/order";
 import useAuthStore from "../store/authStore";
+import { getImageUrl } from "../utils/imageConfig";
 
 dayjs.locale('zh-cn');
 dayjs.extend(relativeTime);
@@ -304,7 +305,7 @@ const ProductDetail: React.FC = () => {
           {/* 主图展示 */}
           <div className="relative overflow-hidden w-[450px] h-[450px] border border-gray-100 flex items-center justify-center mb-4 bg-black cursor-pointer group">
             <img
-              src={activeImage || product.mainImage}
+              src={getImageUrl(activeImage || product.mainImage)}
               alt={`${product.name} - 主图`}
               className="max-w-full max-h-full object-contain transition-transform duration-300 hover:scale-110"
               onClick={() => {
@@ -328,7 +329,7 @@ const ProductDetail: React.FC = () => {
                 }}
               >
                 <img
-                  src={appearance.image}
+                  src={getImageUrl(appearance.image)}
                   className="w-full h-full object-contain"
                   alt={`外观图${idx + 1}`}
                 />

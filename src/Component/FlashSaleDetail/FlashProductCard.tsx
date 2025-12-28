@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import type { SeckillProductVO, TimeStatus } from '../../types/flashSale';
 import { getLowestPriceConfig, calculateSoldPercent } from '../../utils/timeCalculator';
+import { getImageUrl } from '../../utils/imageConfig';
 
 interface Props {
   product: SeckillProductVO;
@@ -60,7 +61,7 @@ const FlashProductCard: React.FC<Props> = ({ product, status }) => {
       >
         <div className="w-[160px] h-[160px] mx-auto overflow-hidden flex items-center justify-center mb-4 relative">
           <img
-            src={image}
+            src={getImageUrl(image)}
             alt={name}
             className={`max-w-full max-h-full transition-transform duration-300 ${!isSoldOut && !isUpcoming && 'group-hover:scale-105'} ${isSoldOut || isUpcoming ? 'opacity-60' : ''}`}
             // 新增：未开始状态也添加透明度

@@ -1,6 +1,7 @@
 // src/component/MainProduct/MainProductCard.tsx
 import { Link } from "react-router-dom";
 import type { ProductCardItem } from "../../types/product";
+import { getImageUrl } from "../../utils/imageConfig";
 
 interface CardProps {
   product: ProductCardItem;
@@ -50,7 +51,7 @@ const hasCoupon = product?.coupons && product.coupons.length > 0 || false;
       <Link to={`/product/${id}`} target={id} className="block">
         <div className="flex justify-center mb-3 hover:opacity-90 transition-opacity duration-300">
           <img
-            src={image}
+            src={getImageUrl(image)}
             alt={name}
             className="h-[160px] object-contain"
           />

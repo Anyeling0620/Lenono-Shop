@@ -5,27 +5,25 @@ export const IMAGE_CONFIG = {
     FOLDERS: {
         ROLL: import.meta.env.VITE_ROLL_FOLDER,
         USER_AVATAR: import.meta.env.VITE_USER_AVATAR_FOLDER, // 用户头像
-        // ......
+        IMAGES: import.meta.env.VITE_IMAGES_FOLDER,
     }
 } as const;
 
 
-export const getImageUrl = (
-    imageName: string,
-    folder: string
-): string => {
-    const baseUrl = IMAGE_CONFIG.PUBLIC_URL;
-
-    const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-    const cleanFolder = folder.startsWith('/') ? folder.slice(1) : folder;
-    const cleanImage = imageName.startsWith('/') ? imageName.slice(1) : imageName;
-
-    return `${cleanBase}/${cleanFolder}/${cleanImage}`;
-}
-
 export const getUserAvatarUrl = (
-    imageName: string | null ,
+    imageName: string | null | undefined,
 ): string => {
     const finalImageName = imageName || 'default.png';
     return `${IMAGE_CONFIG.SERVER_PUBLIC_URL}/${IMAGE_CONFIG.FOLDERS.USER_AVATAR}/${finalImageName}`
+}
+
+export const getImageUrl = (
+    image: string | null | undefined
+): string => {
+    if (!image) image = 'default.png'
+
+    if (image.startsWith('https://'))
+        return `${image}`
+
+    return `${IMAGE_CONFIG.SERVER_PUBLIC_URL}/${IMAGE_CONFIG.FOLDERS.IMAGES}/${image}`
 }

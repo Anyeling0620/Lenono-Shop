@@ -1,13 +1,4 @@
-/*
- * @Author: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @Date: 2025-11-21 17:48:42
- * @LastEditors: 不见霞 15550238+yvi-ksm@user.noreply.gitee.com
- * @LastEditTime: 2025-11-22 10:41:53
- * @FilePath: \lenovo-shop\src\Component\RightNavBar\NavItem.tsx
- * @Description: 
- * 
- * Copyright (c) 2025 by ${git_name_email}, All Rights Reserved. 
- */
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 

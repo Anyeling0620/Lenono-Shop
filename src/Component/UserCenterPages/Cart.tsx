@@ -5,6 +5,7 @@ import type { CartListItemVO } from '../../types/shopCard';
 import globalErrorHandler from '../../utils/globalAxiosErrorHandler';
 import toast from 'react-hot-toast';
 import type { OrderState } from '../../types/order'; // 根据实际路径调整
+import { getImageUrl } from '../../utils/imageConfig';
 
 const Cart: React.FC = () => {
   const navigate = useNavigate();
@@ -210,7 +211,7 @@ const Cart: React.FC = () => {
                       <Link to={`/product/${item.productId}`} target={item.productId} className="block flex-shrink-0">
                         <div className="w-16 h-16 border border-gray-200 rounded-sm overflow-hidden bg-gray-100 hover:border-red-400 transition-colors">
                           <img
-                            src={item.image || 'https://via.placeholder.com/80'}
+                            src={getImageUrl(item.image)}
                             alt={item.name}
                             className="w-full h-full object-contain"
                           />

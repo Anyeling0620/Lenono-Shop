@@ -7,6 +7,7 @@
  * 3. 展示 "联想秒杀" 图片标题和副标题
  */
 import React from 'react';
+import { getImageUrl } from '../../utils/imageConfig';
 
 const FlashHeader: React.FC = () => {
   const TITLE_IMG = "https://p3.lefile.cn/product/adminweb/2020/02/26/99f3bccf-14fe-4a4b-a710-9a1c9c35eefd.png";
@@ -21,7 +22,7 @@ const FlashHeader: React.FC = () => {
 
       <div className="relative z-10 flex flex-col items-center">
         <img 
-          src={TITLE_IMG} 
+          src={getImageUrl(TITLE_IMG)} 
           alt="联想秒杀" 
           className="h-[48px] object-contain mb-6"
         />

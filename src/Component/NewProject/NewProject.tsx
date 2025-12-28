@@ -5,6 +5,7 @@ import React, { useState, useMemo } from 'react';
 // 导入类型定义
 
 import type { ProductItem } from '../../types/product'; 
+import { getImageUrl } from '../../utils/imageConfig';
 
 // --- 静态数据模拟 (实际应来自 API 或配置文件) ---
 
@@ -85,7 +86,7 @@ const NewProduct: React.FC = () => {
                 {/* 产品图片区域 */}
                 <div className="h-48 flex items-center justify-center overflow-hidden">
                     {/* 实际项目中应使用 <img src={imageConfig(item.imageUrl)} /> */}
-                    <img src={item.imageUrl} alt={item.name} className="max-h-full max-w-full" />
+                    <img src={getImageUrl(item.imageUrl)} alt={item.name} className="max-h-full max-w-full" />
                 </div>
                 {/* 产品信息 */}
                 <div className="mt-4 text-left">

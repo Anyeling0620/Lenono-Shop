@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Tag from '../Search/Tag';
 import type { ProductCardItem } from '../../types/product';
+import { getImageUrl } from '../../utils/imageConfig';
 
 // 辅助函数：将价格转换为数字（处理后端返回的字符串/数字类型）
 const toNumber = (value: number | string): number => {
@@ -59,7 +60,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div className='overflow-hidden w-[250px] h-[180px] mx-auto border-b-[1px] border-[#e0e0e0] flex items-center justify-center'>
             <img
               className='w-[160px] h-[160px] object-contain'
-              src={(product.product.mainImage || (product.product).image)}
+              src={getImageUrl(product.product.mainImage || (product.product).image)}
             />
           </div>
 

@@ -3,6 +3,7 @@ import { Carousel, Empty } from 'antd';
 import { Link } from 'react-router-dom';
 import ProductListToPages from './ProductListToPages';
 import type { ProductCardItem } from '../../types/product';
+import { getImageUrl } from '../../utils/imageConfig';
 
 
 interface AutoScrollProductSectionProps {
@@ -80,7 +81,7 @@ const ProductSection: React.FC<AutoScrollProductSectionProps> = ({
                   <div key={value.product.id}>
                     <Link to={`/product/${value.product.id}`} target={value.product.id} >
                       <img
-                        src={value.shelfProduct?.carouselImage as string}
+                        src={getImageUrl(value.shelfProduct?.carouselImage)}
                         // className=' w-full object-cover'
                         className=' object-cover w-[1600px] h-[800px]'
                       />

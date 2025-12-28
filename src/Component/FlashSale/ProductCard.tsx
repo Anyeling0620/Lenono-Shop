@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import type { SeckillProductVO, SeckillProductConfigVO } from '../../types/flashSale';
+import { getImageUrl } from '../../utils/imageConfig';
 
 interface ProductCardProps {
   product: SeckillProductVO;
@@ -108,7 +109,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* 商品图片 */}
         <div className="w-[160px] h-[160px] leading-[160px] text-center mx-auto">
           <img 
-            src={productImage} 
+            src={getImageUrl(productImage)} 
             alt={productName}
             className="inline-block align-middle max-w-[160px] border-0 object-contain" 
           />

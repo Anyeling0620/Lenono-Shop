@@ -5,6 +5,7 @@ import globalErrorHandler from "../../utils/globalAxiosErrorHandler";
 import type { EvaluationItem, ProductEvaluationListResponse } from "../../types/evaluation";
 import { type ApiResponse, axiosInstance } from "../../services/AxiosService";
 import { API_PATHS } from "../../services/apiPaths";
+import { getImageUrl, getUserAvatarUrl } from "../../utils/imageConfig";
 
 
 interface ProductCommentsProps {
@@ -244,7 +245,7 @@ const ProductComments: React.FC<ProductCommentsProps> = ({ productId }) => {
                 {/* 用户头像 */}
                 <div className="flex-shrink-0">
                   <img
-                    src={comment.user.avatar || "https://via.placeholder.com/40x40?text=用"}
+                    src={getUserAvatarUrl(comment.user.avatar)}
                     alt={comment.user.nickname || "用户"}
                     className="w-10 h-10 rounded-full object-cover"
                   />
@@ -278,7 +279,7 @@ const ProductComments: React.FC<ProductCommentsProps> = ({ productId }) => {
                       {comment.images.map((img, idx) => (
                         <img
                           key={idx}
-                          src={img}
+                          src={getImageUrl(img)}
                           alt={`评论图片${idx + 1}`}
                           className="w-16 h-16 object-cover rounded border cursor-pointer hover:opacity-80"
                         />

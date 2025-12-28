@@ -11,6 +11,7 @@ import {
 import { NewProductContext } from '../../pages/NewProduct';
 import { Link } from 'react-router-dom';
 import type { ProductGroup } from '../../types/product';
+import { getImageUrl } from '../../utils/imageConfig';
 
 // 一级分类
 const mainTabs: {id: string, name: string}[] = [
@@ -152,8 +153,8 @@ const NewProductRelease = () => {
                 {currentProducts.items.length > 0 ? (
                     <ul className="grid grid-cols-3 gap-2 py-4">
                         {currentProducts.items.filter((_, index) => index < 3).map((product) => {
-                            const price = product.minPriceConfig?.salePrice ?? (product.product as any).price ?? 0;
-                            const image = product.product.mainImage || (product.product as any).image;
+                            const price = product.minPriceConfig?.salePrice ?? (product.product ).price ?? 0;
+                            const image = product.product.mainImage || (product.product ).image;
                             return (
                             <li key={product.product.id} className="bg-white p-4 transition-shadow hover:shadow-xl group cursor-pointer border border-transparent hover:border-[#eee]">
                                 <Link
@@ -163,7 +164,7 @@ const NewProductRelease = () => {
 
                                     <div className="w-full h-[220px] flex items-center justify-center overflow-hidden mb-4">
                                         <img
-                                            src={image}
+                                            src={getImageUrl(image)}
                                             alt={product.product.name}
                                             className="w-full object-contain transition-transform duration-300 group-hover:scale-105"
                                         />

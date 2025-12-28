@@ -5,6 +5,7 @@ import type { CartListItemVO } from '../types/shopCard';
 import { deleteShopCardsService, getShopCardsService } from '../services/products';
 import globalErrorHandler from '../utils/globalAxiosErrorHandler';
 import type { OrderState } from '../types/order';
+import { getImageUrl } from '../utils/imageConfig';
 
 const ShoppingCart: React.FC = () => {
   const navigate = useNavigate();
@@ -229,7 +230,7 @@ const ShoppingCart: React.FC = () => {
                     <Link to={`/product/${item.productId}`} className="flex">
                       <div className="w-[80px] h-[80px] border border-gray-100 flex items-center justify-center mr-3 bg-white">
                         <img
-                          src={item.image!}
+                          src={getImageUrl(item.image)}
                           alt={item.name}
                           className="max-w-full max-h-full object-contain"
                         />

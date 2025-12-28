@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { getImageUrl } from '../../utils/imageConfig';
 
 interface FooterBannerProps {
   imageUrl: string;
@@ -15,7 +16,7 @@ const FooterBanner: React.FC<FooterBannerProps> = ({
       <div className='w-[1200px] h-[199px] relative m-auto'>
         <img
           className='w-full h-full object-cover border-none'
-          src={imageUrl}
+          src={getImageUrl(imageUrl)}
           alt={altText}
         />
       </div>

@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { getImageUrl } from "../../utils/imageConfig";
 
 interface ImageModalProps {
   isOpen: boolean;
@@ -37,7 +38,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
       <div className="relative max-w-[90vw] max-h-[90vh]">
         <img
-          src={imageSrc}
+          src={getImageUrl(imageSrc)}
           alt={altText}
           className="max-w-full max-h-full object-contain"
         />

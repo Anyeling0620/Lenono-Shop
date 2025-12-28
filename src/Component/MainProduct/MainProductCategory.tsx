@@ -5,6 +5,7 @@ import Indicators from "../Carousel/Indicators";
 import { useEffect, useState } from "react";
 import { useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
+import { getImageUrl } from "../../utils/imageConfig";
 
 
 const MainProductCategory = ({ group }: { group: ProductGroup }) => {
@@ -90,7 +91,7 @@ const MainProductCategory = ({ group }: { group: ProductGroup }) => {
                   className="w-full h-full flex-shrink-0"
                 >
                   <img
-                    src={img.imageName}
+                    src={getImageUrl(img.imageName)}
                     alt={group.title}
                     className="w-full h-full object-cover"
                   />

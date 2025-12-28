@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
+import { getImageUrl } from '../../utils/imageConfig';
 
 interface ProductDetailInfoProps {
   product: any; // 可替换为实际的Product类型
@@ -95,7 +96,7 @@ const ProductDetailInfo: React.FC<ProductDetailInfoProps> = ({
             {banners.map((banner, idx) => (
               <div key={`detail-banner-${idx}`} className="relative">
                 <img
-                  src={banner.image}
+                  src={getImageUrl(banner.image)}
                   alt={`产品详情宣传图${idx + 1}`}
                   className="mx-auto block w-full shadow-lg "
                 />
