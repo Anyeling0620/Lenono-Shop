@@ -1,75 +1,54 @@
-name: Frontend Production Build and Deploy
+name: Frontend Self-hosted Deploy
 
 on:
   push:
     branches:
-      - happy-end2 
+      - happy-end2  # 或者是你希望触发部署的分支
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted  # 关键：这会让任务在你刚才配置的 PM2 进程中运行
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: latest
-
       - name: Install Dependencies
         run: pnpm install
-        
-      - name: Case Sensitivity Hack (Lowercase Symlinks)
+
+      # 1. 修复队友大小写乱写的问题
+      - name: Case Sensitivity Hack
         run: |
-          find src -type d -exec sh -c '
-            for dir do
-              lower=$(echo "$dir" | tr "[:upper:]" "[:lower:]")
-              if [ "$dir" != "$lower" ] && [ ! -e "$lower" ]; then
-                ln -s "$(basename "$dir")" "$lower"
-              fi
-            done
-          ' sh {} +
-          find src -type f -exec sh -c '
-            for file do
-              lower=$(echo "$file" | tr "[:upper:]" "[:lower:]")
-              if [ "$file" != "$lower" ] && [ ! -e "$lower" ]; then
-                ln -s "$(basename "$file")" "$lower"
+          find src -depth -exec sh -c '
+            for item do
+              lower=$(echo "$item" | tr "[:upper:]" "[:lower:]")
+              if [ "$item" != "$lower" ] && [ ! -e "$lower" ]; then
+                ln -s "$(basename "$item")" "$lower"
               fi
             done
           ' sh {} +
 
-      - name: Create Production Env File
+      # 2. 注入环境变量 (使用 GitHub Secrets)
+      - name: Inject Environment Variables
         run: |
-          echo "VITE_PUBLIC_URL=/" > .env.production
-          echo "VITE_ROLL_FOLDER=images/roll" >> .env.production
-          echo "VITE_SERVER_API_PORT=" >> .env.production
-          
-          echo "VITE_SERVER_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" >> .env.production
-          
+          echo "VITE_SERVER_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" > .env.production
           echo "VITE_WS_URL=wss://api.jxutcm.top/ws" >> .env.production
           echo "VITE_SERVER_PUBLIC_URL=${{ secrets.VITE_API_BASE_URL }}" >> .env.production
-          
-          echo "VITE_USER_AVATAR_FOLDER=static/images/user/avatar" >> .env.production
-          echo "VITE_IMAGES_FOLDER=static/images/lenovo" >> .env.production
-          
-          echo "已成功将生产环境 API 地址注入为: ${{ secrets.VITE_API_BASE_URL }}"
 
+      # 3. 强行构建 (限制 1024MB 内存，防止 1.8GB 内存溢出)
       - name: Build Project
-        run: pnpm vite build 
+        run: |
+          export NODE_OPTIONS="--max-old-space-size=1024"
+          ./node_modules/.bin/vite build
 
-      - name: Deploy to JD Cloud
-        uses: easingthemes/ssh-deploy@main
-        with:
-          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
-          REMOTE_HOST: ${{ secrets.SERVER_IP }}
-          REMOTE_USER: "root"
-          ARGS: "-rlgoDzvc -i --delete"
-          SOURCE: "dist/"
-          TARGET: "/www/wwwroot/shop.jxutcm.top" 
+      # 4. 本地部署：直接将 dist 内容移动到 shop 目录
+      - name: Deploy to Web Root
+        run: |
+          # 确保目标目录存在
+          mkdir -p /www/wwwroot/shop.jxutcm.top
+          # 先清空旧的产物（保留目录本身）
+          rm -rf /www/wwwroot/shop.jxutcm.top/*
+          # 将 dist 下的所有内容复制过去
+          cp -r dist/* /www/wwwroot/shop.jxutcm.top/
+          # 修正权限，确保 Nginx 用户 www 可以访问
+          chown -R www:www /www/wwwroot/shop.jxutcm.top/
