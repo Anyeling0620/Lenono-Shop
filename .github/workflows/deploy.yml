@@ -1,0 +1,56 @@
+name: Frontend Production Build and Deploy
+
+on:
+  push:
+    branches:
+      - happy-end2 
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Create Production Env File
+        run: |
+          echo "VITE_PUBLIC_URL=/" > .env.production
+          echo "VITE_ROLL_FOLDER=images/roll" >> .env.production
+          echo "VITE_SERVER_API_PORT=" >> .env.production
+          
+          echo "VITE_SERVER_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" >> .env.production
+          
+          echo "VITE_WS_URL=wss://api.jxutcm.top/ws" >> .env.production
+          echo "VITE_SERVER_PUBLIC_URL=${{ secrets.VITE_API_BASE_URL }}" >> .env.production
+          
+          echo "VITE_USER_AVATAR_FOLDER=static/images/user/avatar" >> .env.production
+          echo "VITE_IMAGES_FOLDER=static/images/lenovo" >> .env.production
+          
+          echo "已成功将生产环境 API 地址注入为: ${{ secrets.VITE_API_BASE_URL }}"
+
+      - name: Build Project
+        run: pnpm run build 
+
+      - name: Deploy to JD Cloud
+        uses: easingthemes/ssh-deploy@main
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.SERVER_IP }}
+          REMOTE_USER: "root"
+          ARGS: "-rlgoDzvc -i --delete"
+          SOURCE: "dist/"
+          TARGET: "/www/wwwroot/shop.jxutcm.top" 
