@@ -107,7 +107,7 @@ const handleConfirmReceipt = async () => {
   const handleBuyAgain = async () => {
     try {
       const addToCartPromises = order.items.map(item => 
-        addToShoppingCartService(item.id)
+        addToShoppingCartService(item.configId)
       );
       await Promise.all(addToCartPromises);
       navigate('/shopping-cart')

@@ -29,6 +29,7 @@ import type {
   ComplaintStatus,
 } from '../../types/afterSale';
 import globalErrorHandler from '../../utils/globalAxiosErrorHandler';
+import { getImageUrl } from '../../utils/imageConfig';
 
 const { Paragraph } = Typography;
 
@@ -362,7 +363,7 @@ const Complaint: React.FC = () => {
                                     className="relative aspect-square rounded overflow-hidden border border-gray-200 bg-gray-100"
                                   >
                                     <Image
-                                      src={imgInfo.image}
+                                      src={getImageUrl(imgInfo.image)}
                                       alt={`投诉图片 ${index + 1}`}
                                       width="100%"
                                       height="100%"

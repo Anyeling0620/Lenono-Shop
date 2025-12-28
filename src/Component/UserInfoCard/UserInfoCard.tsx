@@ -1,18 +1,21 @@
 import { CgShoppingCart } from "react-icons/cg"; import { MdOutlineEditLocation } from "react-icons/md";
 import { RiMessageLine } from "react-icons/ri"; import { RiFileList2Line } from "react-icons/ri";
-import type { FC } from "react";
+import { useEffect, useState, type FC } from "react";
 import UserHeader from "./UserHeader";
 import CouponSection from "./CouponSection";
 import FunctionIconButton from "./FunctionIconButton";
 import useUserInfoStore from "../../store/userInfostore";
 import { getUserAvatarUrl } from "../../utils/imageConfig";
+import { getUserCouponsService } from "../../services/coupon";
+import globalErrorHandler from "../../utils/globalAxiosErrorHandler";
+import toast from "react-hot-toast";
 
 
 interface fbItem {
   icon: React.ReactNode;
   text: string;
   to: string;
-  selectedKey?:string;
+  selectedKey?: string;
   hasBadge: boolean;  //是否显示角标
 }
 
@@ -33,7 +36,7 @@ const functionButtons: fbItem[] = [
     icon: <MdOutlineEditLocation size={40} />,
     text: '地址管理',
     to: '/user-center',
-    selectedKey:'9',
+    selectedKey: '9',
     hasBadge: true,
   },
   {
@@ -46,10 +49,23 @@ const functionButtons: fbItem[] = [
 ];
 
 const UserInfoCard: FC = () => {
+  const [couponCount, setCouponCount] = useState(0)
   const userName = useUserInfoStore((state) => state.nikeName);
   const avatar = useUserInfoStore((state) => state.avatar);
   const memberType = useUserInfoStore((state) => state.memberType);
-  const couponCount = useUserInfoStore((state) => state.couponsCount);
+
+  useEffect(() => {
+    async function fetchCoupon() {
+      try {
+        const coupon = await getUserCouponsService()
+        coupon.items = coupon.items.filter(v => v.status === '未使用');
+        setCouponCount(coupon.items.length)
+      } catch (e) {
+        globalErrorHandler.handle(e, toast.error)
+      }
+    }
+    fetchCoupon()
+  }, [])
 
   return (
     <div className='w-[360px] h-[200px] p-2 m-auto'>
@@ -60,7 +76,7 @@ const UserInfoCard: FC = () => {
           memberType={memberType}
           centerLink='/user-center'
         />
-        <CouponSection count={couponCount} detailLink='/user-center'/>
+        <CouponSection count={couponCount} detailLink='/user-center' />
         <div className='mt-2 px-1 py-3 grid grid-cols-4'>
           {functionButtons.map((btn) => (
             <FunctionIconButton

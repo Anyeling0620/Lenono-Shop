@@ -12,6 +12,7 @@ import {
 import { Card, Image, Button, Divider, Empty, Skeleton } from 'antd';
 import globalErrorHandler from '../../utils/globalAxiosErrorHandler';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../../utils/imageConfig';
 
 
 const formatDate = (value: Date | string) => {
@@ -231,7 +232,7 @@ const Roast: React.FC = () => {
                                 className="relative group cursor-pointer"
                               >
                                 <Image
-                                  src={image.image}
+                                  src={getImageUrl(image.image)}
                                   alt="吐槽附件"
                                   width={120}
                                   height={120}

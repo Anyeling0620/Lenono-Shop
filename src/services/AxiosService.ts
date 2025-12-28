@@ -115,8 +115,8 @@ class AxiosService {
     // ========== 基础信息 ==========
     private getBaseURL(): string {
         const baseUrl = (import.meta as any).env?.VITE_SERVER_API_BASE_URL;
-        const port = (import.meta as any).env?.VITE_SERVER_API_PORT;
-        if (baseUrl && port) return `${baseUrl}:${port}/api`;
+      //  const port = (import.meta as any).env?.VITE_SERVER_API_PORT;
+      //  if (baseUrl && port) return `${baseUrl}:${port}/api`;
         if (baseUrl) return `${baseUrl}/api`;
         return '/api';
     }

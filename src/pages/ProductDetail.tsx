@@ -732,7 +732,7 @@ const ProductDetail: React.FC = () => {
       {/* 图片预览弹窗 */}
       <ImageModal
         isOpen={isModalOpen}
-        imageSrc={modalImage}
+        imageSrc={getImageUrl(modalImage)}
         altText={product.name}
         onClose={() => setIsModalOpen(false)}
       />
