@@ -30,6 +30,7 @@ import {
 import { deleteEvaluation, getEvaluations } from '../../services/afterSale';
 import globalErrorHandler from '../../utils/globalAxiosErrorHandler';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../../utils/imageConfig';
 
 const { Paragraph } = Typography;
 
@@ -304,7 +305,7 @@ const Comments: React.FC = () => {
                             <div className="relative group">
                               <div className="w-20 h-20 rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white">
                                 <Image
-                                  src={comment.product.mainImage || 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=200&h=200&fit=crop'}
+                                  src={getImageUrl(comment.product.mainImage) }
                                   width={80}
                                   height={80}
                                   preview={{
@@ -474,7 +475,7 @@ const Comments: React.FC = () => {
                                   >
                                     <div className="aspect-square rounded-lg overflow-hidden border border-gray-200 bg-gray-100">
                                       <Image
-                                        src={imgInfo.image}
+                                        src={getImageUrl(imgInfo.image)}
                                         alt={`评价图片 ${index + 1}`}
                                         width="100%"
                                         height="100%"

@@ -26,6 +26,7 @@ import { afterSaleService } from '../services/afterSale';
 import globalErrorHandler from '../utils/globalAxiosErrorHandler';
 import toast from 'react-hot-toast';
 import { getOrderDetail } from '../services/order';
+import { getImageUrl } from '../utils/imageConfig';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -276,7 +277,7 @@ const AfterSaleApply: React.FC = () => {
                                         <Image
                                             width={100}
                                             height={100}
-                                            src={orderInfo.image}
+                                            src={getImageUrl(orderInfo.image)}
                                             alt={orderInfo.productName}
                                             className="object-cover border border-gray-200"
                                             preview={false}

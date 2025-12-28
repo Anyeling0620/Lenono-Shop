@@ -36,6 +36,7 @@ import dayjs from 'dayjs';
 import { afterSaleService } from '../services/afterSale';
 import globalErrorHandler from '../utils/globalAxiosErrorHandler';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../utils/imageConfig';
 
 const AfterSaleDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -365,7 +366,7 @@ const AfterSaleDetailPage: React.FC = () => {
                   <Image
                     width={120}
                     height={120}
-                    src={detail.orderItem.product?.mainImage as string }
+                    src={getImageUrl(detail.orderItem.product?.mainImage)}
                     alt={detail.orderItem.productName}
                     className="object-cover rounded-lg border border-gray-200"
                     preview={false}
@@ -416,7 +417,7 @@ const AfterSaleDetailPage: React.FC = () => {
                       <Image
                         width="100%"
                         height={200}
-                        src={image.image}
+                        src={getImageUrl(image.image)}
                         alt="凭证图片"
                         className="object-cover rounded-lg border border-gray-200"
                         preview={{
@@ -471,7 +472,7 @@ const AfterSaleDetailPage: React.FC = () => {
                                     key={img.id}
                                     width={80}
                                     height={80}
-                                    src={img.image}
+                                    src={getImageUrl(img.image)}
                                     alt="投诉图片"
                                     className="object-cover rounded border border-gray-200"
                                     preview={{

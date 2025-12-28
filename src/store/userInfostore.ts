@@ -6,7 +6,6 @@ interface UserInfoStore {
     readonly avatar: string;
     readonly nikeName: string;
     readonly memberType: string;
-    readonly couponsCount: number;
     readonly messageCount: number;
     readonly notificationCount: number;
     readonly email: string,
@@ -15,7 +14,6 @@ interface UserInfoStore {
     updateNikeName: (nikeName: string) => void;
     updateMemberType: (memberType: string) => void;
 
-    updateCouponsCount: (value: number | ((prev: number) => number)) => void;
     updateMessageCount: (value: number | ((prev: number) => number)) => void;
     updateNotificationCount: (value: number | ((prev: number) => number)) => void;
 
@@ -27,7 +25,6 @@ interface UserInfoStore {
     }) => void;
 
     setEmail: (email: string) => void;
-    setCouponsCount: (couponsCount: number) => void;
     setMessageCount: (messageCount: number) => void;
     setNotificationCount: (notificationCount: number) => void;
 
@@ -50,13 +47,7 @@ const useUserInfoStore = create<UserInfoStore>()(
             updateNikeName: (nikeName: string) => set({ nikeName }),
             updateMemberType: (memberType: string) => set({ memberType }),
 
-            updateCouponsCount: (value) =>
-                set((state) => ({
-                    couponsCount:
-                        typeof value === "function"
-                            ? value(state.couponsCount)
-                            : value,
-                })),
+          
 
             updateMessageCount: (value) =>
                 set((state) => ({
@@ -78,7 +69,6 @@ const useUserInfoStore = create<UserInfoStore>()(
                 set({ userId, avatar, nikeName, memberType }),
 
             setEmail: (email: string) => set({ email }),
-            setCouponsCount: (couponsCount: number) => set({ couponsCount }),
             setMessageCount: (messageCount: number) => set({ messageCount }),
             setNotificationCount: (notificationCount: number) => set({ notificationCount }),
 
@@ -88,7 +78,6 @@ const useUserInfoStore = create<UserInfoStore>()(
                     avatar: "default.png",
                     nikeName: "",
                     memberType: "普通会员",
-                    couponsCount: 0,
                     messageCount: 0,
                     notificationCount: 0,
                     email: ''
@@ -101,7 +90,6 @@ const useUserInfoStore = create<UserInfoStore>()(
                 avatar: state.avatar,
                 nikeName: state.nikeName,
                 memberType: state.memberType,
-                couponsCount: state.couponsCount,
                 messageCount: state.messageCount,
                 notificationCount: state.notificationCount,
                 email: state.email,

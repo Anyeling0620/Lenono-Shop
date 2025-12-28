@@ -8,10 +8,12 @@ import { getUserInfo } from "../services/accountInfo";
 import { useNavigate } from "react-router-dom";
 
 
+
 const handleLoginUserInfo = async () => {
     try {
         const userInfo = await getUserInfo();
         useUserInfoStore.getState().setUserInfo(userInfo);
+        
     } catch (error) {
         globalErrorHandler.handle(error, toast.error);
     }

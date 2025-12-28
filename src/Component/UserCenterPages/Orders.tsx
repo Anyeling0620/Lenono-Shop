@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 import type { OrderListItem, OrderListQuery, OrderStats, OrderStatus } from '../../types/order';
 import { cancelOrder, deleteOrder, getOrderList, getOrderStats, confirmReceipt } from '../../services/order'; // 添加 confirmReceipt 导入
+import { getImageUrl } from '../../utils/imageConfig';
 
 // ========== 4. 状态配置 (适配中文枚举) ==========
 
@@ -173,7 +174,12 @@ const Orders = () => {
     };
 
     const handleApplyAfterSale = (order: OrderListItem) => {
-        navigate(`/after-sales/apply/${order.id}`);
+        navigate('/after-sale/apply', {
+      state: {
+        orderId: order.id,
+        orderItemId: order.items[0].id
+      }
+    });
     };
 
     // --- 渲染辅助 ---
@@ -228,7 +234,7 @@ const Orders = () => {
                             <Link to={`/product/${item.productId}`} target={item.productId} className="block flex-shrink-0"> 
                                 <div className="w-20 h-20 border border-gray-200 rounded-sm overflow-hidden bg-gray-100 hover:border-red-400 transition-colors">
                                     <Image 
-                                        src={item.imageSnapshot} 
+                                        src={getImageUrl(item.imageSnapshot)} 
                                         alt={item.productName}
                                         width={80}
                                         height={80}
@@ -290,7 +296,7 @@ const Orders = () => {
                         {order.status === '已收货' && (
                             <>
                                 <Button size="small" className="rounded-sm border-gray-300 text-gray-600 hover:text-red-500 hover:border-red-500" onClick={() => handleApplyAfterSale(order)}>申请售后</Button>
-                                <Link to={`/order/evaluate/${order.id}`}>
+                                <Link to={`/order-detail/${order.id}`}>
                                     <Button size="small" className="rounded-sm border-gray-300 text-gray-600 hover:text-red-500 hover:border-red-500">评价</Button>
                                 </Link>
                                 <Button size="small" danger icon={<DeleteOutlined />} className="rounded-sm" onClick={() => showDeleteModal(order.id)}>删除</Button>

@@ -1,5 +1,4 @@
 export const IMAGE_CONFIG = {
-    PUBLIC_URL: import.meta.env.VITE_PUBLIC_URL,
     SERVER_PUBLIC_URL: import.meta.env.VITE_SERVER_PUBLIC_URL,
 
     FOLDERS: {

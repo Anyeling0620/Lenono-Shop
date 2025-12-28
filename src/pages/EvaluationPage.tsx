@@ -25,6 +25,7 @@ import { afterSaleService } from '../services/afterSale';
 import type { EvaluationPageState } from '../types/afterSale';
 import globalErrorHandler from '../utils/globalAxiosErrorHandler';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../utils/imageConfig';
 
 const { TextArea } = Input;
 
@@ -201,7 +202,7 @@ const EvaluationPage: React.FC = () => {
                   <Image
                     width={100}
                     height={100}
-                    src={image}
+                    src={getImageUrl(image)}
                     alt={productName}
                     className="object-cover rounded-lg border border-gray-200"
                     preview={{

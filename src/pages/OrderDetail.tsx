@@ -36,6 +36,7 @@ import { cancelOrder, confirmReceipt, getOrderDetail } from '../services/order';
 import type { AfterSaleApplyState, EvaluationPageState } from '../types/afterSale';
 import toast from 'react-hot-toast';
 import globalErrorHandler from '../utils/globalAxiosErrorHandler';
+import { getImageUrl } from '../utils/imageConfig';
 
 const OrderDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -331,7 +332,7 @@ const OrderDetail: React.FC = () => {
                                                     <Image
                                                         width={100}
                                                         height={100}
-                                                        src={item.imageSnapshot}
+                                                        src={getImageUrl(item.imageSnapshot)}
                                                         alt={item.productName}
                                                         className="object-cover rounded-lg border border-gray-200 hover:border-red-300 transition-colors"
                                                         fallback="https://via.placeholder.com/100"
