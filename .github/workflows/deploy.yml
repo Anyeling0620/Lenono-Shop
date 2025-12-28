@@ -25,6 +25,25 @@ jobs:
 
       - name: Install Dependencies
         run: pnpm install
+        
+      - name: Case Sensitivity Hack (Lowercase Symlinks)
+        run: |
+          find src -type d -exec sh -c '
+            for dir do
+              lower=$(echo "$dir" | tr "[:upper:]" "[:lower:]")
+              if [ "$dir" != "$lower" ] && [ ! -e "$lower" ]; then
+                ln -s "$(basename "$dir")" "$lower"
+              fi
+            done
+          ' sh {} +
+          find src -type f -exec sh -c '
+            for file do
+              lower=$(echo "$file" | tr "[:upper:]" "[:lower:]")
+              if [ "$file" != "$lower" ] && [ ! -e "$lower" ]; then
+                ln -s "$(basename "$file")" "$lower"
+              fi
+            done
+          ' sh {} +
 
       - name: Create Production Env File
         run: |
@@ -43,7 +62,7 @@ jobs:
           echo "已成功将生产环境 API 地址注入为: ${{ secrets.VITE_API_BASE_URL }}"
 
       - name: Build Project
-        run: pnpm run build 
+        run: pnpm vite build 
 
       - name: Deploy to JD Cloud
         uses: easingthemes/ssh-deploy@main
