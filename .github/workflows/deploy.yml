@@ -10,8 +10,16 @@ jobs:
     runs-on: self-hosted  # 关键：这会让任务在你刚才配置的 PM2 进程中运行
 
     steps:
+      - name: Setup SSH known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          ssh-key: ${{ secrets.DEPLOY_KEY_LENOVO_SHOP }}
 
       - name: Install Dependencies
         run: pnpm install
