@@ -53,16 +53,16 @@ const items: MenuItem[] = [
             { key: '13', label: '我的代金券' },
         ],
     },
-    { type: 'divider' },
-    {
-        key: 'grp',
-        label: '消息中心',
-        type: 'group',
-        children: [
-            { key: '14', icon: <MailOutlined />, label: '系统通知' },
-            { key: '15', icon: <MessageOutlined />, label: '我的咨询' },
-        ],
-    },
+    // { type: 'divider' },
+    // {
+    //     key: 'grp',
+    //     label: '消息中心',
+    //     type: 'group',
+    //     children: [
+    //         { key: '14', icon: <MailOutlined />, label: '系统通知' },
+    //         { key: '15', icon: <MessageOutlined />, label: '我的咨询' },
+    //     ],
+    // },
 ];
 
 /* ------------------------- 官方示例：层级 key 计算 ------------------------- */

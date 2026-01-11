@@ -24,7 +24,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
 
-    "noImplicitAny": false,
+    //"noImplicitAny": false,
     "ignoreDeprecations": "5.0"
   },
   "include": ["src"]

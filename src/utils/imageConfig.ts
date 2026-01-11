@@ -3,7 +3,7 @@ export const IMAGE_CONFIG = {
 
     FOLDERS: {
         ROLL: import.meta.env.VITE_ROLL_FOLDER,
-        USER_AVATAR: import.meta.env.VITE_USER_AVATAR_FOLDER, // 用户头像
+        USER_AVATAR: import.meta.env.VITE_USER_AVATAR_FOLDER || 'static/images/user/avatar', // 用户头像
         IMAGES: import.meta.env.VITE_IMAGES_FOLDER,
     }
 } as const;

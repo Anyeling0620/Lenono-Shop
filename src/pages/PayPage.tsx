@@ -481,13 +481,6 @@ const PayPage: React.FC = () => {
                                     <div className="text-center py-8">
                                         <GiftOutlined className="text-4xl text-gray-300 mb-4" />
                                         <Text type="secondary">暂无可用代金券</Text>
-                                        <Button
-                                            type="link"
-                                            className="mt-2 text-[#e60012]"
-                                            onClick={() => navigate('/voucher')}
-                                        >
-                                            去领取代金券
-                                        </Button>
                                     </div>
                                 ) : (
                                     <Radio.Group

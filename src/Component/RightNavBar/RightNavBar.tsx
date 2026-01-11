@@ -47,21 +47,21 @@ interface NavItemConfig {
                 </div>
             )
         },
-        {
-            id: 'manual-consultation',
-            type: 'normal',
-            normalImage: 'https://p1.lefile.cn/fes/cms/2025/10/20/50z28vxv0m8xogl4uy0kjpnz1pfe3c035989.jpg',
-            hoverImage: 'https://p3.lefile.cn/fes/cms/2025/10/20/4h4gnqksch94pehlf5dtxu6ey6glp4447791.jpg',
-            href: 'manual-consultation',
-            alt: '人工咨询',
-            hasPopup: true,
-            popupContent: (
-                <div className="text-sm text-gray-700">
-                    <div className="font-semibold text-red-600 mb-1">售前咨询</div>
-                    <div className="text-xs text-gray-500 mt-1">周一至周日 9:00-22:00</div>
-                </div>
-            )
-        },
+        // {
+        //     id: 'manual-consultation',
+        //     type: 'normal',
+        //     normalImage: 'https://p1.lefile.cn/fes/cms/2025/10/20/50z28vxv0m8xogl4uy0kjpnz1pfe3c035989.jpg',
+        //     hoverImage: 'https://p3.lefile.cn/fes/cms/2025/10/20/4h4gnqksch94pehlf5dtxu6ey6glp4447791.jpg',
+        //     href: 'manual-consultation',
+        //     alt: '人工咨询',
+        //     hasPopup: true,
+        //     popupContent: (
+        //         <div className="text-sm text-gray-700">
+        //             <div className="font-semibold text-red-600 mb-1">售前咨询</div>
+        //             <div className="text-xs text-gray-500 mt-1">周一至周日 9:00-22:00</div>
+        //         </div>
+        //     )
+        // },
         {
             id: 'app-exclusive',
             type: 'normal',
@@ -83,22 +83,22 @@ interface NavItemConfig {
                 </div>
             )
         },
-        {
-            id: 'feedback',
-            type: 'normal',
-            normalImage: 'https://p2.lefile.cn/fes/cms/2022/04/01/uwvmvtszm9zabuoajqf49jwpztu605300884.png',
-            hoverImage: 'https://p3.lefile.cn/fes/cms/2022/04/01/m3gvd1j97ejneroqxlczlrz0sqj5ri536853.png',
-            href: 'feedback',
-            alt: '吐槽反馈'
-        },
-        {
-            id: 'survey',
-            type: 'normal',
-            normalImage: 'https://p1.lefile.cn/fes/cms/2022/04/01/8umvhtyukxemz1p2vq1yo5c3sopu85703492.png',
-            hoverImage: 'https://p3.lefile.cn/fes/cms/2022/04/01/7ww5fagz71s7noo47by6szu4n1y6az548184.png',
-            href: 'survey',
-            alt: '有奖调研'
-        },
+        // {
+        //     id: 'feedback',
+        //     type: 'normal',
+        //     normalImage: 'https://p2.lefile.cn/fes/cms/2022/04/01/uwvmvtszm9zabuoajqf49jwpztu605300884.png',
+        //     hoverImage: 'https://p3.lefile.cn/fes/cms/2022/04/01/m3gvd1j97ejneroqxlczlrz0sqj5ri536853.png',
+        //     href: 'feedback',
+        //     alt: '吐槽反馈'
+        // },
+        // {
+        //     id: 'survey',
+        //     type: 'normal',
+        //     normalImage: 'https://p1.lefile.cn/fes/cms/2022/04/01/8umvhtyukxemz1p2vq1yo5c3sopu85703492.png',
+        //     hoverImage: 'https://p3.lefile.cn/fes/cms/2022/04/01/7ww5fagz71s7noo47by6szu4n1y6az548184.png',
+        //     href: 'survey',
+        //     alt: '有奖调研'
+        // },
        
         {
             id: 'scroll-to-top',
@@ -185,7 +185,7 @@ const RightNavBar: React.FC = () => {
     };
 
     return (
-        <div className='top-[20%] block w-[70px] h-auto z-[11112] fixed right-5 bg-white/50 shadow-md backdrop-blur-md rounded-lg overflow-visible transition-all duration-300'>
+        <div className='top-[30%] block w-[70px] h-auto z-[11112] fixed right-5 bg-white/50 shadow-md backdrop-blur-md rounded-lg overflow-visible transition-all duration-300'>
             <ul>
                 {navItemsData.filter(item=>{
                     if( !isLogin&&(item.id === 'user-center' )){
