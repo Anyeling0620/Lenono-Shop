@@ -13,6 +13,7 @@ import { addToShoppingCartService } from '../../services/products';
 import type { SimpleOrderItem, OrderResponse } from '../../types/order';
 import globalErrorHandler from '../../utils/globalAxiosErrorHandler';
 import toast from 'react-hot-toast';
+import { getImageUrl } from '../../utils/imageConfig';
 
 interface OrderItemProps {
   order: SimpleOrderItem;
@@ -218,7 +219,7 @@ const handlePayment = async () => {
               <Image
                 width={80}
                 height={80}
-                src={mainItem.imageSnapshot}
+                src={getImageUrl(mainItem.imageSnapshot)}
                 alt={mainItem.productName}
                 className="rounded border border-gray-200 hover:border-red-300 transition-colors"
                 fallback="https://via.placeholder.com/80"
