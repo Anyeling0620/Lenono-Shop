@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react'
-import { useLocation, useMatches } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 
 type TitleOptions = {
   /** 品牌/站点名，会以“页面名 - siteName”的形式拼接 */
@@ -21,21 +21,9 @@ export default function useDocumentTitle(options: TitleOptions = {}) {
 
   const location = useLocation()
 
-  // 注意：useMatches 在非 data router 场景下会返回空数组；这里做兼容。
-  const matches = useMatches?.() ?? []
-
-  const titleFromHandle = useMemo(() => {
-    for (let i = matches.length - 1; i >= 0; i--) {
-      const m: any = matches[i]
-      const t = m?.handle?.title
-      if (typeof t === 'string' && t.trim()) return t.trim()
-      if (typeof t === 'function') {
-        const v = t(m)
-        if (typeof v === 'string' && v.trim()) return v.trim()
-      }
-    }
-    return ''
-  }, [matches])
+  // 当前项目使用 BrowserRouter + <Routes>（非 Data Router），因此不从 route handle 读取 title。
+  // 若未来迁移到 createBrowserRouter，可在这里再接入 handle.title 逻辑。
+  const titleFromHandle = ''
 
   const titleFromPathname = useMemo(() => {
     const p = location.pathname
@@ -65,7 +53,7 @@ export default function useDocumentTitle(options: TitleOptions = {}) {
   }, [location.pathname])
 
   const finalTitle = useMemo(() => {
-    const pageTitle = titleFromHandle || titleFromPathname || fallback
+  const pageTitle = titleFromHandle || titleFromPathname || fallback
     if (!siteName) return pageTitle
     // 若 pageTitle 已经包含站点名，就不重复拼接
     if (pageTitle.toLowerCase().includes(siteName.toLowerCase())) return pageTitle
