@@ -17,7 +17,7 @@ type TitleOptions = {
  * 3) fallback
  */
 export default function useDocumentTitle(options: TitleOptions = {}) {
-  const { siteName = 'lenovo-shop', fallback = 'lenovo-shop' } = options
+  const { fallback = 'lenovo-shop' } = options
 
   const location = useLocation()
 
@@ -54,11 +54,9 @@ export default function useDocumentTitle(options: TitleOptions = {}) {
 
   const finalTitle = useMemo(() => {
   const pageTitle = titleFromHandle || titleFromPathname || fallback
-    if (!siteName) return pageTitle
-    // 若 pageTitle 已经包含站点名，就不重复拼接
-    if (pageTitle.toLowerCase().includes(siteName.toLowerCase())) return pageTitle
-    return `${pageTitle} - ${siteName}`
-  }, [fallback, siteName, titleFromHandle, titleFromPathname])
+  // 按需求：仅显示页面标题，不在后面拼接站点名
+  return pageTitle
+  }, [fallback, titleFromHandle, titleFromPathname])
 
   useEffect(() => {
     document.title = finalTitle
