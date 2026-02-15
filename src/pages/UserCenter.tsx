@@ -1,5 +1,5 @@
 import { useState, type FC } from 'react';
-import { UserOutlined, MessageOutlined, MoneyCollectOutlined, MailOutlined, ShoppingOutlined, TruckOutlined, } from '@ant-design/icons';
+import { UserOutlined, MoneyCollectOutlined, ShoppingOutlined, TruckOutlined } from '@ant-design/icons';
 import { Menu } from 'antd';
 import type { MenuProps } from 'antd';
 import { useSearchParams } from 'react-router-dom';

@@ -15,9 +15,11 @@ import AfterSaleApply from "./pages/AfterSaleApply"
 import ComplaintPage from "./pages/ComplaintPage"
 import EvaluationPage from "./pages/EvaluationPage"
 import AfterSaleDetailPage from "./pages/AfterSaleDetail"
+import useDocumentTitle from "./hooks/useDocumentTitle"
 
 // 懒加载页面组件
 const Login = lazy(() => import("./pages/Auth/Login"))
+  useDocumentTitle({ siteName: 'lenovo-shop' })
 const Register = lazy(() => import("./pages/Auth/Register"))
 const Index = lazy(() => import("./pages/Index"))
 const NewProduct = lazy(() => import("./pages/NewProduct"))
