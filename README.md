@@ -13,266 +13,229 @@
 [📖 快速开始](#-快速开始) • [🏗️ 项目架构](#-项目架构) • [📁 文件结构](#-文件结构) • [🎯 功能特性](#-功能特性) • [🛠️ 开发指南](#-开发指南) • [📋 TODO 清单](#-todo-清单)
 
 </div>
+# Lenovo Shop \uff08\u524d\u53f0\u5546\u57ce\u524d\u7aef\uff09
+
+<div align="center">
+
+<p>
+  <a href="#-%E5%BF%AB%E9%80%9F%E4%BD%93%E9%AA%8C">\u5feb\u901f\u4f53\u9a8c</a> \u00b7
+  <a href="#-%E4%BA%A7%E5%93%81%E8%A7%86%E8%A7%92">\u4ea7\u54c1\u89c6\u89d2</a> \u00b7
+  <a href="#-%E4%B8%9A%E5%8A%A1%E4%B8%8E%E6%B5%81%E7%A8%8B">\u4e1a\u52a1\u4e0e\u6d41\u7a0b</a> \u00b7
+  <a href="#-%E6%9E%B6%E6%9E%84%E4%B8%8E%E5%AF%B9%E6%8E%A5">\u67b6\u6784\u4e0e\u5bf9\u63a5</a> \u00b7
+  <a href="#-%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83">\u5f00\u53d1\u89c4\u8303</a> \u00b7
+  <a href="#-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98">\u5e38\u89c1\u95ee\u9898</a>
+</p>
+
+<p>
+
+  <img alt="React" src="https://img.shields.io/badge/React-19.x-61DAFB?style=flat-square&logo=react&logoColor=white" />
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white" />
+  <img alt="Vite" src="https://img.shields.io/badge/Vite-7.x-646CFF?style=flat-square&logo=vite&logoColor=white" />
+  <img alt="TailwindCSS" src="https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white" />
+  <img alt="Ant Design" src="https://img.shields.io/badge/Ant%20Design-6.x-1677FF?style=flat-square&logo=antdesign&logoColor=white" />
+
+</p>
+
+</div>
+
+> \u5b9a\u4f4d\uff1a\u7528\u6237\u4fa7\uff08C\u7aef\uff09\u5546\u57ce\u524d\u7aef\uff0c\u652f\u6301\u79fb\u52a8\u7aef\u4e3a\u4e3b\uff0c\u517c\u5bb9\u6d4f\u89c8\u5668\u9875\u9762\u6d4f\u89c8\u3002
 
 ---
 
-## 📋 项目概述
+## \u2705 \u5feb\u901f\u4f53\u9a8c
 
-**Lenovo Shop** 是联想集团官方的现代化电商平台，专为联想产品打造的全场景购物解决方案。项目采用最新的前端技术栈，提供了完整的电商购物流程，包括商品展示、用户认证、购物车管理、订单处理等核心功能。
+> \u76ee\u6807\uff1a\u4ece\u521a clone \u5230\u6253\u5f00\u9996\u9875\uff0c\u5c3d\u91cf\u5c11\u8bfb\u6587\u5b57\uff0c\u8ddf\u7740\u505a\u5c31\u80fd\u8dd1\u3002
 
-### 🎯 项目愿景
-- 🚀 **极致性能**：基于 Vite 的现代化构建工具，确保快速加载和流畅体验
-- 📱 **全端适配**：完美支持桌面端和移动端，基于 Capacitor 提供原生 App 体验
-- 🎨 **优雅设计**：采用 TailwindCSS 打造现代化 UI，遵循联想品牌设计规范
-- 🔒 **安全可靠**：完整的用户认证和数据安全保障体系
+```powershell
+cd d:\Repo\lenovo-shop
+pnpm install
+pnpm dev
+```
 
-### 📊 项目规模
-- **代码行数**: ~15,000+ 行
-- **组件数量**: 50+ 个 React 组件
-- **页面数量**: 15+ 个页面
-- **功能模块**: 20+ 个核心功能模块
+| \u9879\u76ee | \u9ed8\u8ba4\u503c | \u8bf4\u660e |
+|---|---:|---|
+| dev server | http://localhost:3000 | \u7531 `vite.config.ts` \u914d\u7f6e |
 
 ---
 
-## 🛠️ 技术栈分析
+## \ud83e\udde9 \u4ea7\u54c1\u89c6\u89d2
 
-### 🎨 前端框架 & 语言
-```json
-{
-  "React": "19.2.0 - 最新稳定版，Hooks + Concurrent Features",
-  "TypeScript": "5.9.3 - 完整的类型安全支持",
-  "Vite": "7.2.2 - 下一代前端构建工具"
-}
-```
+### \u4ea7\u54c1\u80fd\u529b\u5730\u56fe\uff08\u529f\u80fd\u5361\u7247\uff09
 
-### 🎯 UI & 样式
-```json
-{
-  "TailwindCSS": "3.4.18 - 原子化 CSS 框架",
-  "Ant Design": "6.0.0 - 企业级 UI 组件库",
-  "Framer Motion": "12.23.24 - 动画库",
-  "Swiper": "12.0.3 - 轮播组件"
-}
-```
+| \u57df | \u529f\u80fd\u5361\u7247 | \u7528\u6237\u7ed3\u679c |
+|---|---|---|
+| \u8d2d\u7269 | \u9996\u9875\u63a8\u8350 \u00b7 \u5206\u7c7b\u6d4f\u89c8 \u00b7 \u641c\u7d22\u7b5b\u9009 | \u5feb\u901f\u627e\u5230\u5546\u54c1 |
+| \u8f6c\u5316 | \u5546\u54c1\u8be6\u60c5 \u00b7 \u52a0\u8d2d\u7269\u8f66 \u00b7 \u7ed3\u7b97\u4e0b\u5355 | \u5b8c\u6210\u8d2d\u4e70 |
+| \u4f18\u60e0 | \u4f18\u60e0\u5238 \u00b7 \u95ea\u8d2d\u6d3b\u52a8 | \u63d0\u5347\u5ba2\u5355\u4e0e\u8d2d\u4e70\u610f\u613f |
+| \u5c65\u7ea6 | \u8ba2\u5355\u5217\u8868 \u00b7 \u8ba2\u5355\u8be6\u60c5 \u00b7 \u8fde\u7eed\u8ddf\u8e2a | \u8ba2\u5355\u8fc7\u7a0b\u53ef\u89c6\u5316 |
+| \u8d26\u6237 | \u767b\u5f55\u6ce8\u518c \u00b7 \u5730\u5740\u7ba1\u7406 \u00b7 \u7528\u6237\u4e2d\u5fc3 | \u6c89\u6dc0\u4e0e\u590d\u8d2d |
 
-### 🔧 状态管理 & 数据
-```json
-{
-  "Zustand": "5.0.9 - 轻量级状态管理",
-  "React Hook Form": "7.67.0 - 表单管理",
-  "Axios": "1.13.2 - HTTP 客户端",
-  "React Use WebSocket": "4.13.0 - WebSocket 连接"
-}
-```
+### \u7528\u6237\u65c5\u7a0b\u4e00\u5f20\u56fe
 
-### 📱 移动端 & 跨平台
-```json
-{
-  "Capacitor": "原生移动端支持",
-  "@capacitor/android": "Android 原生集成",
-  "@capacitor/ios": "iOS 原生集成"
-}
-```
-
-### 🛠️ 开发工具 & 质量保障
-```json
-{
-  "ESLint": "9.39.1 - 代码质量检查",
-  "TypeScript ESLint": "8.46.3 - TypeScript 代码检查",
-  "PostCSS": "8.5.6 - CSS 处理",
-  "Autoprefixer": "10.4.22 - CSS 浏览器兼容性"
-}
+```mermaid
+flowchart LR
+  A[\u8fdb\u5165\u9996\u9875] --> B[\u6d4f\u89c8\u5206\u7c7b / \u63a8\u8350]
+  B --> C[\u641c\u7d22\u5546\u54c1]
+  C --> D[\u5546\u54c1\u8be6\u60c5]
+  D --> E[\u52a0\u5165\u8d2d\u7269\u8f66]
+  E --> F[\u7ed3\u7b97]\n+  F --> G[\u586b\u5199\u5730\u5740 / \u4f18\u60e0\u5238]
+  G --> H[\u63d0\u4ea4\u8ba2\u5355]\n+  H --> I[\u8ba2\u5355\u8ddf\u8e2a / \u7528\u6237\u4e2d\u5fc3]
 ```
 
 ---
 
-## 🏗️ 项目架构
+## \ud83e\udded \u4e1a\u52a1\u4e0e\u6d41\u7a0b
 
-### 📂 整体架构图
-```
-lenovo-shop/
-├── 📁 android/                 # Android 原生应用
-├── 📁 public/                  # 静态资源
-├── 📁 src/                     # 源代码
-│   ├── 📁 assets/             # 资源文件
-│   ├── 📁 component/          # React 组件
-│   ├── 📁 context/            # React Context
-│   ├── 📁 hooks/              # 自定义 Hooks
-│   ├── 📁 pages/              # 页面组件
-│   ├── 📁 services/           # 服务层
-│   ├── 📁 store/              # 状态管理
-│   └── 📁 types/              # TypeScript 类型定义
-├── 📁 .vscode/                # VS Code 配置
-└── 📄 配置文件                # 各种配置文件
-```
+### \u5173\u952e\u4e1a\u52a1\u573a\u666f\uff08\u7ed3\u7b97\u4e3a\u4f8b\uff09
 
-### 🔄 数据流架构
-```
-用户交互 → React 组件 → Hooks → Context/Store → Services → API
-                      ↓
-                状态更新 ← 响应式更新 ← 数据流
+```mermaid
+sequenceDiagram
+  participant U as \u7528\u6237
+  participant UI as \u524d\u7aef\u9875\u9762
+  participant S as services\uff08Axios\uff09
+  participant API as \u540e\u7aef API
+  U->>UI: \u70b9\u51fb\u7ed3\u7b97
+  UI->>S: \u62c9\u53d6\u8d2d\u7269\u8f66/\u5730\u5740/\u4f18\u60e0\u5238
+  S->>API: GET /cart /address /coupon
+  API-->>S: \u6570\u636e
+  S-->>UI: \u6e32\u67d3\u7ed3\u7b97\u9875
+  U->>UI: \u63d0\u4ea4\u8ba2\u5355
+  UI->>S: \u521b\u5efa\u8ba2\u5355
+  S->>API: POST /orders
+  API-->>S: orderId
+  S-->>UI: \u8df3\u8f6c\u8ba2\u5355\u8be6\u60c5
 ```
 
-### 🗂️ 组件架构模式
-- **容器组件**: 负责数据获取和状态管理
-- **展示组件**: 专注于 UI 渲染和用户交互
-- **高阶组件**: 提供通用功能复用
-- **自定义 Hooks**: 业务逻辑封装和状态管理
+### \u9875\u9762\u5730\u56fe\uff08\u9762\u5411\u4ea7\u54c1/\u6d4b\u8bd5\u7684\u5b9a\u4f4d\uff09
+
+> \u672c\u9879\u76ee\u9875\u9762\u4ee5 `src/pages/` \u4e3a\u4e3b\uff1b\u903b\u8f91\u7b56\u7565\u7c7b\u7684\u901a\u7528\u529f\u80fd\u5206\u6563\u5728 `component/` `services/` `store/` `hooks/`\u3002
+
+```mermaid
+mindmap
+  root((Lenovo Shop \u524d\u53f0))
+    \u9996\u9875
+      \u8f6e\u64ad\u4e0e\u63a8\u8350
+      \u95ea\u8d2d\u6d3b\u52a8
+    \u5546\u54c1
+      \u7c7b\u76ee\u5217\u8868
+      \u5546\u54c1\u8be6\u60c5
+      \u641c\u7d22\u7b5b\u9009
+    \u8d2d\u7269\u8f66
+      \u52a0\u51cf\u4e0e\u5220\u9664
+      \u4f18\u60e0\u8ba1\u7b97
+    \u7ed3\u7b97
+      \u5730\u5740\u9009\u62e9
+      \u4f18\u60e0\u5238
+      \u63d0\u4ea4\u8ba2\u5355
+    \u8ba2\u5355
+      \u8ba2\u5355\u5217\u8868
+      \u8ba2\u5355\u8be6\u60c5
+    \u7528\u6237\u4e2d\u5fc3
+      \u767b\u5f55\u6ce8\u518c
+      \u5730\u5740\u7ba1\u7406
+      \u8d26\u6237\u8bbe\u7f6e
+```
 
 ---
 
-## 📁 文件结构详解
+## \ud83e\uddf1 \u67b6\u6784\u4e0e\u5bf9\u63a5
 
-### 🎯 核心入口文件
+### \u524d\u7aef\u5206\u5c42\u4e00\u5f20\u56fe
 
-#### `src/main.tsx` - 应用入口
-```typescript
-// 📍 位置: src/main.tsx
-// 🎯 功能: React 应用启动入口，路由配置，Provider 包装
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
+```mermaid
+flowchart TB
+  UI[pages & component] --> H[hooks]
+  UI --> ST[store\n(zustand/context)]
+  H --> ST
+  UI --> SV[services\n(axios)]
+  SV --> API[Backend API]
+  UI --> AS[assets\n(static/data)]
+  classDef box fill:#0b1220,stroke:#2b3a55,color:#cbd5e1;
+  class UI,H,ST,SV,API,AS box;
 ```
 
-#### `src/App.tsx` - 主应用组件
-```typescript
-// 📍 位置: src/App.tsx
-// 🎯 功能: 路由配置，布局组件，全局状态管理
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import MainLayout from './component/Layout/MainLayout'
-import Index from './pages/Index'
-// ... 其他导入
+### \u5bf9\u63a5\u540e\u7aef\uff08Lenovo-Shop-Server\uff09
 
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<MainLayout />}>
-          <Route index element={<Index />} />
-          {/* 其他路由配置 */}
-        </Route>
-      </Routes>
-    </BrowserRouter>
-  )
-}
+| \u9884\u671f\u6574\u5408 | \u5efa\u8bae\u8def\u5f84 | \u8bf4\u660e |
+|---|---|---|
+| API Base URL | `VITE_API_BASE_URL` | \u914d\u7f6e\u4e3a\u540e\u7aef\u670d\u52a1\u5730\u5740\uff0c\u4f8b\uff1a`http://localhost:xxxx` |
+| \u767b\u5f55\u6001 | Cookie / LocalStorage | \u4f7f\u7528 `js-cookie`\uff0c\u8be6\u60c5\u4ee5 `src/services/` \u5b9e\u73b0\u4e3a\u51c6 |
+| WebSocket | `VITE_WS_URL`\uff08\u53ef\u9009\uff09 | \u9879\u76ee\u5df2\u5f15\u5165 `react-use-websocket`\uff0c\u5982\u6709\u8ba2\u5355\u8fdb\u5ea6\u63a8\u9001\u53ef\u6269\u5c55 |
 
-export default App
+> \u73b0\u72b6\u63d0\u793a\uff1aREADME \u4ec5\u63d0\u4f9b\u5bf9\u63a5\u5951\u7ea6\uff0c\u5177\u4f53\u7684 API \u8def\u7531\u4ee5 `lenovo-shop-server/docs/` \u4e3a\u51c6\u3002
+
+### \u914d\u7f6e\u793a\u4f8b\uff08\u4e00\u5f20\u8868\uff0c\u5c11\u8bf4\u8bdd\uff09
+
+\u65b0\u5efa `.env.local`\uff1a
+
+| \u952e | \u793a\u4f8b\u503c | \u5fc5\u987b |
+|---|---|:---:|
+| `VITE_API_BASE_URL` | `http://localhost:8080` | \u25cf |
+| `VITE_WS_URL` | `ws://localhost:8080` | \u25cb |
+
+---
+
+## \ud83d\udee0\ufe0f \u5f00\u53d1\u89c4\u8303
+
+### \u8fd0\u884c\u4e0e\u4ea4\u4ed8\uff08\u811a\u672c\u4e00\u8df5\u5230\u4f4d\uff09
+
+| \u52a8\u4f5c | \u547d\u4ee4 | \u4ea7\u7269 |
+|---|---|---|
+| \u672c\u5730\u5f00\u53d1 | `pnpm dev` | \u70ed\u66f4\u65b0\u5f00\u53d1\u670d\u52a1 |
+| \u7c7b\u578b+\u6253\u5305 | `pnpm build` | `dist/` |
+| \u9759\u6001\u9884\u89c8 | `pnpm preview` | \u672c\u5730\u9884\u89c8\u6253\u5305\u7ed3\u679c |
+| \u4ee3\u7801\u89c4\u8303 | `pnpm lint` | ESLint \u7ed3\u679c |
+
+### \u76ee\u5f55\u5b9a\u4f4d\uff08\u4e00\u773c\u627e\u5230\u4f60\u8981\u6539\u7684\u4e1c\u897f\uff09
+
+| \u60f3\u505a\u7684\u4e8b | \u5148\u770b\u8fd9\u91cc |
+|---|---|
+| \u6539\u9875\u9762 | `src/pages/` |
+| \u62c6\u7ec4\u4ef6 | `src/component/` |
+| \u63a5\u540e\u7aef\u63a5\u53e3 | `src/services/` |
+| \u5168\u5c40\u72b6\u6001 | `src/store/` |
+| \u516c\u5171 Hooks | `src/hooks/` |
+| \u7c7b\u578b\u5b9a\u4e49 | `src/types/` |
+| \u714c\u5b9a\u6570\u636e/\u56fe\u7247 | `src/assets/` `public/` |
+
+---
+
+## \u2753 \u5e38\u89c1\u95ee\u9898
+
+### \u4e3a\u4ec0\u4e48\u7aef\u53e3\u662f 3000\uff1f
+
+\u56e0\u4e3a\u5728 `vite.config.ts` \u4e2d\u914d\u7f6e\u4e86 `server.port = 3000`\u3002
+
+### \u6211\u8c03\u7528\u540e\u7aef\u6709 CORS \u95ee\u9898\uff1f
+
+\u5efa\u8bae\u4f18\u5148\u6539\u540e\u7aef CORS\uff08\u53c2\u8003 `lenovo-shop-server/CORS_FIX_README.md`\uff09\uff1b\u4e3a\u4e86\u672c\u5730\u6d4b\u8bd5\u4e5f\u53ef\u4ee5\u5728 Vite \u4e2d\u52a0\u4e00\u4e2a proxy\uff08\u4f46\u9700\u8981\u6839\u636e\u540e\u7aef\u8def\u7531\u5b9e\u9645\u60c5\u51b5\u8bbe\u7f6e\uff09\u3002
+
+### pnpm \u88c5\u5305\u5f88\u6162\uff1f
+
+\u4f7f\u7528\u56fd\u5185 registry\u3001\u6216\u5728\u516c\u53f8\u4ee3\u7406\u73af\u5883\u4e0b\u914d\u7f6e PNPM/NPM \u4ee3\u7406\u5373\u53ef\u3002
+
+---
+
+## \ud83d\udd10 \u8d28\u91cf\u95e8\u7981\uff08\u63d0\u4ea4\u4ee3\u7801\u524d\u5efa\u8bae\u8fd0\u884c\uff09
+
+```powershell
+pnpm lint
+pnpm build
 ```
 
-### 📂 页面组件 (`src/pages/`)
+---
 
-#### `src/pages/Index.tsx` - 首页
-```typescript
-// 📍 位置: src/pages/Index.tsx
-// 🎯 功能: 商城首页，展示轮播图、商品分类、推荐商品等
-// 🔗 路由: /
-import React from 'react'
-import Carousel from '../component/Carousel/Carousel'
-import MainProduct from '../component/MainProduct/MainProduct'
-// ... 其他组件
+## \ud83e\udded \u9644\u5f55\uff1a\u6280\u672f\u9009\u578b\uff08\u7528\u4e00\u5f20\u8868\u5c31\u591f\uff09
 
-const Index: React.FC = () => {
-  return (
-    <div className="space-y-8">
-      <Carousel />
-      <MainProduct />
-      {/* 其他首页模块 */}
-    </div>
-  )
-}
-```
+| \u7c7b\u522b | \u65b9\u6848 | \u76ee\u7684 |
+|---|---|---|
+| \u6846\u67b6 | React + TypeScript | \u7ec4\u4ef6\u5316\u3001\u7c7b\u578b\u5b89\u5168 |
+| \u6784\u5efa | Vite | \u51b7\u542f\u52a8\u5feb\u3001HMR \u5feb |
+| UI | Ant Design + TailwindCSS | \u7ec4\u4ef6\u80fd\u529b + \u6837\u5f0f\u6548\u7387 |
+| \u72b6\u6001 | Zustand | \u8f7b\u91cf\u3001\u4e0d\u5520\u53e8 |
+| \u8868\u5355 | React Hook Form + Zod | \u6821\u9a8c\u5f3a\u3001\u6027\u80fd\u597d |
+| \u901a\u4fe1 | Axios + (WebSocket \u53ef\u9009) | \u7edf\u4e00\u6570\u636e\u83b7\u53d6\u5c42 |
 
-#### `src/pages/ProductDetail.tsx` - 商品详情页 ⭐⭐⭐
-```typescript
-// 📍 位置: src/pages/ProductDetail.tsx
-// 🎯 功能: 商品详细信息展示、规格选择、购买流程
-// 🔗 路由: /product/:id
-// 📊 复杂度: 高 (包含图片展示、评论系统、配送选择等)
-// 🔧 依赖: useCart, useFavorites, ProductComments 等
-import React, { useState } from "react"
-import { useParams } from "react-router-dom"
-import { findProductById } from "../assets/data/mockProducts"
-// ... 其他导入
-
-const ProductDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>()
-  // 复杂的商品详情逻辑
-}
-```
-
-#### `src/pages/ShoppingCart.tsx` - 购物车
-```typescript
-// 📍 位置: src/pages/ShoppingCart.tsx
-// 🎯 功能: 购物车商品管理、数量调整、结算功能
-// 🔗 路由: /shopping-cart
-// 🔧 依赖: useCart Context
-```
-
-#### `src/pages/Checkout.tsx` - 结算页面
-```typescript
-// 📍 位置: src/pages/Checkout.tsx
-// 🎯 功能: 订单确认、收货地址填写、支付方式选择
-// 🔗 路由: /checkout
-```
-
-#### `src/pages/UserCenter.tsx` - 用户中心
-```typescript
-// 📍 位置: src/pages/UserCenter.tsx
-// 🎯 功能: 用户信息管理、订单历史、账户设置
-// 🔗 路由: /user-center
-```
-
-#### `src/pages/Search.tsx` - 搜索页面
-```typescript
-// 📍 位置: src/pages/Search.tsx
-// 🎯 功能: 商品搜索、筛选、排序功能
-// 🔗 路由: /search
-```
-
-#### `src/pages/FlashSalePage.tsx` - 限时抢购
-```typescript
-// 📍 位置: src/pages/FlashSalePage.tsx
-// 🎯 功能: 秒杀活动、倒计时、抢购逻辑
-// 🔗 路由: /flash-sale
-```
-
-### 📂 组件系统 (`src/component/`)
-
-#### 🔐 认证组件 (`src/component/Auth/`)
-
-##### `src/component/Auth/AuthForm.tsx` - 认证表单
-```typescript
-// 📍 位置: src/component/Auth/AuthForm.tsx
-// 🎯 功能: 用户登录/注册表单，表单验证
-// 🔧 依赖: react-hook-form, zod
-```
-
-##### `src/component/Auth/LoginModeTabs.tsx` - 登录模式切换
-```typescript
-// 📍 位置: src/component/Auth/LoginModeTabs.tsx
-// 🎯 功能: 手机号/邮箱登录切换
-```
-
-##### `src/component/Auth/VerificationCodeField.tsx` - 验证码输入
-```typescript
-// 📍 位置: src/component/Auth/VerificationCodeField.tsx
-// 🎯 功能: 短信验证码输入和倒计时
-// 🔧 依赖: useVerificationCode hook
-```
-
-#### 🖼️ 轮播组件 (`src/component/Carousel/`)
-
-##### `src/component/Carousel/Carousel.tsx` - 主轮播组件
-```typescript
-// 📍 位置: src/component/Carousel/Carousel.tsx
-// 🎯 功能: 首页轮播图展示
 // 🔧 依赖: Swiper
 ```
 
